@@ -146,7 +146,7 @@ def mono_calibration(
     results = []
     for nd in nd_list:
         # switch nd filter
-        nd_enum = mlcm.MLFilterEnum(nd)
+        nd_enum = mlcm.MLFilterEnum(int(nd)) # et MLFilterEnum.ND0
         mono.ml_move_nd_syn(nd_enum)
         for gray in gray_range:
             aeparams = mlcm.pyAEParams(dynamic_range=gray,target_max=gray + 0.05,target_min=gray - 0.05, max_time=19000, rate=1000000)
@@ -173,7 +173,7 @@ def mono_calibration(
                 })
             else:
                 for xyz in xyz_list:
-                    xyz_enum = mlcm.MLFilterEnum(xyz)
+                    xyz_enum = mlcm.MLFilterEnum(int(xyz))
                     Luminance = luminance_values[xyz_enum]
                     # move color filter
                     mono.ml_move_xyz_syn(xyz_enum)
