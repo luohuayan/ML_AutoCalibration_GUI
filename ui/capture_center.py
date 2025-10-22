@@ -88,10 +88,35 @@ class CaptureCenterWindow(QWidget):
             QSizePolicy.Expanding, QSizePolicy.Fixed)
         grid_layout.addWidget(self.line_edit_axislist, 10, 0)
 
+        self.label_path = QLabel()
+        self.label_path.setText("保存路径:")
+        grid_layout.addWidget(self.label_path, 11, 0)
+
+        self.line_edit_path = QLineEdit()
+        self.line_edit_path.setReadOnly(True)  # 设置为只读
+        self.line_edit_path.setPlaceholderText("未选择文件夹")
+        self.line_edit_path.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        grid_layout.addWidget(self.line_edit_path, 12, 0)
+
+        self.btn_browse = QPushButton("浏览...")
+        self.btn_browse.clicked.connect(self._open_folder_dialog)
+        grid_layout.addWidget(self.btn_browse, 12, 1)
+
+        self.btn_capture = QPushButton("开始拍图")
+        self.btn_capture.clicked.connect(self.start_mono_calibration)
+        grid_layout.addWidget(self.btn_capture, 13, 0)
+
         spacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
         grid_layout.addItem(spacer)
 
         self.setLayout(grid_layout)
+
+        self.label_sphlist.hide()
+        self.line_edit_sphlist.hide()
+        self.label_cyllist.hide()
+        self.line_edit_cyllist.hide()
+        self.label_axislist.hide()
+        self.line_edit_axislist.hide()
 
 
     
