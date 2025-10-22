@@ -24,6 +24,7 @@ def datetime_str2():
 
 def measurement(
     colorimeter: mlcm.ML_Colorimeter,
+    half_size: int,
     nd: mlcm.MLFilterEnum,
     xyz_list: List[mlcm.MLFilterEnum],
     RX_str: str,
@@ -43,7 +44,7 @@ def measurement(
     module_id = 1
     mono = colorimeter.ml_bino_manage.ml_get_module_by_id(module_id)
     # capture data
-    capture_data_dict = dict()
+    capture_data_dict = Dict()
     for xyz in xyz_list:
         ret = ml_mono.ml_move_xyz_syn(xyz)
         if not ret.success:
@@ -119,7 +120,7 @@ def measurement(
 
         row, col = img.shape[0], img.shape[1]
         center_row, center_col = int(row / 2), int(col / 2)
-        half_size = 3600 / mlcm.Binning_to_Int(mlcm.Binning(binn))
+        half_size = half_size / mlcm.Binning_to_Int(mlcm.Binning(binn))
 
         fig = plt.figure(figsize=(16, 4))
         plt.subplot(1, 2, 1)
@@ -131,10 +132,12 @@ def measurement(
                   "_" + mlcm.MLFilterEnum_to_str(xyz))
         plt.subplot(1, 2, 2)
         plt.plot(
-            img[center_row, int(center_col - half_size): int(center_col + half_size)]
+            img[center_row, int(center_col - half_size)
+                                : int(center_col + half_size)]
         )
         plt.plot(
-            img[int(center_row - half_size): int(center_row + half_size), center_col]
+            img[int(center_row - half_size)
+                    : int(center_row + half_size), center_col]
         )
         plt.grid(which="both")
         plt.xlabel("Position(pixel)")
@@ -200,22 +203,20 @@ def cal_synthetic_mean_images(
     module_id = 1
     mono = colorimeter.ml_bino_manage.ml_get_module_by_id(module_id)
     for nd in nd_list:
-        nd_enum = mlcm.MLFilterEnum(int(nd))
         for xyz in xyz_list:
-            xyz_enum = mlcm.MLFilterEnum(int(xyz))
             colorimeter.ml_cal_synthetic_mean_images(
                 module_id=module_id,
                 save_path=save_path,
                 aperture=mono.ml_get_aperture(),
-                nd=nd_enum,
-                xyz=xyz_enum,
+                nd=nd,
+                xyz=xyz,
                 sphere_list=[0],
                 light_source=mono.ml_get_light_source()
             )
             print("calculate mean images for: " +
-                  mlcm.MLFilterEnum_to_str(xyz_enum))
+                  mlcm.MLFilterEnum_to_str(xyz))
         print("calculate mean images for: " +
-              mlcm.MLFilterEnum_to_str(nd_enum))
+              mlcm.MLFilterEnum_to_str(nd))
     print("calculate ffc synthetic mean finish")
 
 
@@ -223,7 +224,7 @@ def capture_ffc_images(
     colorimeter: mlcm.ML_Colorimeter,
     nd_list: List[mlcm.MLFilterEnum],
     xyz_list: List[mlcm.MLFilterEnum],
-    binn: int,
+    binn: mlcm.Binning,
     exposure_map: Dict[mlcm.MLFilterEnum, Dict[mlcm.MLFilterEnum, mlcm.pyExposureSetting]],
     capture_times: int,
     save_path: str,
@@ -235,16 +236,13 @@ def capture_ffc_images(
     module_id = 1
     mono = colorimeter.ml_bino_manage.ml_get_module_by_id(module_id)
 
-    xyz_list = [mlcm.MLFilterEnum(int(xyz)) for xyz in xyz_list]
-
     for nd in nd_list:
-        nd_enum = mlcm.MLFilterEnum(nd)
-        ret = mono.ml_move_nd_syn(nd_enum)
-        print(mlcm.MLFilterEnum_to_str(nd_enum))
+        ret = mono.ml_move_nd_syn(nd)
+        print(mlcm.MLFilterEnum_to_str(nd))
         if not ret.success:
             raise RuntimeError("ml_move_nd_syn error")
 
-        ret = mono.ml_set_binning(mlcm.Binning(binn))
+        ret = mono.ml_set_binning(binn)
         if not ret.success:
             raise RuntimeError("ml_set_binning error")
         get_binn = mono.ml_get_binning()
@@ -256,11 +254,11 @@ def capture_ffc_images(
             ret = colorimeter.ml_capture_ffc2(
                 module_id=module_id,
                 save_path=save_path,
-                nd=nd_enum,
+                nd=nd,
                 xyz_list=xyz_list,
                 rx=rx,
                 avg_count=capture_times,
-                exposure_map=exposure_map[nd_enum]
+                exposure_map=exposure_map[nd]
             )
             if not ret.success:
                 raise RuntimeError("ml_capture_ffc2 error")
@@ -271,11 +269,11 @@ def capture_ffc_images(
                 ret = colorimeter.ml_capture_ffc2(
                     module_id=module_id,
                     save_path=save_path,
-                    nd=nd_enum,
+                    nd=nd,
                     xyz_list=xyz_list,
                     rx=rx,
                     avg_count=capture_times,
-                    exposure_map=exposure_map[nd_enum]
+                    exposure_map=exposure_map[nd]
                 )
                 print("capture image for: " + mlcm.pyRXCombination_to_str(rx))
                 if not ret.success:
@@ -287,11 +285,11 @@ def capture_ffc_images(
                     ret = colorimeter.ml_capture_ffc2(
                         module_id=module_id,
                         save_path=save_path,
-                        nd=nd_enum,
+                        nd=nd,
                         xyz_list=xyz_list,
                         rx=rx,
                         avg_count=capture_times,
-                        exposure_map=exposure_map[nd_enum]
+                        exposure_map=exposure_map[nd]
                     )
                     print("capture image for: " +
                           mlcm.pyRXCombination_to_str(rx))
@@ -303,6 +301,7 @@ def capture_ffc_images(
 
 def cal_uniformity(
     colorimeter: mlcm.ML_Colorimeter,
+    half_size: int,
     nd_list: List[mlcm.MLFilterEnum],
     xyz_list: List[mlcm.MLFilterEnum],
     uniformity_path: str,
@@ -315,30 +314,28 @@ def cal_uniformity(
     module_id = 1
     mono = colorimeter.ml_bino_manage.ml_get_module_by_id(module_id)
 
-    xyz_list = [mlcm.MLFilterEnum(int(xyz)) for xyz in xyz_list]
     cali_path = mono.ml_get_config_path()
 
     for nd in nd_list:
-        nd_enum = mlcm.MLFilterEnum(nd)
         ffc_xlsx = uniformity_path + r"\ffc_uniformity-" + datetime_str2() + "-" + \
-            mlcm.MLFilterEnum_to_str(nd_enum) + "_" + \
+            mlcm.MLFilterEnum_to_str(nd) + "_" + \
             mono.ml_get_aperture()+".xlsx"
 
         fourcolor_xlsx = uniformity_path + r"\fourcolor_uniformity-" + datetime_str2() + "-" + \
-            mlcm.MLFilterEnum_to_str(nd_enum) + "_" + \
+            mlcm.MLFilterEnum_to_str(nd) + "_" + \
             mono.ml_get_aperture()+".xlsx"
 
-        ret = ml_mono.ml_move_nd_syn(nd_enum)
+        ret = ml_mono.ml_move_nd_syn(nd)
         if not ret.success:
             raise RuntimeError("ml_move_nd_syn error")
 
         if use_RX:
-            sph_list = rx_dict[nd_enum][0]
-            cyl_list = rx_dict[nd_enum][1]
-            axis_list = rx_dict[nd_enum][2]
+            sph_list = rx_dict[nd][0]
+            cyl_list = rx_dict[nd][1]
+            axis_list = rx_dict[nd][2]
 
         for binn in binn_list:
-            ret = mono.ml_set_binning(mlcm.Binning(binn))
+            ret = mono.ml_set_binning(binn)
             if not ret.success:
                 raise RuntimeError("ml_set_binning error")
             get_binn = mono.ml_get_binning()
@@ -348,7 +345,7 @@ def cal_uniformity(
             ffc_wb.save(ffc_xlsx)
             ffc_wb = load_workbook(ffc_xlsx)
             ffc_wb.remove(ffc_wb["Sheet"])
-            title = str(pow(2, binn)) + "X" + str(pow(2, binn))
+            title = str(pow(2, int(binn))) + "X" + str(pow(2, int(binn)))
             ffc_ws = ffc_wb.create_sheet(title=title)
             ffc_title = ["RX", "ColorFilter", "NDFilter", "Light Source", "ROI1", "ROI2", "ROI3",
                          "ROI4", "ROI5", "ROI6", "ROI7", "ROI8", "ROI9", "Mean", "Std", "Min", "Max", "Min/Max", "Uniformity"]
@@ -358,7 +355,7 @@ def cal_uniformity(
             fourcolor_wb.save(fourcolor_xlsx)
             fourcolor_wb = load_workbook(fourcolor_xlsx)
             fourcolor_wb.remove(fourcolor_wb["Sheet"])
-            title = str(pow(2, binn)) + "X" + str(pow(2, binn))
+            title = str(pow(2, int(binn))) + "X" + str(pow(2, int(binn)))
             fourcolor_ws = fourcolor_wb.create_sheet(title=title)
             fourcolor_title = ["RX", "CxCyLuminance", "NDFilter", "Light Source", "ROI1", "ROI2", "ROI3",
                                      "ROI4", "ROI5", "ROI6", "ROI7", "ROI8", "ROI9", "Mean", "Std", "Min", "Max", "Min/Max", "Uniformity"]
@@ -370,8 +367,12 @@ def cal_uniformity(
 
                 # calibration config for measurement
                 cali_config = mlcm.pyCalibrationConfig(
-                    input_path=cali_path, aperture=mono.ml_get_aperture(), nd_filter_list=[nd_enum], color_filter_list=xyz_list,
-                    rx=rx, light_source_list=[mono.ml_get_light_source()],
+                    input_path=cali_path, 
+                    aperture=mono.ml_get_aperture(), 
+                    nd_filter_list=[nd], 
+                    color_filter_list=xyz_list,
+                    rx=rx, 
+                    light_source_list=[mono.ml_get_light_source()],
                     dark_flag=True,
                     ffc_flag=True,
                     color_shift_flag=True,
@@ -388,9 +389,25 @@ def cal_uniformity(
                     save_calibration=False
                 )
 
-                measurement(colorimeter, nd_enum, xyz_list, RX_str, binn, exposure_map, module_id,
-                            cali_config, save_config, roi_dict, ffc_ws, fourcolor_ws, ffc_wb, fourcolor_wb, ffc_xlsx, fourcolor_xlsx
-                            )
+                measurement(
+                    colorimeter, 
+                    half_size, 
+                    nd, 
+                    xyz_list, 
+                    RX_str, 
+                    binn, 
+                    exposure_map, 
+                    module_id,
+                    cali_config, 
+                    save_config, 
+                    roi_dict, 
+                    ffc_ws, 
+                    fourcolor_ws, 
+                    ffc_wb, 
+                    fourcolor_wb, 
+                    ffc_xlsx, 
+                    fourcolor_xlsx
+                )
 
             else:
                 for sph in sph_list:
@@ -405,9 +422,12 @@ def cal_uniformity(
 
                             # calibration config for measurement
                             cali_config = mlcm.pyCalibrationConfig(
-                                input_path=cali_path, aperture=mono.ml_get_aperture(), nd_filter_list=[nd_enum], color_filter_list=xyz_list,
-                                rx=rx, light_source_list=[
-                                    mono.ml_get_light_source()],
+                                input_path=cali_path, 
+                                aperture=mono.ml_get_aperture(), 
+                                nd_filter_list=[nd], 
+                                color_filter_list=xyz_list,
+                                rx=rx, 
+                                light_source_list=[mono.ml_get_light_source()],
                                 dark_flag=True,
                                 ffc_flag=True,
                                 color_shift_flag=True,
@@ -424,9 +444,25 @@ def cal_uniformity(
                                 save_calibration=False
                             )
 
-                            measurement(colorimeter, nd_enum, xyz_list, RX_str, binn, exposure_map, module_id,
-                                        cali_config, save_config, roi_dict, ffc_ws, fourcolor_ws, ffc_wb, fourcolor_wb, ffc_xlsx, fourcolor_xlsx
-                                        )
+                            measurement(
+                                colorimeter, 
+                                half_size, 
+                                nd, 
+                                xyz_list, 
+                                RX_str, 
+                                binn, 
+                                exposure_map, 
+                                module_id,
+                                cali_config, 
+                                save_config, 
+                                roi_dict, 
+                                ffc_ws, 
+                                fourcolor_ws, 
+                                ffc_wb, 
+                                fourcolor_wb, 
+                                ffc_xlsx, 
+                                fourcolor_xlsx
+                            )
                             print("measurement for rx: " + RX_str)
 
 
@@ -463,8 +499,10 @@ if __name__ == '__main__':
 
         # 4:ND0  5:ND1  6:ND2  7:ND3  8:ND4
         nd_list = [4]
+        nd_list = [mlcm.MLFilterEnum(int(nd)) for nd in nd_list]
         # 1:X  2:Y  3:Z  10:Clear
         xyz_list = [1, 2, 3]
+        xyz_list = [mlcm.MLFilterEnum(int(xyz)) for xyz in xyz_list]
         # multi frame averaging
         capture_times = 1
         # different exposure map of nd while capture ffc images
@@ -509,8 +547,10 @@ if __name__ == '__main__':
         # 0:ONE_BY_ONE  1:TWO_BY_TWO  2:FOUR_BY_FOUR  3:EIGHT_BY_EIGHT  4:SIXTEEN_BY_SIXTEEN
         # binn of capture ffc images
         binn = 0
+        binn = mlcm.Binning(int(binn))
         # binn list of calculate uniformity
         binn_list = [0]
+        binn_list = [mlcm.Binning(int(binn)) for binn in binn_list]
         # exposure map for calculate uniformity
         exposure_map = {
             mlcm.MLFilterEnum.X: mlcm.pyExposureSetting(exposure_mode=mlcm.ExposureMode.Auto, exposure_time=100),
@@ -589,6 +629,7 @@ if __name__ == '__main__':
             ]
         }
 
+        half_size = 3600
         is_capture_ffc = True
         is_calculate_synthetic = True
         is_calculate_uniformity = True
@@ -600,9 +641,9 @@ if __name__ == '__main__':
         if use_RX and is_calculate_synthetic:
             cal_synthetic_mean_images(
                 ml_colorimeter, nd_list, xyz_list, save_path)
-       
+
         if is_calculate_uniformity:
-            cal_uniformity(ml_colorimeter, nd_list, xyz_list,
+            cal_uniformity(ml_colorimeter, half_size, nd_list, xyz_list,
                            uniformity_path, binn_list, exposure_map, roi_dict, use_RX, rx_dict)
 
     except Exception as e:

@@ -40,6 +40,7 @@ class CaptureFFC_CalUniformity_Plot_Window(QWidget):
         self.dialog_title = "选择文件夹"
         self.default_path = ""
         self.file_name = ""
+        self.module_id = 1
         self._init_ui()
 
     def _init_ui(self):
@@ -191,6 +192,7 @@ class CaptureFFC_CalUniformity_Plot_Window(QWidget):
         self.rgbw_btngroup.addButton(self.cb_G, 2)
         self.rgbw_btngroup.addButton(self.cb_B, 3)
         self.rgbw_btngroup.addButton(self.cb_W, 4)
+        self.rgbw_btngroup.idClicked.connect(self._rgbw_changed)
 
         h_layout.addWidget(self.cb_R)
         h_layout.addWidget(self.cb_G)
@@ -198,9 +200,19 @@ class CaptureFFC_CalUniformity_Plot_Window(QWidget):
         h_layout.addWidget(self.cb_W)
         grid_layout.addLayout(h_layout, 20, 0)
 
+        self.label_pixelcount = QLabel()
+        self.label_pixelcount.setText("Plot计算, 水平方向和竖直方向像素个数: ")
+        grid_layout.addWidget(self.label_pixelcount, 21, 0)
+
+        self.line_edit_pixelcount = QLineEdit()
+        self.line_edit_pixelcount.setText("7200")
+        self.line_edit_pixelcount.setSizePolicy(
+            QSizePolicy.Expanding, QSizePolicy.Fixed)
+        grid_layout.addWidget(self.line_edit_pixelcount, 22, 0)
+
         self.btn_capture = QPushButton("开始拍图及计算FFC,FourColor均匀性")
         self.btn_capture.clicked.connect(self._start_capture_calculate)
-        grid_layout.addWidget(self.btn_capture, 21, 0)
+        grid_layout.addWidget(self.btn_capture, 23, 0)
 
         spacer = QSpacerItem(20, 40, QSizePolicy.Minimum,
                              QSizePolicy.Expanding)
@@ -250,6 +262,12 @@ class CaptureFFC_CalUniformity_Plot_Window(QWidget):
             self.line_edit_axislist.hide()
             self.cb_calculate_synthetic.hide()
 
+    def _rgbw_changed(self, btn_id):
+        obj = {1: "R", 2: "G", 3: "B", 4: "W"}
+        self.light_source = obj[btn_id]
+        self.colorimeter.ml_bino_manage.ml_get_module_by_id(
+            self.module_id).ml_set_light_source(self.light_source)
+
     def _start_capture_calculate(self):
         try:
             if self.cb_captureffc.isChecked():
@@ -261,17 +279,27 @@ class CaptureFFC_CalUniformity_Plot_Window(QWidget):
                                         QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
 
             self.capture_times = int(self.line_edit_times.text())
-            self.binn = int(self.line_edit_binn.text())
+
+            self.binn = mlcm.Binning(int(self.line_edit_binn.text()))
             self.binnlist = self.line_edit_binnlist.text().split()
+            self.binnlist = [mlcm.Binning(int(binn)) for binn in self.binnlist]
+
             self.ndlist = self.line_edit_ndlist.text().split()
+            self.ndlist = [mlcm.MLFilterEnum(int(nd)) for nd in self.ndlist]
+
             self.xyzlist = self.line_edit_xyzlist.text().split()
+            self.xyzlist = [mlcm.MLFilterEnum(
+                int(xyz)) for xyz in self.xyzlist]
+
             self.useRX = self.cb_useRX.isChecked()
             self.sphlist = self.line_edit_sphlist.text().split()
             self.cyllist = self.line_edit_cyllist.text().split()
             self.axislist = self.line_edit_axislist.text().split()
+
             self.capture_ffc = self.cb_captureffc.isChecked()
             self.cal_synthetic = self.cb_calculate_synthetic.isChecked()
             self.cal_uniformity = self.cb_calculate_uniformity.isChecked()
+            self.pixelcount = int(self.line_edit_pixelcount.text())
 
             # different exposure map of nd while capture ffc images
             exposure_map_obj = {
@@ -385,22 +413,48 @@ class CaptureFFC_CalUniformity_Plot_Window(QWidget):
             }
 
             self.eye1_path = self.colorimeter.ml_bino_manage.ml_get_module_by_id(
-                1).ml_get_config_path()
+                self.module_id).ml_get_config_path()
 
             if self.capture_ffc:
-                capture_ffc_images(self.colorimeter, self.ndlist, self.xyzlist, self.binn, exposure_map_obj, self.capture_times,
-                                   self.eye1_path, self.useRX, self.sphlist, self.cyllist, self.axislist)
+                capture_ffc_images(
+                    self.colorimeter,
+                    self.ndlist,
+                    self.xyzlist,
+                    self.binn,
+                    exposure_map_obj,
+                    self.capture_times,
+                    self.eye1_path,
+                    self.useRX,
+                    self.sphlist,
+                    self.cyllist,
+                    self.axislist
+                )
 
             if self.useRX and self.cal_synthetic:
                 cal_synthetic_mean_images(
-                    self.colorimeter, self.ndlist, self.xyzlist, self.out_path)
+                    self.colorimeter,
+                    self.ndlist,
+                    self.xyzlist,
+                    self.out_path
+                )
 
             if self.cal_uniformity:
-                cal_uniformity(self.colorimeter, self.ndlist, self.xyzlist,
-                               self.out_path, self.binnlist, exposure_map, roi_dict, self.useRX, rx_dict)
+                cal_uniformity(
+                    self.colorimeter,
+                    self.pixelcount/2,
+                    self.ndlist,
+                    self.xyzlist,
+                    self.out_path,
+                    self.binnlist,
+                    exposure_map,
+                    roi_dict,
+                    self.useRX,
+                    rx_dict
+                )
 
             QMessageBox.information(
                 self, "MLColorimeter", "finish", QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
+
         except Exception as e:
             QMessageBox.critical(self, "MLColorimeter", "exception" + e,
                                  QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
