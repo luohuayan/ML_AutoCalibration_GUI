@@ -1,0 +1,7 @@
+numpy # add version number
+opencv-python
+matplotlib
+openpyxl
+pillow
+pandas
+pyqt5
