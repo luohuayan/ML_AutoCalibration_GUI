@@ -13,10 +13,12 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import QRect, QMetaObject
 from core.app_config import AppConfig
-from ui.settings_windows import SettingsWindow
-from ui.dark_heatmap_windows import DarkHeatMapWindow
-from ui.captureffc_uniformity_plot_windows import CaptureFFC_CalUniformity_Plot_Window
-
+from ui.settings_window import SettingsWindow
+from ui.dark_heatmap_window import DarkHeatMapWindow
+from ui.captureffc_uniformity_plot_window import CaptureFFC_CalUniformity_Plot_Window
+from ui.mono_calibration import MonoCalibrationWindow
+from ui.calculate_sph_cyl_coefficient import CalculateSphCylCoefficientWindow
+from ui.capture_center import CaptureCenterWindow
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -25,6 +27,7 @@ class MainWindow(QMainWindow):
         self.setGeometry(100, 100, 1024, 768)
         self._init_ui()
         self.colorimeter = AppConfig.get_colorimeter()
+        self.select_path=""
 
     def _init_ui(self):
         # 创建菜单栏
@@ -50,12 +53,20 @@ class MainWindow(QMainWindow):
         script2_action = QAction("captureffc_uniformity_plot", self)
         script2_action.triggered.connect(self.open_captureffc_caluniformity)
 
-        script3_action = QAction("Script 3", self)
-        # script3_action.triggered.connect(self.show_script3_interface)
+        script3_action = QAction("monocalibration", self)
+        script3_action.triggered.connect(self.open_monocalibration)
+
+        script4_action = QAction("calculate_sph_cyl_coef", self)
+        script4_action.triggered.connect(self.open_calculate_sph_cyl_coefficient)
+
+        script5_action = QAction("calculate_center", self)
+        script5_action.triggered.connect(self.open_capture_center)
 
         scripts_menu.addAction(script1_action)
         scripts_menu.addAction(script2_action)
         scripts_menu.addAction(script3_action)
+        scripts_menu.addAction(script4_action)
+        scripts_menu.addAction(script5_action)
 
     def create_main_widget(self):
         # 主控件
@@ -126,7 +137,13 @@ class MainWindow(QMainWindow):
 
     def open_settings(self):
         self.settings_window = SettingsWindow()
+        self.settings_window.path_changed.connect(self.handle_path_changed)
         self.settings_window.show()
+    
+    
+    def handle_path_changed(self,path):
+        self.select_path=path
+
 
     def open_dark_heatmap(self):
         self.dark_heatmap_window = DarkHeatMapWindow()
@@ -135,3 +152,15 @@ class MainWindow(QMainWindow):
     def open_captureffc_caluniformity(self):
         self.captureffc_caluniformity_window = CaptureFFC_CalUniformity_Plot_Window()
         self.captureffc_caluniformity_window.show()
+
+    def open_monocalibration(self):
+        self.monocalibration_window = MonoCalibrationWindow(self.select_path)
+        self.monocalibration_window.show()
+
+    def open_calculate_sph_cyl_coefficient(self):
+        self.calculate_sph_cyl_coefficient_window = CalculateSphCylCoefficientWindow()
+        self.calculate_sph_cyl_coefficient_window.show()
+
+    def open_capture_center(self):
+        self.capture_center_window = CaptureCenterWindow()
+        self.capture_center_window.show()
