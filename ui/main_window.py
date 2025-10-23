@@ -13,13 +13,12 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import QRect, QMetaObject
 from core.app_config import AppConfig
-from ui.settings import SettingsWindow
-from ui.dark_heatmap import DarkHeatMapWindow
-from ui.captureffc_uniformity_plot import CaptureFFC_CalUniformity_Plot_Window
+from ui.settings_window import SettingsWindow
+from ui.dark_heatmap_window import DarkHeatMapWindow
+from ui.captureffc_uniformity_plot_window import CaptureFFC_CalUniformity_Plot_Window
 from ui.mono_calibration import MonoCalibrationWindow
 from ui.calculate_sph_cyl_coefficient import CalculateSphCylCoefficientWindow
 from ui.capture_center import CaptureCenterWindow
-
 
 class MainWindow(QMainWindow):
     def __init__(self):
