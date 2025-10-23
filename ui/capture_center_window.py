@@ -26,6 +26,7 @@ from openpyxl import Workbook, load_workbook
 from openpyxl.drawing.image import Image
 from scripts.capture_colorfilter_center import capture_colorfilter_center
 from scripts.capture_RX_center import capture_RX_center
+from ui.exposureconfig_window import ExposureConfigWindow
 
 class CaptureCenterWindow(QWidget):
     def __init__(self, parent=None):
@@ -33,6 +34,10 @@ class CaptureCenterWindow(QWidget):
         self.setWindowTitle("Capture Center")
         self.setGeometry(200, 200, 400, 200)
         self.colorimeter = AppConfig.get_colorimeter()
+        self.dialog_title = "选择文件夹"
+        self.default_path = ""
+        self.file_name = ""
+        self.exposure_map_obj = {}
         self._init_ui()
 
     def _init_ui(self):
@@ -103,8 +108,12 @@ class CaptureCenterWindow(QWidget):
         grid_layout.addWidget(self.btn_browse, 12, 1)
 
         self.btn_capture = QPushButton("开始拍图")
-        self.btn_capture.clicked.connect(self.start_mono_calibration)
+        self.btn_capture.clicked.connect(self.start_capture)
         grid_layout.addWidget(self.btn_capture, 13, 0)
+
+        self.btn_load_config = QPushButton("曝光时间配置")
+        self.btn_load_config.clicked.connect(self.load_exposure_config)
+        grid_layout.addWidget(self.btn_load_config, 13, 1)
 
         spacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
         grid_layout.addItem(spacer)
@@ -118,8 +127,78 @@ class CaptureCenterWindow(QWidget):
         self.label_axislist.hide()
         self.line_edit_axislist.hide()
 
+    def start_capture(self):
+        try:
+            self.nd_list=self.line_edit_ndlist.text().strip().split()
+            self.xyz_list=self.line_edit_xyzlist.text().strip().split()
+            self.save_path=self.line_edit_path.text().strip()
+            if self.cb_useRX.isChecked():
+                sph_list=[float(sph) for sph in self.line_edit_sphlist.text().strip().split()]
+                cyl_list=[float(cyl) for cyl in self.line_edit_cyllist.text().strip().split()]
+                axis_list=[int(axis) for axis in self.line_edit_axislist.text().strip().split()]
+                capture_RX_center(
+                    colorimeter=self.colorimeter,
+                    sph_list=sph_list,
+                    cyl_list=cyl_list,
+                    axis_list=axis_list,
+                    save_path=self.save_path,
+                    nd_list=self.nd_list,
+                    xyz_list=self.xyz_list,
+                    exposure_map_obj=self.exposure_map_obj
+                )
+            else:
+                capture_colorfilter_center(
+                    colorimeter=self.colorimeter,
+                    save_path=self.save_path,
+                    nd_list=self.nd_list,
+                    xyz_list=self.xyz_list,
+                    exposure_map_obj=self.exposure_map_obj
+                )
+            pass
+        except Exception as e:
+            QMessageBox.critical(self,"MLColorimeter","exception" + e, QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
+        
+    def _open_folder_dialog(self):
+        # 打开文件夹选择对话框
+        folder_path = QFileDialog.getExistingDirectory(
+            self,
+            self.dialog_title,
+            self.default_path if self.default_path else "",  # 初始路径
+            options=QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks,
+        )
 
+        if folder_path:
+            self.save_path = folder_path
+            self.line_edit_path.setText(folder_path)
+        else:
+            QMessageBox.critical(self,"MLColorimeter","选择路径错误",QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
+
+    def load_exposure_config(self):
+        try:
+            self.nd_list=self.line_edit_ndlist.text().strip().split()
+            self.xyz_list=self.line_edit_xyzlist.text().strip().split()
+            self.exposure_config_window = ExposureConfigWindow(self.nd_list,self.xyz_list)
+            # 连接信号
+            self.exposure_config_window.config_saved.connect(self.update_config)
+            self.exposure_config_window.show()
+        except Exception as e:
+            QMessageBox.critical(self,"MLColorimeter","exception" + e, QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
     
+    def update_config(self,exposure_map):
+        # print("Received exposure map:", exposure_map)
+        self.exposure_map_obj={}
+        for nd_str,xyz_dict in exposure_map.items():
+            nd_enum=mlcm.str_to_MLFilterEnum(nd_str)
+            self.exposure_map_obj[nd_enum]={}
+            for xyz_str,setting in xyz_dict.items():
+                xyz_enum=mlcm.str_to_MLFilterEnum(xyz_str)
+                exposure_mode = mlcm.ExposureMode.Fixed if setting['exposure_mode']=='Fixed' else mlcm.ExposureMode.Auto
+                exposure_time=setting['exposure_time']
+                self.exposure_map_obj[nd_enum][xyz_enum]=mlcm.pyExposureSetting(
+                    exposure_mode=exposure_mode,
+                    exposure_time=exposure_time
+                )
+        
     def _useRX_state_changed(self):
         if self.cb_useRX.isChecked():
             self.label_sphlist.show()

@@ -25,6 +25,7 @@ import matplotlib.pyplot as plt
 from openpyxl import Workbook, load_workbook
 from openpyxl.drawing.image import Image
 from scripts.calculate_sph_cyl_coefficient import calculate_sph_cyl_coefficinet
+from ui.exposureconfig_window import ExposureConfigWindow
 
 
 class CalculateSphCylCoefficientWindow(QWidget):
@@ -35,6 +36,7 @@ class CalculateSphCylCoefficientWindow(QWidget):
         self.colorimeter = AppConfig.get_colorimeter()
         self.dialog_title = "选择文件夹"
         self.default_path = ""
+        self.exposure_map_obj={}
         self._init_ui()
 
     def _init_ui(self):
@@ -53,6 +55,10 @@ class CalculateSphCylCoefficientWindow(QWidget):
         self.line_edit_xyzlist = QLineEdit()
         self.line_edit_xyzlist.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         grid_layout.addWidget(self.line_edit_xyzlist, 3, 0)
+
+        self.btn_exposure = QPushButton("曝光设置")
+        self.btn_exposure.clicked.connect(self.exposure_config)
+        grid_layout.addWidget(self.btn_exposure, 3, 1)
 
         self.label_sphlist= QLabel()
         self.label_sphlist.setText("球面镜列表（输入类似-5 -4 -3 0），以空格隔开")
@@ -98,6 +104,32 @@ class CalculateSphCylCoefficientWindow(QWidget):
 
         self.setLayout(grid_layout)
     
+    def exposure_config(self):
+        try:
+            self.nd_list=self.line_edit_ndlist.text().strip().split()
+            self.xyz_list=self.line_edit_xyzlist.text().strip().split()
+            self.exposure_config_window = ExposureConfigWindow(self.nd_list,self.xyz_list)
+            # 连接信号
+            self.exposure_config_window.config_saved.connect(self.update_config)
+            self.exposure_config_window.show()
+        except Exception as e:
+            QMessageBox.critical(self,"MLColorimeter","exception" + e, QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
+    
+    def update_config(self,exposure_map):
+        # print("Received exposure map:", exposure_map)
+        self.exposure_map_obj={}
+        for nd_str,xyz_dict in exposure_map.items():
+            nd_enum=mlcm.str_to_MLFilterEnum(nd_str)
+            self.exposure_map_obj[nd_enum]={}
+            for xyz_str,setting in xyz_dict.items():
+                xyz_enum=mlcm.str_to_MLFilterEnum(xyz_str)
+                exposure_mode = mlcm.ExposureMode.Fixed if setting['exposure_mode']=='Fixed' else mlcm.ExposureMode.Auto
+                exposure_time=setting['exposure_time']
+                self.exposure_map_obj[nd_enum][xyz_enum]=mlcm.pyExposureSetting(
+                    exposure_mode=exposure_mode,
+                    exposure_time=exposure_time
+                )
+    
     def _open_folder_dialog(self):
         # 打开文件夹选择对话框
         folder_path = QFileDialog.getExistingDirectory(
@@ -114,4 +146,22 @@ class CalculateSphCylCoefficientWindow(QWidget):
             QMessageBox.critical(self,"MLColorimeter","选择路径错误",QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
 
     def start_calculate(self):
-        pass
+        try:
+            self.nd_list=self.line_edit_ndlist.text().strip().split()
+            self.xyz_list=self.line_edit_xyzlist.text().strip().split()
+            self.sph_list=[float(sph) for sph in self.line_edit_sphlist.text().strip().split()]
+            self.cyl_list=[float(cyl) for cyl in self.line_edit_cyllist.text().strip().split()]
+            self.count=int(self.line_edit_count.text().strip())
+            calculate_sph_cyl_coefficinet(
+                colorimeter=self.colorimeter,
+                sph_list=self.sph_list,
+                cyl_list=self.cyl_list,
+                save_path=self.save_path,
+                nd_list=self.nd_list,
+                xyz_list=self.xyz_list,
+                count=self.count,
+                exposure_map_obj=self.exposure_map_obj
+            )
+        except Exception as e:
+            QMessageBox.critical(self,"MLColorimeter","exception" + e, QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
+        

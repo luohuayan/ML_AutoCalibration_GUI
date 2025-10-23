@@ -17,8 +17,8 @@ from ui.settings import SettingsWindow
 from ui.dark_heatmap import DarkHeatMapWindow
 from ui.captureffc_uniformity_plot import CaptureFFC_CalUniformity_Plot_Window
 from ui.mono_calibration import MonoCalibrationWindow
-from ui.calculate_sph_cyl_coefficient import CalculateSphCylCoefficientWindow
-from ui.capture_center import CaptureCenterWindow
+from ui.calculate_sph_cyl_coefficient_window import CalculateSphCylCoefficientWindow
+from ui.capture_center_window import CaptureCenterWindow
 
 
 class MainWindow(QMainWindow):
