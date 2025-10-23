@@ -30,6 +30,15 @@ class MainWindow(QMainWindow):
         self.colorimeter = AppConfig.get_colorimeter()
         self.select_path=""
 
+        # 初始化子窗口调用
+        self.settings_window = None
+        self.dark_heatmap_window = None
+        self.captureffc_caluniformity_window = None
+        self.monocalibration_window = None
+        self.calculate_sph_cyl_coefficient_window = None
+        self.capture_center_window = None
+
+
     def _init_ui(self):
         # 创建菜单栏
         self.create_menus()
@@ -137,9 +146,9 @@ class MainWindow(QMainWindow):
             )
 
     def open_settings(self):
-        self.settings_window = SettingsWindow()
+        self.settings_window = SettingsWindow(self)
         self.settings_window.path_changed.connect(self.handle_path_changed)
-        self.settings_window.show()
+        self.settings_window.exec_()
     
     
     def handle_path_changed(self,path):
@@ -148,20 +157,20 @@ class MainWindow(QMainWindow):
 
     def open_dark_heatmap(self):
         self.dark_heatmap_window = DarkHeatMapWindow()
-        self.dark_heatmap_window.show()
+        self.dark_heatmap_window.exec_()
 
     def open_captureffc_caluniformity(self):
         self.captureffc_caluniformity_window = CaptureFFC_CalUniformity_Plot_Window()
-        self.captureffc_caluniformity_window.show()
+        self.captureffc_caluniformity_window.exec_()
 
     def open_monocalibration(self):
         self.monocalibration_window = MonoCalibrationWindow(self.select_path)
-        self.monocalibration_window.show()
+        self.monocalibration_window.exec_()
 
     def open_calculate_sph_cyl_coefficient(self):
         self.calculate_sph_cyl_coefficient_window = CalculateSphCylCoefficientWindow()
-        self.calculate_sph_cyl_coefficient_window.show()
+        self.calculate_sph_cyl_coefficient_window.exec_()
 
     def open_capture_center(self):
         self.capture_center_window = CaptureCenterWindow()
-        self.capture_center_window.show()
+        self.capture_center_window.exec_()

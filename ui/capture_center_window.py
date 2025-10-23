@@ -14,6 +14,7 @@ from PyQt5.QtWidgets import (
     QRadioButton,
     QButtonGroup,
     QCheckBox,
+    QDialog,
 )
 from core.app_config import AppConfig
 from PyQt5.QtCore import pyqtSignal, Qt
@@ -28,11 +29,12 @@ from scripts.capture_colorfilter_center import capture_colorfilter_center
 from scripts.capture_RX_center import capture_RX_center
 from ui.exposureconfig_window import ExposureConfigWindow
 
-class CaptureCenterWindow(QWidget):
+class CaptureCenterWindow(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Capture Center")
         self.setGeometry(200, 200, 400, 200)
+        self.setWindowFlags(Qt.Window | Qt.WindowMaximizeButtonHint | Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint)
         self.colorimeter = AppConfig.get_colorimeter()
         self.dialog_title = "选择文件夹"
         self.default_path = ""
@@ -180,7 +182,7 @@ class CaptureCenterWindow(QWidget):
             self.exposure_config_window = ExposureConfigWindow(self.nd_list,self.xyz_list)
             # 连接信号
             self.exposure_config_window.config_saved.connect(self.update_config)
-            self.exposure_config_window.show()
+            self.exposure_config_window.exec_()
         except Exception as e:
             QMessageBox.critical(self,"MLColorimeter","exception" + e, QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
     

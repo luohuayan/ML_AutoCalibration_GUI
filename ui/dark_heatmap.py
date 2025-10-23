@@ -11,6 +11,7 @@ from PyQt5.QtWidgets import (
     QGroupBox,
     QGridLayout,
     QSpacerItem,
+    QDialog
 )
 from core.app_config import AppConfig
 from PyQt5.QtCore import pyqtSignal, Qt
@@ -24,7 +25,7 @@ from openpyxl.drawing.image import Image
 from scripts.capture_dark_heatmap import capture_dark_heatmap
 
 
-class DarkHeatMapWindow(QWidget):
+class DarkHeatMapWindow(QDialog):
     path_changed = pyqtSignal(str)
 
     def __init__(self, parent=None):
@@ -32,6 +33,8 @@ class DarkHeatMapWindow(QWidget):
         self.setWindowTitle("capture dark heatmap")
         self.setGeometry(200, 200, 800, 500)
         self.colorimeter = AppConfig.get_colorimeter()
+        self.setWindowFlags(Qt.Window | Qt.WindowMaximizeButtonHint | Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint)
+        
         self.dialog_title = "选择文件夹"
         self.default_path = ""
         self.file_name = "dark_heatmap.xlsx"

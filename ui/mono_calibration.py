@@ -14,6 +14,7 @@ from PyQt5.QtWidgets import (
     QRadioButton,
     QButtonGroup,
     QCheckBox,
+    QDialog,
 )
 from core.app_config import AppConfig
 from PyQt5.QtCore import pyqtSignal, Qt
@@ -27,13 +28,15 @@ from openpyxl.drawing.image import Image
 from scripts.mono_calibration import mono_calibration
 from ui.settings import SettingsWindow
 
-class MonoCalibrationWindow(QWidget):
+class MonoCalibrationWindow(QDialog):
     # path_changed = pyqtSignal(str)
 
     def __init__(self, path, parent=None):
         super().__init__(parent)
         self.setWindowTitle("mono calibration")
         self.setGeometry(200, 200, 800, 500)
+        self.setWindowFlags(Qt.Window | Qt.WindowMaximizeButtonHint | Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint)
+
         self.colorimeter = AppConfig.get_colorimeter()
         self.dialog_title = "选择文件夹"
         self.default_path = ""

@@ -17,6 +17,7 @@ from PyQt5.QtWidgets import (
     QCheckBox,
     QComboBox,
     QFormLayout,
+    QDialog,
 )
 from core.app_config import AppConfig
 from PyQt5.QtCore import pyqtSignal, Qt
@@ -30,13 +31,15 @@ from openpyxl.drawing.image import Image
 from typing import List
 import json
 
-class ExposureConfigWindow(QWidget):
+class ExposureConfigWindow(QDialog):
     # 定义信号，传递字典类型的数据
     config_saved = pyqtSignal(dict)
     def __init__(self, nd_list:List[str],xyz_list:List[str], parent=None):
         super().__init__(parent)
         self.setWindowTitle("Exposure Configuration")
         self.setGeometry(250, 250, 400, 300)
+        self.setWindowFlags(Qt.Window | Qt.WindowMaximizeButtonHint | Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint)
+
         self.colorimeter = AppConfig.get_colorimeter()
         self.nd_list = nd_list
         self.xyz_list = xyz_list
