@@ -13,9 +13,9 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import QRect, QMetaObject
 from core.app_config import AppConfig
-from ui.settings import SettingsWindow
-from ui.dark_heatmap import DarkHeatMapWindow
-from ui.captureffc_uniformity_plot import CaptureFFC_CalUniformity_Plot_Window
+from ui.settings_windows import SettingsWindow
+from ui.dark_heatmap_windows import DarkHeatMapWindow
+from ui.captureffc_uniformity_plot_windows import CaptureFFC_CalUniformity_Plot_Window
 
 
 class MainWindow(QMainWindow):
