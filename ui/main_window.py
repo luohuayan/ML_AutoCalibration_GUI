@@ -188,7 +188,7 @@ class MainWindow(QMainWindow):
         self.capture_center_window.exec_()
 
     def open_capture_image_fixedLUM(self):
-        self.capture_image_fixedLUM_window = CaptureImageFixedLUMWindow()
+        self.capture_image_fixedLUM_window = CaptureImageFixedLUMWindow(self.select_path)
         self.capture_image_fixedLUM_window.exec_()
 
     def open_filed_curve(self):
