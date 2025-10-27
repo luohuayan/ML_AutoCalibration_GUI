@@ -22,20 +22,8 @@ def field_curve(
 ):
     module_id = 1
     ml_mono = colorimeter.ml_bino_manage.ml_get_module_by_id(module_id)
-    # exposure mode setting, Auto or Fixed
-    exposure_mode1 = mlcm.ExposureMode.Auto
     # exposure time for fixed exposure, initial time for auto exposure
-    exposure_time = 100
-    exposure1 = mlcm.pyExposureSetting(exposure_mode1, exposure_time)
     exposure = mlcm.pyExposureSetting(exposure_mode, exposure_time)
-    # camera binning selector
-    binn_selector1 = mlcm.BinningSelector.Logic
-    # camera binning
-    binn1 = mlcm.Binning.ONE_BY_ONE
-    # camera binning mode
-    binn_mode1 = mlcm.BinningMode.AVERAGE
-    # camera pixel format
-    pixel_format1 = mlcm.MLPixelFormat.MLMono12
 
     ret = ml_mono.ml_set_binning_selector(binn_selector)
     if not ret.success:
