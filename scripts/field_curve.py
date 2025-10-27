@@ -1,25 +1,41 @@
 import mlcolorimeter as mlcm
 import os
+from typing import List
 
 """
     field_curve.py is an example script that shows a simplified way to do vid scan, then get field curve
 """
 
 
-def field_curve():
+def field_curve(
+        colorimeter:mlcm.ML_Colorimeter,
+        exposure_mode:mlcm.ExposureMode,
+        binn_selector:mlcm.BinningSelector,
+        binn_mode:mlcm.BinningMode,
+        binn:mlcm.Binning,
+        pixel_format:mlcm.MLPixelFormat,
+        exposure_time:float,
+        out_path:str,
+        focus_config:mlcm.pyThroughFocusConfig=None,
+        freq_list:List[float]=[6.75,13.5],
+
+):
+    module_id = 1
+    ml_mono = colorimeter.ml_bino_manage.ml_get_module_by_id(module_id)
     # exposure mode setting, Auto or Fixed
-    exposure_mode = mlcm.ExposureMode.Auto
+    exposure_mode1 = mlcm.ExposureMode.Auto
     # exposure time for fixed exposure, initial time for auto exposure
     exposure_time = 100
+    exposure1 = mlcm.pyExposureSetting(exposure_mode1, exposure_time)
     exposure = mlcm.pyExposureSetting(exposure_mode, exposure_time)
     # camera binning selector
-    binn_selector = mlcm.BinningSelector.Logic
+    binn_selector1 = mlcm.BinningSelector.Logic
     # camera binning
-    binn = mlcm.Binning.ONE_BY_ONE
+    binn1 = mlcm.Binning.ONE_BY_ONE
     # camera binning mode
-    binn_mode = mlcm.BinningMode.AVERAGE
+    binn_mode1 = mlcm.BinningMode.AVERAGE
     # camera pixel format
-    pixel_format = mlcm.MLPixelFormat.MLMono12
+    pixel_format1 = mlcm.MLPixelFormat.MLMono12
 
     ret = ml_mono.ml_set_binning_selector(binn_selector)
     if not ret.success:
@@ -44,29 +60,14 @@ def field_curve():
     if not ret.success:
         raise RuntimeError("ml_set_exposure error")
 
-    for freq in [6.75, 13.5]:
+    for freq in freq_list:
         file_path = out_path + "\\through_focus\\coarse_result.csv"
         new_path = out_path + f"\\through_focus\\coarse_result_{str(freq)}.csv"
         if os.path.exists(file_path):
             os.remove(file_path)
         if os.path.exists(new_path):
             os.remove(new_path)
-
-        focus_config = mlcm.pyThroughFocusConfig(
-            focus_max=31.51,
-            focus_min=29.51,
-            inf_position=32.11,
-            focal_length=50,
-            pixel_size=0.00345,
-            focal_space=0,
-            freq=freq,
-            rois=roi_list,
-            use_chess_mode=True,
-            use_lpmm_unit=False,
-            rough_step=0.05,
-            use_fine_adjust=False,
-            average_count=3,
-        )
+        focus_config.freq = freq
         motion_name = "CameraMotion"
 
         ret = ml_mono.ml_vid_scan(motion_name=motion_name, focus_config=focus_config)

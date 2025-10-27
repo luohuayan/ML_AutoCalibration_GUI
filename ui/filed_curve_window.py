@@ -1,0 +1,417 @@
+from PyQt5.QtWidgets import (
+    QWidget,
+    QHBoxLayout,
+    QVBoxLayout,
+    QLabel,
+    QLineEdit,
+    QRadioButton,
+    QPushButton,
+    QFileDialog,
+    QSizePolicy,
+    QMessageBox,
+    QGroupBox,
+    QGridLayout,
+    QSpacerItem,
+    QDialog,
+    QFormLayout,
+    QCheckBox,
+    QListWidget,
+    QComboBox,
+)
+from core.app_config import AppConfig
+from PyQt5.QtCore import pyqtSignal, Qt
+import mlcolorimeter as mlcm
+import os
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+from openpyxl import Workbook, load_workbook
+from openpyxl.drawing.image import Image
+from scripts.field_curve import field_curve
+
+class FiledCurveWindow(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("capture field curve")
+        self.setGeometry(200, 200, 800, 500)
+        self.colorimeter = AppConfig.get_colorimeter()
+        self.setWindowFlags(Qt.Window | Qt.WindowMaximizeButtonHint | Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint)
+        
+        self.dialog_title = "选择文件夹"
+        self.default_path = ""
+        self.file_name = "field_curve.xlsx"
+        self.roi_list=[]
+        self.exposure_mode=['Auto','Fixed']
+        self.binning_selector=['Logic','Sensor']
+        self.binning_mode=['AVERAGE','SUM']
+        self.pixel_format=['MLMono8','MLMono10','MLMono12','MLMono16','MLRGB24','MLBayer','MLBayerGB8','MLBayerGB12']
+        self._init_ui()
+    
+    def _init_ui(self):
+        grid_layout = QGridLayout()
+
+        group_box0=QGroupBox("相机设置")
+        from_layout0=QFormLayout()
+
+        self.label_binn_selector = QLabel(" binning_selector：")
+        self.line_edit_binn_selector = QComboBox()
+        self.line_edit_binn_selector.addItems(self.binning_selector)
+        self.line_edit_binn_selector.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+
+        self.label_binn_mode = QLabel(" binning_mode：")
+        self.line_edit_binn_mode = QComboBox()
+        self.line_edit_binn_mode.addItems(self.binning_mode)
+        self.line_edit_binn_mode.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+
+        horizontal_layout=QHBoxLayout()
+        horizontal_layout.addWidget(self.label_binn_selector)
+        horizontal_layout.addWidget(self.line_edit_binn_selector)
+        horizontal_layout.addWidget(self.label_binn_mode)
+        horizontal_layout.addWidget(self.line_edit_binn_mode)
+        from_layout0.addRow(horizontal_layout)
+
+        self.label_binnlist = QLabel(" binning：")
+        self.line_edit_binnlist = QLineEdit()
+        self.line_edit_binnlist.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        self.line_edit_binnlist.setPlaceholderText("0: 1X1, 1: 2X2, 2: 4X4, 3: 8X8, 4: 16X16")
+        from_layout0.addRow(self.label_binnlist, self.line_edit_binnlist)
+
+        self.label_exposure_mode = QLabel(" exposure_mode：")
+        self.line_edit_exposure_mode = QComboBox()
+        self.line_edit_exposure_mode.addItems(self.exposure_mode)
+        self.line_edit_exposure_mode.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+
+        self.label_exposure_time = QLabel(" exposure_time(ms)：")
+        self.line_edit_exposure_time = QLineEdit()
+        self.line_edit_exposure_time.setText("100")
+        self.line_edit_exposure_time.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+
+        self.label_pixel_format = QLabel(" pixel_format：")
+        self.line_edit_pixel_format = QComboBox()
+        self.line_edit_pixel_format.addItems(self.pixel_format)
+        self.line_edit_pixel_format.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        self.line_edit_pixel_format.setCurrentText("MLMono12")
+
+
+        horizontal_layout1=QHBoxLayout()
+        horizontal_layout1.addWidget(self.label_exposure_mode)
+        horizontal_layout1.addWidget(self.line_edit_exposure_mode)
+        horizontal_layout1.addWidget(self.label_exposure_time)
+        horizontal_layout1.addWidget(self.line_edit_exposure_time)
+        horizontal_layout1.addWidget(self.label_pixel_format)
+        horizontal_layout1.addWidget(self.line_edit_pixel_format)
+        from_layout0.addRow(horizontal_layout1)
+
+        group_box0.setLayout(from_layout0)
+        grid_layout.addWidget(group_box0, 0, 0)
+
+
+
+        group_box=QGroupBox("过焦参数")
+        from_layout=QFormLayout()
+
+        self.label_focus_max=QLabel("focus_max: ")
+        self.line_edit_focus_max = QLineEdit()
+        self.line_edit_focus_max.setText("10")
+        self.line_edit_focus_max.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+
+        self.label_focus_min=QLabel("focus_min: ")
+        self.line_edit_focus_min = QLineEdit()
+        self.line_edit_focus_min.setText("-10")
+        self.line_edit_focus_min.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+
+        self.label_inf_pos=QLabel("inf_pos: ")
+        self.line_edit_inf_pos = QLineEdit()
+        self.line_edit_inf_pos.setText("0")
+        self.line_edit_inf_pos.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+
+        self.label_focal_length=QLabel("focal_length: ")
+        self.line_edit_focal_length = QLineEdit()
+        self.line_edit_focal_length.setText("4.25")
+        self.line_edit_focal_length.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+
+        horizontal_layout2=QHBoxLayout()
+        horizontal_layout2.addWidget(self.label_focus_max)
+        horizontal_layout2.addWidget(self.line_edit_focus_max)
+        horizontal_layout2.addWidget(self.label_focus_min)
+        horizontal_layout2.addWidget(self.line_edit_focus_min)
+        horizontal_layout2.addWidget(self.label_inf_pos)
+        horizontal_layout2.addWidget(self.line_edit_inf_pos)
+        horizontal_layout2.addWidget(self.label_focal_length)
+        horizontal_layout2.addWidget(self.line_edit_focal_length)
+        from_layout.addRow(horizontal_layout2)
+
+        self.label_pixel_size=QLabel("pixel_size: ")
+        self.line_edit_pixel_size = QLineEdit()
+        self.line_edit_pixel_size.setText("0.0014")
+        self.line_edit_pixel_size.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+
+        self.label_focal_space=QLabel("focal_space: ")
+        self.line_edit_focal_space = QLineEdit()
+        self.line_edit_focal_space.setText("0.5")
+        self.line_edit_focal_space.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+
+        self.label_use_chess_mode=QLabel("use_chess_mode: ")
+        self.line_edit_use_chess_mode = QCheckBox()
+        self.line_edit_use_chess_mode.setChecked(True)
+        self.line_edit_use_chess_mode.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+
+        self.label_use_lpmm_unit=QLabel("use_lpmm_unit: ")
+        self.line_edit_use_lpmm_unit = QCheckBox()
+        self.line_edit_use_lpmm_unit.setChecked(True)
+        self.line_edit_use_lpmm_unit.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+
+        horizontal_layout3=QHBoxLayout()
+        horizontal_layout3.addWidget(self.label_pixel_size)
+        horizontal_layout3.addWidget(self.line_edit_pixel_size)
+        horizontal_layout3.addWidget(self.label_focal_space)
+        horizontal_layout3.addWidget(self.line_edit_focal_space)
+        horizontal_layout3.addWidget(self.label_use_chess_mode)
+        horizontal_layout3.addWidget(self.line_edit_use_chess_mode)
+        horizontal_layout3.addWidget(self.label_use_lpmm_unit)
+        horizontal_layout3.addWidget(self.line_edit_use_lpmm_unit)
+        from_layout.addRow(horizontal_layout3)
+
+        self.label_rough_step=QLabel("rough_step: ")
+        self.line_edit_rough_step = QLineEdit()
+        self.line_edit_rough_step.setText("0.1")
+        self.line_edit_rough_step.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+
+        self.label_use_fine_adjust=QLabel("use_fine_adjust: ")
+        self.line_edit_use_fine_adjust = QCheckBox()
+        self.line_edit_use_fine_adjust.setChecked(False)
+        self.line_edit_use_fine_adjust.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+
+        self.label_average_count=QLabel("average_count: ")
+        self.line_edit_average_count = QLineEdit()
+        self.line_edit_average_count.setText("3")
+        self.line_edit_average_count.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+
+        horizontal_layout4=QHBoxLayout()
+        horizontal_layout4.addWidget(self.label_rough_step)
+        horizontal_layout4.addWidget(self.line_edit_rough_step)
+        horizontal_layout4.addWidget(self.label_use_fine_adjust)
+        horizontal_layout4.addWidget(self.line_edit_use_fine_adjust)
+        horizontal_layout4.addWidget(self.label_average_count)
+        horizontal_layout4.addWidget(self.line_edit_average_count)
+        from_layout.addRow(horizontal_layout4)
+
+        group_box.setLayout(from_layout)
+        grid_layout.addWidget(group_box, 1, 0)
+
+        self.label_freq_list = QLabel()
+        self.label_freq_list.setText("频率列表, 例如: 6.75 13.5, 以空格隔开")
+        grid_layout.addWidget(self.label_freq_list, 2, 0)
+        self.line_edit_freq_list = QLineEdit()
+        self.line_edit_freq_list.setText("6.75 13.5")
+        self.line_edit_freq_list.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        grid_layout.addWidget(self.line_edit_freq_list, 3, 0)
+
+        group_box1=QGroupBox("roi设置")
+        from_layout1=QFormLayout()
+
+        self.label_x_input=QLabel("x_input: ")
+        self.line_edit_x_input = QLineEdit()
+        self.line_edit_x_input.setText("0")
+        self.line_edit_x_input.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+
+        self.label_y_input=QLabel("y_input: ")
+        self.line_edit_y_input = QLineEdit()
+        self.line_edit_y_input.setText("0")
+        self.line_edit_y_input.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+
+        self.label_width_input=QLabel("width_input: ")
+        self.line_edit_width_input = QLineEdit()
+        self.line_edit_width_input.setText("100")
+        self.line_edit_width_input.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+
+        self.label_height_input=QLabel("height_input: ")
+        self.line_edit_height_input = QLineEdit()
+        self.line_edit_height_input.setText("100")
+        self.line_edit_height_input.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+
+        horizontal_layout5=QHBoxLayout()
+        horizontal_layout5.addWidget(self.label_x_input)
+        horizontal_layout5.addWidget(self.line_edit_x_input)
+        horizontal_layout5.addWidget(self.label_y_input)
+        horizontal_layout5.addWidget(self.line_edit_y_input)
+        horizontal_layout5.addWidget(self.label_width_input)
+        horizontal_layout5.addWidget(self.line_edit_width_input)
+        horizontal_layout5.addWidget(self.label_height_input)
+        horizontal_layout5.addWidget(self.line_edit_height_input)
+        from_layout1.addRow(horizontal_layout5)
+
+
+        self.add_button = QPushButton("Add ROI")
+        self.add_button.clicked.connect(self.add_roi)
+        from_layout1.addRow(self.add_button)
+
+        self.roi_display=QListWidget()
+        self.roi_display.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        from_layout1.addRow(self.roi_display)
+
+        group_box1.setLayout(from_layout1)
+        grid_layout.addWidget(group_box1, 4, 0)
+
+        self.label_path = QLabel()
+        self.label_path.setText("保存路径:")
+        grid_layout.addWidget(self.label_path, 5, 0)
+
+        self.line_edit_path = QLineEdit()
+        self.line_edit_path.setReadOnly(True)  # 设置为只读
+        self.line_edit_path.setPlaceholderText("未选择文件夹")
+        self.line_edit_path.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        grid_layout.addWidget(self.line_edit_path, 6, 0)
+
+        self.btn_browse = QPushButton("浏览...")
+        self.btn_browse.clicked.connect(self._open_folder_dialog)
+        grid_layout.addWidget(self.btn_browse, 6, 1)
+
+        self.btn_capture = QPushButton("开始拍图")
+        self.btn_capture.clicked.connect(self.start_capture)
+        grid_layout.addWidget(self.btn_capture, 7, 0)
+
+
+        spacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        grid_layout.addItem(spacer)
+
+        self.setLayout(grid_layout)
+    def _open_folder_dialog(self):
+        # 打开文件夹选择对话框
+        folder_path = QFileDialog.getExistingDirectory(
+            self,
+            self.dialog_title,
+            self.default_path if self.default_path else "",  # 初始路径
+            options=QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks,
+        )
+
+        if folder_path:
+            self.save_path = folder_path
+            self.line_edit_path.setText(folder_path)
+        else:
+            QMessageBox.critical(self,"MLColorimeter","选择路径错误",QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
+
+    def add_roi(self):
+
+        try:
+            x=int(self.line_edit_x_input.text().strip())
+            y=int(self.line_edit_y_input.text().strip())
+            width=int(self.line_edit_width_input.text().strip())
+            height=int(self.line_edit_height_input.text().strip())
+
+            # 创建roi并添加到列表
+            roi=mlcm.pyCVRect(x,y,width,height)
+            self.roi_list.append(roi)
+            i=len(self.roi_list)
+            # 显示在控件上
+            roi_str=f"{i}-{x},{y},{width},{height}"
+            self.roi_display.addItem(roi_str)
+        except Exception as e:
+            QMessageBox.critical(self,"MLColorimeter","exception" + str(e), QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
+    
+    def start_capture(self):
+        try:
+            pixel_format=self.get_current_pixel_format()
+            binn_selector=self.get_current_binning_selector()
+            binn_mode=self.get_current_binning_mode()
+            binn=mlcm.Binning(int(self.line_edit_binnlist.text().strip()))
+            exposure_mode=self.get_current_exposure_mode()
+            exposure_time=float(self.line_edit_exposure_time.text().strip())
+            focus_max=float(self.line_edit_focus_max.text().strip())
+            focus_min=float(self.line_edit_focus_min.text().strip())
+            inf_pos=float(self.line_edit_inf_pos.text().strip())
+            focal_length=float(self.line_edit_focal_length.text().strip())
+            pixel_size=float(self.line_edit_pixel_size.text().strip())
+            focal_space=float(self.line_edit_focal_space.text().strip())
+            use_chess_mode=self.line_edit_use_chess_mode.isChecked()
+            use_lpmm_unit=self.line_edit_use_lpmm_unit.isChecked()
+            rough_step=float(self.line_edit_rough_step.text().strip())
+            use_fine_adjust=self.line_edit_use_fine_adjust.isChecked()
+            average_count=int(self.line_edit_average_count.text().strip())
+            freq_list=[float(freq) for freq in self.line_edit_freq_list.text().strip().split()]
+            if not freq_list:
+                QMessageBox.critical(self,"MLColorimeter","请填写频率列表",QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
+                return
+            if not self.roi_list:
+                QMessageBox.critical(self,"MLColorimeter","请添加roi",QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
+                return
+            out_path=self.line_edit_path.text().strip()
+            if not out_path:
+                QMessageBox.critical(self,"MLColorimeter","请选择保存路径",QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
+                return
+            
+            focus_config = mlcm.pyThroughFocusConfig(
+                focus_max=focus_max,
+                focus_min=focus_min,
+                inf_position=inf_pos,
+                focal_length=focal_length,
+                pixel_size=pixel_size,
+                focal_space=focal_space,
+                rois=self.roi_list,
+                use_chess_mode=use_chess_mode,
+                use_lpmm_unit=use_lpmm_unit,
+                rough_step=rough_step,
+                use_fine_adjust=use_fine_adjust,
+                average_count=average_count,
+            )
+
+            field_curve(
+                colorimeter=self.colorimeter,
+                exposure_mode=exposure_mode,
+                binn_selector=binn_selector,
+                binn_mode=binn_mode,
+                binn=binn,
+                pixel_format=pixel_format,
+                exposure_time=exposure_time,
+                out_path=out_path,
+                focus_config=focus_config,
+                freq_list=freq_list,
+            )
+
+            QMessageBox.information(self,"MLColorimeter","finish", QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
+        except Exception as e:
+            QMessageBox.critical(self,"MLColorimeter","exception" + str(e), QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
+        
+        pass
+
+    def get_current_pixel_format(self):
+        # 获取当前选择的项
+        selected_format=self.line_edit_pixel_format.currentText()
+        # 创建字符串到枚举值的映射
+        format_mapping={
+            'MLMono8':mlcm.MLPixelFormat.MLMono8,
+            'MLMono10':mlcm.MLPixelFormat.MLMono10,
+            'MLMono12':mlcm.MLPixelFormat.MLMono12,
+            'MLMono16':mlcm.MLPixelFormat.MLMono16,
+            'MLRGB24':mlcm.MLPixelFormat.MLRGB24,
+            'MLBayer':mlcm.MLPixelFormat.MLBayer,
+            'MLBayerGB8':mlcm.MLPixelFormat.MLBayerGB8,
+            'MLBayerGB12':mlcm.MLPixelFormat.MLBayerGB12,
+        }
+        # 获取对应的枚举值
+        pixel_format_enum=format_mapping.get(selected_format)
+        return pixel_format_enum
+    
+    def get_current_exposure_mode(self):
+        # 获取当前选择的项
+        selected_mode=self.line_edit_exposure_mode.currentText()
+        if selected_mode=='Auto':
+            return mlcm.ExposureMode.Auto
+        else:
+            return mlcm.ExposureMode.Fixed
+    
+    def get_current_binning_selector(self):
+        # 获取当前选择的项
+        selected_selector=self.line_edit_binn_selector.currentText()
+        if selected_selector=='Logic':
+            return mlcm.BinningSelector.Logic
+        else:
+            return mlcm.BinningSelector.Sensor
+        
+    def get_current_binning_mode(self):
+        # 获取当前选择的项
+        selected_mode=self.line_edit_binn_mode.currentText()
+        if selected_mode=='AVERAGE':
+            return mlcm.BinningMode.AVERAGE
+        else:
+            return mlcm.BinningMode.SUM

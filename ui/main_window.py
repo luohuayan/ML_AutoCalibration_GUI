@@ -19,7 +19,8 @@ from ui.captureffc_uniformity_plot import CaptureFFC_CalUniformity_Plot_Window
 from ui.mono_calibration import MonoCalibrationWindow
 from ui.calculate_sph_cyl_coefficient_window import CalculateSphCylCoefficientWindow
 from ui.capture_center_window import CaptureCenterWindow
-
+from ui.capture_image_fixedLUM_window import CaptureImageFixedLUMWindow
+from ui.filed_curve_window import FiledCurveWindow
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -37,6 +38,9 @@ class MainWindow(QMainWindow):
         self.monocalibration_window = None
         self.calculate_sph_cyl_coefficient_window = None
         self.capture_center_window = None
+        self.capture_image_fixedLUM_window = None
+        self.filed_curve_window = None
+        
 
 
     def _init_ui(self):
@@ -72,11 +76,19 @@ class MainWindow(QMainWindow):
         script5_action = QAction("calculate_center", self)
         script5_action.triggered.connect(self.open_capture_center)
 
+        script6_action = QAction("capture_image_fixedLUM", self)
+        script6_action.triggered.connect(self.open_capture_image_fixedLUM)
+
+        script7_action = QAction("filed_curve", self)
+        script7_action.triggered.connect(self.open_filed_curve)
+
         scripts_menu.addAction(script1_action)
         scripts_menu.addAction(script2_action)
         scripts_menu.addAction(script3_action)
         scripts_menu.addAction(script4_action)
         scripts_menu.addAction(script5_action)
+        scripts_menu.addAction(script6_action)
+        scripts_menu.addAction(script7_action)
 
     def create_main_widget(self):
         # 主控件
@@ -174,3 +186,11 @@ class MainWindow(QMainWindow):
     def open_capture_center(self):
         self.capture_center_window = CaptureCenterWindow()
         self.capture_center_window.exec_()
+
+    def open_capture_image_fixedLUM(self):
+        self.capture_image_fixedLUM_window = CaptureImageFixedLUMWindow()
+        self.capture_image_fixedLUM_window.exec_()
+
+    def open_filed_curve(self):
+        self.filed_curve_window = FiledCurveWindow()
+        self.filed_curve_window.exec_()
