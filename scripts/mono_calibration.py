@@ -162,7 +162,7 @@ def mono_calibration(
                 radiance_k = radiance / gray_ET if gray_ET > 0 else 0
                 results.append({
                     "Gray Range": f"{gray * 100}" + "%",
-                    "NDFilter": mlcm.MLFilterEnum_to_str(nd),
+                    "NDFilter": mlcm.MLFilterEnum_to_str(nd_enum),
                     "AVEGray": average_gray,
                     "ExposureTime": exposure_time,
                     "G/ET": gray_ET,
@@ -192,8 +192,8 @@ def mono_calibration(
                     # add result to the list
                     results.append({
                         "Gray Range": f"{gray * 100}" + "%",
-                        "NDFilter": mlcm.MLFilterEnum_to_str(nd),
-                        "XYZFilter": mlcm.MLFilterEnum_to_str(xyz),
+                        "NDFilter": mlcm.MLFilterEnum_to_str(nd_enum),
+                        "XYZFilter": mlcm.MLFilterEnum_to_str(xyz_enum),
                         "AVEGray": average_gray,
                         "ExposureTime": exposure_time,
                         "G/ET": gray_ET,
@@ -220,20 +220,20 @@ def mono_calibration(
             radiance_config_path = os.path.join(eye1_path, "Radiance")
             create_directory(radiance_config_path)
 
-            luminance_file_path = os.path.join(out_path, file_name)
+            luminance_file_path = os.path.join(luminance_config_path, file_name)
             os.makedirs(luminance_file_path, exist_ok=True)
             # 完整的文件路径
-            luminance_json_file_path= os.path.join(luminance_config_path, "Luminance.json")
+            luminance_json_file_path= os.path.join(luminance_file_path, "Luminance.json")
             # 创建要写入的字典
             data={
                 "Luminance": [[float(luminance_k),0]]
             }
             save_json(data, luminance_json_file_path)
 
-            radiance_file_path = os.path.join(out_path, file_name)
+            radiance_file_path = os.path.join(radiance_config_path, file_name)
             os.makedirs(radiance_file_path, exist_ok=True)
             # 完整的文件路径
-            radiance_json_file_path= os.path.join(radiance_config_path, "Radiance.json")
+            radiance_json_file_path= os.path.join(radiance_file_path, "Radiance.json")
             # 创建要写入的字典
             data1={
                 "Radiance": [[float(radiance_k),0]]

@@ -216,7 +216,7 @@ class MonoCalibrationWindow(QDialog):
             self.nd_list=self.line_edit_ndlist.text().split()
             self.light_source=self.rgbw_btngroup.checkedButton().text()
             self.radiance=float(self.line_edit_radiance_lum.text())
-            self.gray_list=self.line_edit_gray_range.text().split()
+            self.gray_list=[float(gray) for gray in self.line_edit_gray_range.text().split()]
             self.image_point=self.line_edit_image_size.text().split()
             self.roi_size=self.line_edit_roi_size.text().split()
             self.out_path=self.line_edit_path.text()
