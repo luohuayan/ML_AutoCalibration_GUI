@@ -159,7 +159,6 @@ class CalculateSphCylCoefficientColorCameraWindow(QDialog):
 
     def start_calculate(self):
         try:
-            QMessageBox.information(self,"完成","计算已完成！",QMessageBox.Ok)
             self.nd=self.get_current_filter(self.line_edit_nd_selector.currentText())
             self.xyz=self.get_current_filter(self.line_edit_xyz_selector.currentText())
             self.exposure_time=float(self.line_edit_exposure_time.text())

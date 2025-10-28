@@ -22,6 +22,8 @@ from ui.capture_center_window import CaptureCenterWindow
 from ui.capture_image_fixedLUM_window import CaptureImageFixedLUMWindow
 from ui.filed_curve_window import FiledCurveWindow
 from ui.fourcolor_calibration_window import FourColorCalabrationWindow
+from ui.calculate_sph_cyl_coefficient_colorcamera_window import CalculateSphCylCoefficientColorCameraWindow
+from ui.capture_RX_center_colorcamera_window import CaptureRXCenterColorCameraWindow
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -42,6 +44,8 @@ class MainWindow(QMainWindow):
         self.capture_image_fixedLUM_window = None
         self.filed_curve_window = None
         self.fourcolor_calibration=None
+        self.calculate_sph_cyl_coefficient_colorcamera_window=None
+        self.capture_RX_center_colorcamera=None
         
 
 
@@ -87,6 +91,12 @@ class MainWindow(QMainWindow):
         script8_action = QAction("fourcolor_calibration", self)
         script8_action.triggered.connect(self.open_fourcolor_calibration)
 
+        script9_action = QAction("calculate_sph_cyl_coefficient_colorcamera", self)
+        script9_action.triggered.connect(self.calculate_sph_cyl_coefficient_colorcamera)
+
+        script10_action = QAction("capture_RX_center_colorcamera", self)
+        script10_action.triggered.connect(self.capture_RX_center_colorcamera)
+
         scripts_menu.addAction(script1_action)
         scripts_menu.addAction(script2_action)
         scripts_menu.addAction(script3_action)
@@ -95,6 +105,8 @@ class MainWindow(QMainWindow):
         scripts_menu.addAction(script6_action)
         scripts_menu.addAction(script7_action)
         scripts_menu.addAction(script8_action)
+        scripts_menu.addAction(script9_action)
+        scripts_menu.addAction(script10_action)
 
     def create_main_widget(self):
         # 主控件
@@ -204,3 +216,11 @@ class MainWindow(QMainWindow):
     def open_fourcolor_calibration(self):
         self.fourcolor_calibration=FourColorCalabrationWindow()
         self.fourcolor_calibration.exec_()
+
+    def calculate_sph_cyl_coefficient_colorcamera(self):
+        self.calculate_sph_cyl_coefficient_colorcamera=CalculateSphCylCoefficientColorCameraWindow()
+        self.calculate_sph_cyl_coefficient_colorcamera.exec_()
+
+    def capture_RX_center_colorcamera(self):
+        self.capture_RX_center_colorcamera=CaptureRXCenterColorCameraWindow()
+        self.capture_RX_center_colorcamera.exec_()
