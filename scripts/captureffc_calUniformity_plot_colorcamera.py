@@ -44,7 +44,7 @@ def measurement2(
 ):
     mono = colorimeter.ml_bino_manage.ml_get_module_by_id(module_id)
     # capture data
-    capture_data_dict = Dict()
+    capture_data_dict = dict()
     ret = ml_mono.ml_set_exposure(exposure)
     if not ret.success:
         raise RuntimeError("ml_set_exposure error")
@@ -242,13 +242,13 @@ def capture_ffc_images2(
         if use_RX == False or (not sph_list) or (not cyl_list) or (not axis_list):
             rx = mlcm.pyRXCombination(0, 0, 0)
             # capture ffc images
-            ret = colorimeter.ml_capture_ffc_colorcamera(
+            ret = colorimeter.ml_capture_ffc_colorcamera2(
                 module_id=module_id,
                 save_path=save_path,
                 nd=nd,
                 rx=rx,
                 avg_count=capture_times,
-                exposure=exposure_map[nd]
+                exposure_map=exposure_map[nd]
             )
             if not ret.success:
                 raise RuntimeError("ml_capture_ffc_colorcamera error")
@@ -256,13 +256,13 @@ def capture_ffc_images2(
         else:
             for sph in sph_list:
                 rx = mlcm.pyRXCombination(sph, 0, 0)
-                ret = colorimeter.ml_capture_ffc_colorcamera(
+                ret = colorimeter.ml_capture_ffc_colorcamera2(
                     module_id=module_id,
                     save_path=save_path,
                     nd=nd,
                     rx=rx,
                     avg_count=capture_times,
-                    exposure=exposure_map[nd]
+                    exposure_map=exposure_map[nd]
                 )
                 print("capture image for: " + mlcm.pyRXCombination_to_str(rx))
                 if not ret.success:
@@ -458,11 +458,11 @@ def cal_uniformity2(
 
 
 if __name__ == '__main__':
-    eye1_path = r"C:\zww_test\M25393S103MM\EYE1"
+    eye1_path = r"G:\project\weilaixing\EYE1"
     path_list = [
         eye1_path,
     ]
-    uniformity_path = r"D:\aolanduo2_uniformity"
+    uniformity_path = r"G:\aolanduo2_uniformity"
     if not os.path.exists(uniformity_path):
         os.makedirs(uniformity_path)
     try:
@@ -498,11 +498,31 @@ if __name__ == '__main__':
         capture_times = 1
         # different exposure map of nd while capture ffc images
         exposure_map_obj = {
-            mlcm.MLFilterEnum.ND0: mlcm.pyExposureSetting(exposure_mode=mlcm.ExposureMode.Fixed, exposure_time=13),
-            mlcm.MLFilterEnum.ND1: mlcm.pyExposureSetting(exposure_mode=mlcm.ExposureMode.Fixed, exposure_time=90),
-            mlcm.MLFilterEnum.ND2: mlcm.pyExposureSetting(exposure_mode=mlcm.ExposureMode.Fixed, exposure_time=4054),
-            mlcm.MLFilterEnum.ND3: mlcm.pyExposureSetting(exposure_mode=mlcm.ExposureMode.Fixed, exposure_time=4054),
-            mlcm.MLFilterEnum.ND4: mlcm.pyExposureSetting(exposure_mode=mlcm.ExposureMode.Fixed, exposure_time=4054),
+            mlcm.MLFilterEnum.ND0: {
+                mlcm.MLFilterEnum.X: mlcm.pyExposureSetting(exposure_mode=mlcm.ExposureMode.Fixed, exposure_time=200),
+                mlcm.MLFilterEnum.Y: mlcm.pyExposureSetting(exposure_mode=mlcm.ExposureMode.Fixed, exposure_time=100),
+                mlcm.MLFilterEnum.Z: mlcm.pyExposureSetting(exposure_mode=mlcm.ExposureMode.Fixed, exposure_time=200),
+            },
+            mlcm.MLFilterEnum.ND1: {
+                mlcm.MLFilterEnum.X: mlcm.pyExposureSetting(exposure_mode=mlcm.ExposureMode.Fixed, exposure_time=120),
+                mlcm.MLFilterEnum.Y: mlcm.pyExposureSetting(exposure_mode=mlcm.ExposureMode.Fixed, exposure_time=90),
+                mlcm.MLFilterEnum.Z: mlcm.pyExposureSetting(exposure_mode=mlcm.ExposureMode.Fixed, exposure_time=280),
+            },
+            mlcm.MLFilterEnum.ND2: {
+                mlcm.MLFilterEnum.X: mlcm.pyExposureSetting(exposure_mode=mlcm.ExposureMode.Fixed, exposure_time=4556),
+                mlcm.MLFilterEnum.Y: mlcm.pyExposureSetting(exposure_mode=mlcm.ExposureMode.Fixed, exposure_time=4054),
+                mlcm.MLFilterEnum.Z: mlcm.pyExposureSetting(exposure_mode=mlcm.ExposureMode.Fixed, exposure_time=4999),
+            },
+            mlcm.MLFilterEnum.ND3: {
+                mlcm.MLFilterEnum.X: mlcm.pyExposureSetting(exposure_mode=mlcm.ExposureMode.Fixed, exposure_time=4556),
+                mlcm.MLFilterEnum.Y: mlcm.pyExposureSetting(exposure_mode=mlcm.ExposureMode.Fixed, exposure_time=4054),
+                mlcm.MLFilterEnum.Z: mlcm.pyExposureSetting(exposure_mode=mlcm.ExposureMode.Fixed, exposure_time=4999),
+            },
+            mlcm.MLFilterEnum.ND4: {
+                mlcm.MLFilterEnum.X: mlcm.pyExposureSetting(exposure_mode=mlcm.ExposureMode.Fixed, exposure_time=4556),
+                mlcm.MLFilterEnum.Y: mlcm.pyExposureSetting(exposure_mode=mlcm.ExposureMode.Fixed, exposure_time=4054),
+                mlcm.MLFilterEnum.Z: mlcm.pyExposureSetting(exposure_mode=mlcm.ExposureMode.Fixed, exposure_time=4999),
+            }
         }
 
         # 0:ONE_BY_ONE  1:TWO_BY_TWO  2:FOUR_BY_FOUR  3:EIGHT_BY_EIGHT  4:SIXTEEN_BY_SIXTEEN
@@ -524,7 +544,7 @@ if __name__ == '__main__':
         save_path = eye1_path
 
         half_size = 3600
-        vrange = [1500, 3900]
+        vrange = [15, 390]
 
         # different rx list of nd while calculate uniformity
         rx_dict = {
@@ -596,7 +616,6 @@ if __name__ == '__main__':
             capture_ffc_images2(
                 ml_colorimeter,
                 nd_list,
-                xyz_list,
                 binn,
                 exposure_map_obj,
                 capture_times,
@@ -618,6 +637,8 @@ if __name__ == '__main__':
         if is_calculate_uniformity:
             cal_uniformity2(
                 ml_colorimeter,
+                half_size,
+                vrange,
                 nd_list,
                 xyz_list,
                 uniformity_path,
