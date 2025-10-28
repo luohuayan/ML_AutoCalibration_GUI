@@ -95,6 +95,10 @@ def save_results_to_excel(results,out_path):
 
 def mono_calibration(
         colorimeter:mlcm.ML_Colorimeter,
+        binn_selector:mlcm.BinningSelector,
+        binn_mode:mlcm.BinningMode,
+        binn:mlcm.Binning,
+        pixel_format:mlcm.MLPixelFormat,
         nd_list:List[mlcm.MLFilterEnum],
         xyz_list:List[mlcm.MLFilterEnum],
         gray_range:List[float],
@@ -118,22 +122,19 @@ def mono_calibration(
     mono = colorimeter.ml_bino_manage.ml_get_module_by_id(module_id)
     # set light source
     mono.ml_set_light_source(light_source)
-
-    binn_selector=mlcm.BinningSelector.Logic
-    # camera binning
-    binning = mlcm.Binning.ONE_BY_ONE
-    # camera binning mode
-    binning_mode = mlcm.BinningMode.AVERAGE
-    # camera pixel format
-    pixel_format = mlcm.MLPixelFormat.MLMono12
+    
     ret = mono.ml_set_binning_selector(binn_selector)
     if not ret.success:
         raise RuntimeError("ml_set_binning_selector error")
 
     # Set binning mode for camera.
-    ret = mono.ml_set_binning_mode(binning_mode)
+    ret = mono.ml_set_binning_mode(binn_mode)
     if not ret.success:
         raise RuntimeError("ml_set_binning_mode error")
+    
+    ret = mono.ml_set_binning(binn)
+    if not ret.success:
+        raise RuntimeError("ml_set_binning error")
     
     # Format of the pixel to use for acquisition.
     ret = mono.ml_set_pixel_format(pixel_format)

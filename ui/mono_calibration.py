@@ -15,6 +15,8 @@ from PyQt5.QtWidgets import (
     QButtonGroup,
     QCheckBox,
     QDialog,
+    QComboBox,
+    QFormLayout
 )
 from core.app_config import AppConfig
 from PyQt5.QtCore import pyqtSignal, Qt
@@ -42,76 +44,115 @@ class MonoCalibrationWindow(QDialog):
         self.default_path = ""
         self.select_path=path
         self.file_name = "mono_calibration.xlsx"
+        self.binning_selector=['Logic','Sensor']
+        self.binning_mode=['AVERAGE','SUM']
+        self.pixel_format=['MLMono8','MLMono10','MLMono12','MLMono16','MLRGB24','MLBayer','MLBayerGB8','MLBayerGB12']
         self._init_ui()
 
     def _init_ui(self):
         grid_layout = QGridLayout()
 
+        group_box0=QGroupBox("相机设置")
+        from_layout0=QFormLayout()
+
+        self.label_binn_selector = QLabel(" binning_selector：")
+        self.line_edit_binn_selector = QComboBox()
+        self.line_edit_binn_selector.addItems(self.binning_selector)
+        self.line_edit_binn_selector.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+
+        self.label_binn_mode = QLabel(" binning_mode：")
+        self.line_edit_binn_mode = QComboBox()
+        self.line_edit_binn_mode.addItems(self.binning_mode)
+        self.line_edit_binn_mode.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+
+        horizontal_layout=QHBoxLayout()
+        horizontal_layout.addWidget(self.label_binn_selector)
+        horizontal_layout.addWidget(self.line_edit_binn_selector)
+        horizontal_layout.addWidget(self.label_binn_mode)
+        horizontal_layout.addWidget(self.line_edit_binn_mode)
+        from_layout0.addRow(horizontal_layout)
+
+        self.label_binnlist = QLabel(" binning：")
+        self.line_edit_binnlist = QLineEdit()
+        self.line_edit_binnlist.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        self.line_edit_binnlist.setPlaceholderText("0: 1X1, 1: 2X2, 2: 4X4, 3: 8X8, 4: 16X16")
+        from_layout0.addRow(self.label_binnlist, self.line_edit_binnlist)
+
+        self.label_pixel_format = QLabel(" pixel_format：")
+        self.line_edit_pixel_format = QComboBox()
+        self.line_edit_pixel_format.addItems(self.pixel_format)
+        self.line_edit_pixel_format.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        self.line_edit_pixel_format.setCurrentText("MLMono12")
+        from_layout0.addRow(self.label_pixel_format,self.line_edit_pixel_format)
+
+        group_box0.setLayout(from_layout0)
+        grid_layout.addWidget(group_box0, 0, 0)
+
         self.label_aperture = QLabel()
         self.label_aperture.setText("光阑(mm): 例如：3mm")
-        grid_layout.addWidget(self.label_aperture, 0, 0)
+        grid_layout.addWidget(self.label_aperture, 1, 0)
         self.line_edit_aperture = QLineEdit()
         self.line_edit_aperture.setText("3mm")
         self.line_edit_aperture.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        grid_layout.addWidget(self.line_edit_aperture, 1, 0)
+        grid_layout.addWidget(self.line_edit_aperture, 2, 0)
 
         self.label_ndlist = QLabel()
         self.label_ndlist.setText("nd列表, (4: ND0, 5: ND1, 6: ND2, 7:ND3, 8:ND4), 以空格隔开")
-        grid_layout.addWidget(self.label_ndlist, 2, 0)
+        grid_layout.addWidget(self.label_ndlist, 3, 0)
         self.line_edit_ndlist = QLineEdit()
         self.line_edit_ndlist.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        grid_layout.addWidget(self.line_edit_ndlist, 3, 0)
+        grid_layout.addWidget(self.line_edit_ndlist, 4, 0)
 
         self.label_xyzlist = QLabel()
         self.label_xyzlist.setText("xyz列表, (1: X, 2: Y, 3: Z, 10: Clear), 以空格隔开")
-        grid_layout.addWidget(self.label_xyzlist, 4, 0)
+        grid_layout.addWidget(self.label_xyzlist, 5, 0)
         self.checkbox_exist_xyz=QCheckBox("无xyz滤光片")
         self.checkbox_exist_xyz.stateChanged.connect(self.on_xyz_checkbox_changed)
-        grid_layout.addWidget(self.checkbox_exist_xyz,4,1)
+        grid_layout.addWidget(self.checkbox_exist_xyz,5,1)
 
 
         self.line_edit_xyzlist = QLineEdit()
         self.line_edit_xyzlist.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        grid_layout.addWidget(self.line_edit_xyzlist, 5, 0)
+        grid_layout.addWidget(self.line_edit_xyzlist, 6, 0)
 
         self.label_xyzlist_lum=QLabel()
         self.label_xyzlist_lum.setText("输入对应xyz列表下的亮度, 以空格隔开(无xyz滤光片时只输入一个亮度值即可)")
-        grid_layout.addWidget(self.label_xyzlist_lum, 6, 0)
+        grid_layout.addWidget(self.label_xyzlist_lum, 7, 0)
         self.line_edit_xyzlist_lum = QLineEdit()
         self.line_edit_xyzlist_lum.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)  
-        grid_layout.addWidget(self.line_edit_xyzlist_lum, 7, 0)
+        grid_layout.addWidget(self.line_edit_xyzlist_lum, 8, 0)
 
         self.label_radiance_lum=QLabel()
         self.label_radiance_lum.setText("Radiance：")
-        grid_layout.addWidget(self.label_radiance_lum, 8, 0)
+        grid_layout.addWidget(self.label_radiance_lum, 9, 0)
         self.line_edit_radiance_lum = QLineEdit()
         self.line_edit_radiance_lum.setText("1000")
         self.line_edit_radiance_lum.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)  
-        grid_layout.addWidget(self.line_edit_radiance_lum, 9, 0)
+        grid_layout.addWidget(self.line_edit_radiance_lum, 10, 0)
 
         self.label_gray_range=QLabel()
         self.label_gray_range.setText("灰度值(例如: 0.5,0.8)，多个灰度值以空格隔开")
-        grid_layout.addWidget(self.label_gray_range, 10, 0)
+        grid_layout.addWidget(self.label_gray_range, 11, 0)
         self.line_edit_gray_range = QLineEdit()
         self.line_edit_gray_range.setText("0.8")
         self.line_edit_gray_range.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        grid_layout.addWidget(self.line_edit_gray_range, 11, 0)
+        grid_layout.addWidget(self.line_edit_gray_range, 12, 0)
 
         self.label_image_size = QLabel()
         self.label_image_size.setText("图像中心点坐标x y（打开相机软件查看）：例如像素为13376 9528，则中心点为6688 4764以空格隔开")
-        grid_layout.addWidget(self.label_image_size, 12, 0)
+        grid_layout.addWidget(self.label_image_size, 13, 0)
         self.line_edit_image_size = QLineEdit()
         self.line_edit_image_size.setText("6688 4764")
         self.line_edit_image_size.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        grid_layout.addWidget(self.line_edit_image_size, 13, 0)
+        grid_layout.addWidget(self.line_edit_image_size, 14, 0)
 
         self.label_roi_size = QLabel()
         self.label_roi_size.setText("ROI宽高：例如200 200，以空格隔开")
-        grid_layout.addWidget(self.label_roi_size, 14, 0)
+        grid_layout.addWidget(self.label_roi_size, 15, 0)
         self.line_edit_roi_size = QLineEdit()
         self.line_edit_roi_size.setText("200 200")
         self.line_edit_roi_size.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        grid_layout.addWidget(self.line_edit_roi_size, 15, 0)
+        grid_layout.addWidget(self.line_edit_roi_size, 16, 0)
 
         h_layout = QHBoxLayout()
         self.cb_R = QRadioButton()
@@ -143,34 +184,34 @@ class MonoCalibrationWindow(QDialog):
         h_layout.addWidget(self.cb_G)
         h_layout.addWidget(self.cb_B)
         h_layout.addWidget(self.cb_W)
-        grid_layout.addLayout(h_layout, 16, 0)
+        grid_layout.addLayout(h_layout, 17, 0)
 
         self.label_path = QLabel()
         self.label_path.setText("保存路径(excel保存位置):")
-        grid_layout.addWidget(self.label_path, 17, 0)
+        grid_layout.addWidget(self.label_path, 18, 0)
 
         self.line_edit_path = QLineEdit()
         self.line_edit_path.setReadOnly(True)  # 设置为只读
         self.line_edit_path.setPlaceholderText("未选择文件夹")
         self.line_edit_path.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        grid_layout.addWidget(self.line_edit_path, 18, 0)
+        grid_layout.addWidget(self.line_edit_path, 19, 0)
 
         self.btn_browse = QPushButton("浏览...")
         self.btn_browse.clicked.connect(self._open_folder_dialog)
-        grid_layout.addWidget(self.btn_browse, 18, 1)
+        grid_layout.addWidget(self.btn_browse, 19, 1)
 
         self.label_path=QLabel()
         self.label_path.setText("配置路径（eye1）")
-        grid_layout.addWidget(self.label_path, 19, 0)
+        grid_layout.addWidget(self.label_path, 20, 0)
         self.line_edit_eye1_path=QLineEdit()
         self.line_edit_eye1_path.setReadOnly(True)
         self.line_edit_eye1_path.setText(self.select_path)
-        grid_layout.addWidget(self.line_edit_eye1_path,20,0)
+        grid_layout.addWidget(self.line_edit_eye1_path,21,0)
 
 
         self.btn_capture = QPushButton("单色定标")
         self.btn_capture.clicked.connect(self.start_mono_calibration)
-        grid_layout.addWidget(self.btn_capture, 21, 0)
+        grid_layout.addWidget(self.btn_capture, 22, 0)
 
         spacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
         grid_layout.addItem(spacer)
@@ -200,7 +241,10 @@ class MonoCalibrationWindow(QDialog):
 
     def start_mono_calibration(self):
         try:
-            
+            self.pixel_format=self.get_current_pixel_format()
+            self.binn_selector=self.get_current_binning_selector()
+            self.binn_mode=self.get_current_binning_mode()
+            self.binn=mlcm.Binning(int(self.line_edit_binnlist.text().strip()))
             # self.path_changed.connect(self.out_path_changed)
             self.eye1_path=self.line_edit_eye1_path.text()
             self.lum_dict={}
@@ -220,9 +264,25 @@ class MonoCalibrationWindow(QDialog):
             self.image_point=self.line_edit_image_size.text().split()
             self.roi_size=self.line_edit_roi_size.text().split()
             self.out_path=self.line_edit_path.text()
-            mono_calibration(self.colorimeter,self.nd_list,self.xyz_list,self.gray_list,self.aperture,self.light_source,
-                            self.lum_dict,self.luminance_no_xyz,self.radiance,self.eye1_path,self.out_path,self.image_point,self.roi_size)
-            
+            mono_calibration(
+                colorimeter=self.colorimeter,
+                binn_selector=self.binn_selector,
+                binn_mode=self.binn_mode,
+                binn=self.binn,
+                pixel_format=self.pixel_format,
+                nd_list=self.nd_list,
+                xyz_list=self.xyz_list,
+                gray_range=self.gray_list,
+                apturate=self.aperture,
+                light_source=self.light_source,
+                luminance_values=self.lum_dict,
+                luminance_no_xyz=self.luminance_no_xyz,
+                radiance=self.radiance,
+                eye1_path=self.eye1_path,
+                out_path=self.out_path,
+                image_point=self.image_point,
+                roi_size=self.roi_size
+            )
         except Exception as e:
             QMessageBox.critical(self,"MLColorimeter","exception" + e, QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
         
@@ -244,3 +304,38 @@ class MonoCalibrationWindow(QDialog):
         except Exception as e:
             QMessageBox.critical(self,"MLColorimeter","生成亮度字典异常" + e, QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
         return lum_dict
+    
+    
+    def get_current_pixel_format(self):
+        # 获取当前选择的项
+        selected_format=self.line_edit_pixel_format.currentText()
+        # 创建字符串到枚举值的映射
+        format_mapping={
+            'MLMono8':mlcm.MLPixelFormat.MLMono8,
+            'MLMono10':mlcm.MLPixelFormat.MLMono10,
+            'MLMono12':mlcm.MLPixelFormat.MLMono12,
+            'MLMono16':mlcm.MLPixelFormat.MLMono16,
+            'MLRGB24':mlcm.MLPixelFormat.MLRGB24,
+            'MLBayer':mlcm.MLPixelFormat.MLBayer,
+            'MLBayerGB8':mlcm.MLPixelFormat.MLBayerGB8,
+            'MLBayerGB12':mlcm.MLPixelFormat.MLBayerGB12,
+        }
+        # 获取对应的枚举值
+        pixel_format_enum=format_mapping.get(selected_format)
+        return pixel_format_enum
+    
+    def get_current_binning_selector(self):
+        # 获取当前选择的项
+        selected_selector=self.line_edit_binn_selector.currentText()
+        if selected_selector=='Logic':
+            return mlcm.BinningSelector.Logic
+        else:
+            return mlcm.BinningSelector.Sensor
+        
+    def get_current_binning_mode(self):
+        # 获取当前选择的项
+        selected_mode=self.line_edit_binn_mode.currentText()
+        if selected_mode=='AVERAGE':
+            return mlcm.BinningMode.AVERAGE
+        else:
+            return mlcm.BinningMode.SUM
