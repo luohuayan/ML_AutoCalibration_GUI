@@ -72,6 +72,43 @@ def fourcolor_calibration_calculate(
     rmatrix = ml_colorimeter.ml_get_RMatrix(module_id)
     print(rmatrix)
 
+def fourcolor_calibration(
+        colorimeter:mlcm.ML_Colorimeter,
+        binn_selector:mlcm.BinningSelector,
+        binn_mode:mlcm.BinningMode,
+        binn:mlcm.Binning,
+        pixel_format:mlcm.MLPixelFormat,
+        out_path:str,
+        is_do_ffc:bool,
+        nd_list:List[mlcm.MLFilterEnum],
+        xyz_list:List[mlcm.MLFilterEnum],
+        roi:mlcm.pyCVRect,
+        exposure_map_obj:Dict[mlcm.MLFilterEnum,Dict[mlcm.MLFilterEnum,mlcm.pyExposureSetting]]={},
+
+):
+    module_id = 1
+    ml_mono = colorimeter.ml_bino_manage.ml_get_module_by_id(module_id)
+    # set pixel format to MLMono12 during capture
+    ret = ml_mono.ml_set_pixel_format(pixel_format=mlcm.MLPixelFormat.MLMono12)
+    if not ret.success:
+        raise RuntimeError("ml_set_pixel_format error")
+    ret = ml_mono.ml_set_binning_selector(binn_selector)
+    if not ret.success:
+        raise RuntimeError("ml_set_binning_selector error")
+
+    # Set binning mode for camera.
+    ret = ml_mono.ml_set_binning_mode(binn_mode)
+    if not ret.success:
+        raise RuntimeError("ml_set_binning_mode error")
+    
+    ret = ml_mono.ml_set_binning(binn)
+    if not ret.success:
+        raise RuntimeError("ml_set_binning error")
+    
+    
+    
+    pass
+
 
 if __name__ == "__main__":
     # set mono module calibration configuration path

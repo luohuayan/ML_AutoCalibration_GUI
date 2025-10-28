@@ -21,6 +21,7 @@ from ui.calculate_sph_cyl_coefficient_window import CalculateSphCylCoefficientWi
 from ui.capture_center_window import CaptureCenterWindow
 from ui.capture_image_fixedLUM_window import CaptureImageFixedLUMWindow
 from ui.filed_curve_window import FiledCurveWindow
+from ui.fourcolor_calibration_window import FourColorCalabrationWindow
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -40,6 +41,7 @@ class MainWindow(QMainWindow):
         self.capture_center_window = None
         self.capture_image_fixedLUM_window = None
         self.filed_curve_window = None
+        self.fourcolor_calibration=None
         
 
 
@@ -82,6 +84,9 @@ class MainWindow(QMainWindow):
         script7_action = QAction("filed_curve", self)
         script7_action.triggered.connect(self.open_filed_curve)
 
+        script8_action = QAction("fourcolor_calibration", self)
+        script8_action.triggered.connect(self.open_fourcolor_calibration)
+
         scripts_menu.addAction(script1_action)
         scripts_menu.addAction(script2_action)
         scripts_menu.addAction(script3_action)
@@ -89,6 +94,7 @@ class MainWindow(QMainWindow):
         scripts_menu.addAction(script5_action)
         scripts_menu.addAction(script6_action)
         scripts_menu.addAction(script7_action)
+        scripts_menu.addAction(script8_action)
 
     def create_main_widget(self):
         # 主控件
@@ -194,3 +200,7 @@ class MainWindow(QMainWindow):
     def open_filed_curve(self):
         self.filed_curve_window = FiledCurveWindow()
         self.filed_curve_window.exec_()
+
+    def open_fourcolor_calibration(self):
+        self.fourcolor_calibration=FourColorCalabrationWindow()
+        self.fourcolor_calibration.exec_()
