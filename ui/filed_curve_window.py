@@ -244,7 +244,9 @@ class FiledCurveWindow(QDialog):
 
         self.add_button = QPushButton("Add ROI")
         self.add_button.clicked.connect(self.add_roi)
-        from_layout1.addRow(self.add_button)
+        self.delete_button=QPushButton("Delete ROI")
+        self.delete_button.clicked.connect(self.delete_roi)
+        from_layout1.addRow(self.add_button,self.delete_button)
 
         self.roi_display=QListWidget()
         self.roi_display.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
@@ -302,10 +304,37 @@ class FiledCurveWindow(QDialog):
             # 创建roi并添加到列表
             roi=mlcm.pyCVRect(x,y,width,height)
             self.roi_list.append(roi)
-            i=len(self.roi_list)
             # 显示在控件上
-            roi_str=f"{i}-{x},{y},{width},{height}"
+            roi_str=f"{x},{y},{width},{height}"
             self.roi_display.addItem(roi_str)
+        except Exception as e:
+            QMessageBox.critical(self,"MLColorimeter","exception" + str(e), QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
+
+    def delete_roi(self):
+        try:
+
+            current_item=self.roi_display.currentItem()
+            if current_item is None:
+                QMessageBox.warning(self,"警告","请先选择要删除的ROI",QMessageBox.Ok)
+                return
+            
+            roi_str=current_item.text()
+            # 解析ROi
+            roi_coords=list(map(int,roi_str.split(',')))
+            roi_list=[int(roi) for roi in roi_coords]
+            roi_x=roi_list[0]
+            roi_y=roi_list[1]
+            roi_w=roi_list[2]
+            roi_h=roi_list[3]
+            roi_remove=mlcm.pyCVRect(roi_x,roi_y,roi_w,roi_h)
+            for index,roi in enumerate(self.roi_list):
+                if (roi.x == roi_remove.x and roi.y==roi_remove.y and roi.width==roi_remove.width and roi.height==roi_remove.height):
+                    # 只删除第一个匹配的roi
+                    del self.roi_list[index]
+                    break # 找到并删除后退出循环
+            
+            row=self.roi_display.row(current_item)
+            self.roi_display.takeItem(row)
         except Exception as e:
             QMessageBox.critical(self,"MLColorimeter","exception" + str(e), QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
     
