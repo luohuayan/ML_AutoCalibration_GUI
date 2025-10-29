@@ -66,7 +66,7 @@ def field_curve(
         if not ret.success:
             raise RuntimeError("ml_save_vid_scan_result error")
         os.rename(file_path, new_path)
-        print("vid scan finish for freq " + str(freq))
+        # print("vid scan finish for freq " + str(freq))
 
 
 if __name__ == "__main__":
@@ -113,4 +113,5 @@ if __name__ == "__main__":
         out_path = r"D:\ml_software"
         field_curve()
     except Exception as e:
-        print(e)
+        # print(e)
+        pass

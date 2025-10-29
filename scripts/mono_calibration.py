@@ -17,8 +17,8 @@ def modify_exposure_config(
 ):
     # Check if the file exists
     if not os.path.exists(config_path):
-        print(f"Configuration file not found: {config_path}")
-        logging.error(f"Configuration file not found: {config_path}")
+        # print(f"Configuration file not found: {config_path}")
+        # logging.error(f"Configuration file not found: {config_path}")
         return
 
     # Read the JSON configuration
@@ -37,7 +37,7 @@ def modify_exposure_config(
     with open(config_path, "w") as file:
         json.dump(config, file, indent=4)
 
-    print(f"Configuration file updated: {config_path}")
+    # print(f"Configuration file updated: {config_path}")
 
 
 # Function to show a message box with the light source information

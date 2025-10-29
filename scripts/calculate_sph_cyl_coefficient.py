@@ -139,4 +139,5 @@ if __name__ == "__main__":
 
         calculate_sph_cyl_coefficinet()
     except Exception as e:
-        print(e)
+        # print(e)
+        pass

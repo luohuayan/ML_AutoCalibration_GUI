@@ -87,4 +87,5 @@ if __name__ == "__main__":
 
         capture_colorfilter_center()
     except Exception as e:
-        print(e)
+        # print(e)
+        pass

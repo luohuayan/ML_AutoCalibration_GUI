@@ -205,11 +205,11 @@ def cal_synthetic_mean_images2(
                 sphere_list=[0],
                 light_source=mono.ml_get_light_source()
             )
-            print("calculate mean images for: " +
-                  mlcm.MLFilterEnum_to_str(xyz))
-        print("calculate mean images for: " +
-              mlcm.MLFilterEnum_to_str(nd))
-    print("calculate ffc synthetic mean finish")
+    #         print("calculate mean images for: " +
+    #               mlcm.MLFilterEnum_to_str(xyz))
+    #     print("calculate mean images for: " +
+    #           mlcm.MLFilterEnum_to_str(nd))
+    # print("calculate ffc synthetic mean finish")
 
 
 def capture_ffc_images2(
@@ -229,7 +229,7 @@ def capture_ffc_images2(
 
     for nd in nd_list:
         ret = mono.ml_move_nd_syn(nd)
-        print(mlcm.MLFilterEnum_to_str(nd))
+        # print(mlcm.MLFilterEnum_to_str(nd))
         if not ret.success:
             raise RuntimeError("ml_move_nd_syn error")
 
@@ -237,7 +237,7 @@ def capture_ffc_images2(
         if not ret.success:
             raise RuntimeError("ml_set_binning error")
         get_binn = mono.ml_get_binning()
-        print(mlcm.Binning_to_str(get_binn))
+        # print(mlcm.Binning_to_str(get_binn))
 
         if use_RX == False or (not sph_list) or (not cyl_list) or (not axis_list):
             rx = mlcm.pyRXCombination(0, 0, 0)
@@ -264,7 +264,7 @@ def capture_ffc_images2(
                     avg_count=capture_times,
                     exposure_map=exposure_map[nd]
                 )
-                print("capture image for: " + mlcm.pyRXCombination_to_str(rx))
+                # print("capture image for: " + mlcm.pyRXCombination_to_str(rx))
                 if not ret.success:
                     raise RuntimeError("ml_capture_ffc_colorcamera error")
 
@@ -279,12 +279,12 @@ def capture_ffc_images2(
                         avg_count=capture_times,
                         exposure=exposure_map[nd]
                     )
-                    print("capture image for: " +
-                          mlcm.pyRXCombination_to_str(rx))
+                    # print("capture image for: " +
+                    #       mlcm.pyRXCombination_to_str(rx))
                     if not ret.success:
                         raise RuntimeError("ml_capture_ffc_colorcamera error")
 
-    print("capture color camera ffc images finish")
+    # print("capture color camera ffc images finish")
 
 
 def cal_uniformity2(
@@ -328,7 +328,7 @@ def cal_uniformity2(
             if not ret.success:
                 raise RuntimeError("ml_set_binning error")
             get_binn = mono.ml_get_binning()
-            print(get_binn)
+            # print(get_binn)
 
             ffc_wb = Workbook()
             ffc_wb.save(ffc_xlsx)
@@ -337,7 +337,7 @@ def cal_uniformity2(
             title = str(pow(2, int(binn))) + "X" + str(pow(2, int(binn)))
             ffc_ws = ffc_wb.create_sheet(title=title)
             ffc_title = ["RX", "ColorFilter", "NDFilter", "Light Source", "ROI1", "ROI2", "ROI3",
-                         "ROI4", "ROI5", "ROI6", "ROI7", "ROI8", "ROI9", "Mean", "Std", "Min", "Max", "Min/Max", "Uniformity"]
+                        "ROI4", "ROI5", "ROI6", "ROI7", "ROI8", "ROI9", "Mean", "Std", "Min", "Max", "Min/Max", "Uniformity"]
             ffc_ws.append(ffc_title)
 
             fourcolor_wb = Workbook()
@@ -454,7 +454,7 @@ def cal_uniformity2(
                                 ffc_xlsx, 
                                 fourcolor_xlsx
                             )
-                            print("measurement for rx: " + RX_str)
+                            # print("measurement for rx: " + RX_str)
 
 
 if __name__ == '__main__':
@@ -650,4 +650,5 @@ if __name__ == '__main__':
             )
 
     except Exception as e:
-        print(e)
+        # print(e)
+        pass

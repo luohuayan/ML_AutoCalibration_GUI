@@ -83,8 +83,8 @@ def calculate_sph_cyl_coefficinet(
         for i in range(len(sph_coefficient)):
             sph_coefficient[i] = format(sph_coefficient[i] / last_sph, ".3f")
 
-        print("sph coefficient: ")
-        print(sph_coefficient)
+        # print("sph coefficient: ")
+        # print(sph_coefficient)
         line = ["sph_coefficient", *sph_coefficient]
         ws.append(line)
         line = []
@@ -116,8 +116,8 @@ def calculate_sph_cyl_coefficinet(
         for i in range(len(cyl_coefficient)):
             cyl_coefficient[i] = format(cyl_coefficient[i] / last_cyl, ".3f")
 
-        print("cyl coefficient: ")
-        print(cyl_coefficient)
+        # print("cyl coefficient: ")
+        # print(cyl_coefficient)
         line = ["cyl_coefficient", *cyl_coefficient]
         ws.append(line)
         line = []
@@ -125,7 +125,7 @@ def calculate_sph_cyl_coefficinet(
         line = []
 
     wb.save(save_xlsx)
-    print("calculate sph cyl coefficient finish")
+    # print("calculate sph cyl coefficient finish")
 
 
 if __name__ == "__main__":
@@ -174,4 +174,5 @@ if __name__ == "__main__":
             roi,
         )
     except Exception as e:
-        print(e)
+        # print(e)
+        pass

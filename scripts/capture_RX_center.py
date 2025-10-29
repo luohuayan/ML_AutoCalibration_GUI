@@ -99,4 +99,5 @@ if __name__ == "__main__":
         capture_RX_center()
 
     except Exception as e:
-        print(e)
+        # print(e)
+        pass

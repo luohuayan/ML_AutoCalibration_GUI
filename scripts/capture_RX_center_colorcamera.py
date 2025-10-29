@@ -71,11 +71,11 @@ def capture_RX_center(
                     roi_img = Y[roi.y:roi.y +
                                 roi.height, roi.x:roi.x+roi.width]
                     cv2.imwrite(img_path, roi_img)
-                    print("capture image for: " +
-                          mlcm.pyRXCombination_to_str(rx))
-            print("capture image for: " + mlcm.MLFilterEnum_to_str(xyz))
-        print("capture image for: " + mlcm.MLFilterEnum_to_str(nd))
-    print("capture RX center finish")
+    #                 print("capture image for: " +
+    #                       mlcm.pyRXCombination_to_str(rx))
+    #         print("capture image for: " + mlcm.MLFilterEnum_to_str(xyz))
+    #     print("capture image for: " + mlcm.MLFilterEnum_to_str(nd))
+    # print("capture RX center finish")
 
 
 if __name__ == "__main__":
@@ -159,4 +159,5 @@ if __name__ == "__main__":
         )
 
     except Exception as e:
-        print(e)
+        # print(e)
+        pass

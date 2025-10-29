@@ -84,7 +84,7 @@ def capture_dark_heatmap(
                 if not ret.success:
                     raise RuntimeError("ml_set_binning error")
                 get_binn = mono.ml_get_binning()
-                print(get_binn)
+                # print(get_binn)
 
                 # generate xlsx file
                 title = str(pow(2, binn)) + "X" + str(pow(2, binn))
@@ -201,7 +201,7 @@ def capture_dark_heatmap(
 
                 wb.save(file_path)
 
-            print("finish")
+            # print("finish")
 
 
 if __name__ == "__main__":
@@ -239,6 +239,7 @@ if __name__ == "__main__":
         # multi frame averaging
         capture_times = 5
         capture_dark_heatmap(ml_colorimeter, nd_list, xyz_list,
-                             binn_list, et_list, save_path, file_name, capture_times)
+                            binn_list, et_list, save_path, file_name, capture_times)
     except Exception as e:
-        print(e)
+        # print(e)
+        pass
