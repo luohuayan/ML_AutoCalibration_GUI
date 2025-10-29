@@ -25,7 +25,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from openpyxl import Workbook, load_workbook
 from openpyxl.drawing.image import Image
-from scripts.fourcolor_calibration import fourcolor_calibration_calculate
+from scripts.fourcolor_calibration import fourcolor_calibration_capture, fourcolor_calibration_calculate
 from ui.exposureconfig_window import ExposureConfigWindow
 
 class FourColorCalabrationWindow(QDialog):
@@ -196,9 +196,11 @@ class FourColorCalabrationWindow(QDialog):
             self.pixel_format=self.get_current_pixel_format()
             self.binn_selector=self.get_current_binning_selector()
             self.binn_mode=self.get_current_binning_mode()
-            self.binn=mlcm.Binning(int(self.line_edit_binnlist.text().strip()))
-            self.nd_list=[int(nd) for nd in self.line_edit_ndlist.text().strip().split()]
-            self.xyz_list=[int(xyz) for xyz in self.line_edit_xyzlist.text().strip().split()]
+            self.binn=mlcm.Binning(int(self.line_edit_binn.text().strip()))
+            nd_enum=[int(nd) for nd in self.line_edit_ndlist.text().strip().split()]
+            self.nd_list=[mlcm.MLFilterEnum(nd) for nd in nd_enum]
+            xyz_enum=[int(xyz) for xyz in self.line_edit_xyzlist.text().strip().split()]
+            self.xyz_list=[mlcm.MLFilterEnum(xyz) for xyz in xyz_enum]
             self.avg_count=int(self.line_edit_avg_count.text().strip())
             x=int(self.line_edit_x_input.text().strip())
             y=int(self.line_edit_y_input.text().strip())
@@ -208,8 +210,36 @@ class FourColorCalabrationWindow(QDialog):
             self.save_path=self.line_edit_path.text().strip()
             self.nmatrix_path=self.line_edit_NMatrix_path.text().strip()
             self.is_do_ffc=self.checkbox_is_do_ffc.isChecked()
-
-            pass
+            self.light_source_list=["R", "G", "B", "W"]
+            for nd in self.nd_list:
+                for light_source in self.light_source_list:
+                    temp = QMessageBox.information(self,"提示",f"请先切换到{light_source}光",QMessageBox.Ok)
+                    if temp==QMessageBox.Ok:
+                        exposure_map=self.exposure_map_obj[nd]
+                        fourcolor_calibration_capture(
+                            colorimeter=self.colorimeter,
+                            binn_selector=self.binn_selector,
+                            binn_mode=self.binn_mode,
+                            binn=self.binn,
+                            pixel_format=self.pixel_format,
+                            save_path=self.save_path,
+                            light_source=light_source,
+                            nd=nd,
+                            avg_count=self.avg_count,
+                            exposure_map=exposure_map,
+                            roi=self.roi,
+                            is_do_ffc=self.is_do_ffc
+                        )
+                    else:
+                        return
+                fourcolor_calibration_calculate(
+                    colorimeter=self.colorimeter,
+                    save_path=self.save_path,
+                    nd=nd,
+                    NMatrix_path=self.nmatrix_path
+                )
+            
+            QMessageBox.information(self,"提示","流程结束",QMessageBox.Ok)
         except Exception as e:
             QMessageBox.critical(self,"MLColorimeter","exception" + e, QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
 
