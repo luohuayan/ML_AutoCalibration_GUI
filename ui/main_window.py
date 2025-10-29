@@ -24,6 +24,7 @@ from ui.filed_curve_window import FiledCurveWindow
 from ui.fourcolor_calibration_window import FourColorCalabrationWindow
 from ui.calculate_sph_cyl_coefficient_colorcamera_window import CalculateSphCylCoefficientColorCameraWindow
 from ui.capture_RX_center_colorcamera_window import CaptureRXCenterColorCameraWindow
+from ui.captureffc_calUniformity_plot_colorcamera_window import CaptureFFCCalUniformityPlotColorCameraWindow
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -46,6 +47,7 @@ class MainWindow(QMainWindow):
         self.fourcolor_calibration=None
         self.calculate_sph_cyl_coefficient_colorcamera_window=None
         self.capture_RX_center_colorcamera=None
+        self.capture_ffc_CalUniformityPlot_ColorCamera=None
         
 
 
@@ -97,6 +99,9 @@ class MainWindow(QMainWindow):
         script10_action = QAction("capture_RX_center_colorcamera", self)
         script10_action.triggered.connect(self.capture_RX_center_colorcamera)
 
+        script11_action = QAction("capture_ffc_CalUniformityPlot_ColorCamera", self)
+        script11_action.triggered.connect(self.capture_ffc_CalUniformityPlot_ColorCamera)
+
         scripts_menu.addAction(script1_action)
         scripts_menu.addAction(script2_action)
         scripts_menu.addAction(script3_action)
@@ -107,6 +112,7 @@ class MainWindow(QMainWindow):
         scripts_menu.addAction(script8_action)
         scripts_menu.addAction(script9_action)
         scripts_menu.addAction(script10_action)
+        scripts_menu.addAction(script11_action)
 
     def create_main_widget(self):
         # 主控件
@@ -224,3 +230,7 @@ class MainWindow(QMainWindow):
     def capture_RX_center_colorcamera(self):
         self.capture_RX_center_colorcamera=CaptureRXCenterColorCameraWindow()
         self.capture_RX_center_colorcamera.exec_()
+
+    def capture_ffc_CalUniformityPlot_ColorCamera(self):
+        self.capture_ffc_CalUniformityPlot_ColorCamera=CaptureFFCCalUniformityPlotColorCameraWindow(self.select_path)
+        self.capture_ffc_CalUniformityPlot_ColorCamera.exec_()
