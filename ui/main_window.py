@@ -25,6 +25,8 @@ from ui.fourcolor_calibration_window import FourColorCalabrationWindow
 from ui.calculate_sph_cyl_coefficient_colorcamera_window import CalculateSphCylCoefficientColorCameraWindow
 from ui.capture_RX_center_colorcamera_window import CaptureRXCenterColorCameraWindow
 from ui.captureffc_calUniformity_plot_colorcamera_window import CaptureFFCCalUniformityPlotColorCameraWindow
+from ui.mono_calibration_colorcamera_window import MonoCalibrationColorCameraWindow
+from ui.rx_selfrotation_window import RXSelfRotationWindow
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -46,8 +48,10 @@ class MainWindow(QMainWindow):
         self.filed_curve_window = None
         self.fourcolor_calibration=None
         self.calculate_sph_cyl_coefficient_colorcamera_window=None
-        self.capture_RX_center_colorcamera=None
-        self.capture_ffc_CalUniformityPlot_ColorCamera=None
+        self.capture_rx_center_colorcamera=None
+        self.capture_FFC_CalUniformityPlot_ColorCamera=None
+        self.mono_calibration_Colorcamera=None
+        self.rx_selfrotation_window=None
         
 
 
@@ -102,6 +106,12 @@ class MainWindow(QMainWindow):
         script11_action = QAction("capture_ffc_CalUniformityPlot_ColorCamera", self)
         script11_action.triggered.connect(self.capture_ffc_CalUniformityPlot_ColorCamera)
 
+        script12_action = QAction("mono_calibration_colorcamera", self)
+        script12_action.triggered.connect(self.mono_calibration_colorcamera)
+
+        script13_action = QAction("rx_selfroattion", self)
+        script13_action.triggered.connect(self.rx_selfrotation)
+
         scripts_menu.addAction(script1_action)
         scripts_menu.addAction(script2_action)
         scripts_menu.addAction(script3_action)
@@ -113,6 +123,8 @@ class MainWindow(QMainWindow):
         scripts_menu.addAction(script9_action)
         scripts_menu.addAction(script10_action)
         scripts_menu.addAction(script11_action)
+        scripts_menu.addAction(script12_action)
+        scripts_menu.addAction(script13_action)
 
     def create_main_widget(self):
         # 主控件
@@ -155,6 +167,7 @@ class MainWindow(QMainWindow):
                 QMessageBox.Yes | QMessageBox.No,
                 QMessageBox.Yes,
             )
+            return
         QMessageBox.information(
                 self,
                 "MLColorimeter",
@@ -173,6 +186,7 @@ class MainWindow(QMainWindow):
                 QMessageBox.Yes | QMessageBox.No,
                 QMessageBox.Yes,
             )
+            return
         QMessageBox.information(
                 self,
                 "MLColorimeter",
@@ -224,13 +238,21 @@ class MainWindow(QMainWindow):
         self.fourcolor_calibration.exec_()
 
     def calculate_sph_cyl_coefficient_colorcamera(self):
-        self.calculate_sph_cyl_coefficient_colorcamera=CalculateSphCylCoefficientColorCameraWindow()
-        self.calculate_sph_cyl_coefficient_colorcamera.exec_()
+        self.calculate_sph_cyl_coefficient_colorcamera_window=CalculateSphCylCoefficientColorCameraWindow()
+        self.calculate_sph_cyl_coefficient_colorcamera_window.exec_()
 
     def capture_RX_center_colorcamera(self):
-        self.capture_RX_center_colorcamera=CaptureRXCenterColorCameraWindow()
-        self.capture_RX_center_colorcamera.exec_()
+        self.capture_rx_center_colorcamera=CaptureRXCenterColorCameraWindow()
+        self.capture_rx_center_colorcamera.exec_()
 
     def capture_ffc_CalUniformityPlot_ColorCamera(self):
-        self.capture_ffc_CalUniformityPlot_ColorCamera=CaptureFFCCalUniformityPlotColorCameraWindow(self.select_path)
-        self.capture_ffc_CalUniformityPlot_ColorCamera.exec_()
+        self.capture_FFC_CalUniformityPlot_ColorCamera=CaptureFFCCalUniformityPlotColorCameraWindow(self.select_path)
+        self.capture_FFC_CalUniformityPlot_ColorCamera.exec_()
+
+    def mono_calibration_colorcamera(self):
+        self.mono_calibration_Colorcamera=MonoCalibrationColorCameraWindow(self.select_path)
+        self.mono_calibration_Colorcamera.exec_()
+
+    def rx_selfrotation(self):
+        self.rx_selfrotation_window=RXSelfRotationWindow()
+        self.rx_selfrotation_window.exec_()
