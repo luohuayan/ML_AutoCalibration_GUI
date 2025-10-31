@@ -9,6 +9,7 @@ from tkinter import messagebox
 import pandas as pd
 from datetime import datetime
 from typing import List,Dict
+import time
 
 
 # Function to modify the exposure configuration
@@ -111,7 +112,12 @@ def mono_calibration(
         out_path:str,
         image_point:List[int],
         roi_size:List[int],
+        status_callback=None
 ):
+    def update_status(message):
+        if status_callback:
+            status_callback(message)
+    
     if len(image_point) >=2:
         image_x=int(image_point[0])
         image_y=int(image_point[1])
@@ -158,6 +164,7 @@ def mono_calibration(
                 img = mono.ml_get_image()
                 average_gray = process_image(img,image_x,image_y,roi_width,roi_height)
                 exposure_time = mono.ml_get_exposure_time()
+                update_status(f"{mlcm.MLFilterEnum_to_str(nd_enum)}_{str(gray)}_averageGray:{str(average_gray)}_exposureTime:{str(exposure_time)}")
                 gray_ET= average_gray / exposure_time if exposure_time > 0 else 0
                 luminance_k= luminance_no_xyz / gray_ET if gray_ET > 0 else 0
                 radiance_k = radiance / gray_ET if gray_ET > 0 else 0
@@ -187,6 +194,7 @@ def mono_calibration(
                     average_gray = process_image(img,image_x,image_y,roi_width,roi_height)
                     # get exposure time
                     exposure_time = mono.ml_get_exposure_time()
+                    update_status(f"{mlcm.MLFilterEnum_to_str(nd_enum)}_{str(gray)}_{mlcm.MLFilterEnum_to_str(xyz_enum)}_averageGray:{str(average_gray)}_exposureTime:{str(exposure_time)}")
                     gray_ET= average_gray / exposure_time if exposure_time > 0 else 0
                     luminance_k= Luminance / gray_ET if gray_ET > 0 else 0
                     radiance_k = radiance / gray_ET if gray_ET > 0 else 0
@@ -203,6 +211,8 @@ def mono_calibration(
                         "Radiance": radiance,
                         "K(R)": radiance_k
                     })
+    time.sleep(1)
+    update_status("写入配置中...")
     
     # 将results中灰度值在80%的luminance_k和radiance_k写入配置文件，b为0
     for item in results:
@@ -240,5 +250,6 @@ def mono_calibration(
                 "Radiance": [[float(radiance_k),0]]
             }
             save_json(data1, radiance_json_file_path)
-    
+    time.sleep(1)
+    update_status("写入完成，保存数据表")
     save_results_to_excel(results,out_path)
