@@ -19,7 +19,7 @@ from PyQt5.QtWidgets import (
     QFormLayout
 )
 from core.app_config import AppConfig
-from PyQt5.QtCore import pyqtSignal, Qt
+from PyQt5.QtCore import pyqtSignal, Qt,QThread
 import mlcolorimeter as mlcm
 import os
 import cv2
@@ -29,6 +29,22 @@ from openpyxl import Workbook, load_workbook
 from openpyxl.drawing.image import Image
 from scripts.capture_RX_center_colorcamera import capture_RX_center
 from ui.exposureconfig_window import ExposureConfigWindow
+
+class CaptureRXCenterColorCameraThread(QThread):
+    finished=pyqtSignal() # 线程完成信号
+    error=pyqtSignal(str) # 错误信号
+    status_update=pyqtSignal(str) # 状态更新信号
+
+    def __init__(self, parameters):
+        super().__init__()
+        self.parameters=parameters
+    
+    def run(self):
+        try:
+            capture_RX_center(status_callback=self.status_update.emit, **self.parameters)
+            self.finished.emit() # 发送完成信号
+        except Exception as e:
+            self.error.emit(str(e)) # 发送错误信号
 
 class CaptureRXCenterColorCameraWindow(QDialog):
     def __init__(self, parent=None):
@@ -45,6 +61,9 @@ class CaptureRXCenterColorCameraWindow(QDialog):
         self.binning_mode=['AVERAGE','SUM']
         self.pixel_format=['MLMono8','MLMono10','MLMono12','MLMono16','MLRGB24','MLBayer','MLBayerGB8','MLBayerGB12']
         self._init_ui()
+
+        # 标识当前流程是否正在进行
+        self.is_captureing=False
 
     def _init_ui(self):
         grid_layout = QGridLayout()
@@ -136,6 +155,10 @@ class CaptureRXCenterColorCameraWindow(QDialog):
         self.btn_capture.clicked.connect(self.start_capture)
         grid_layout.addWidget(self.btn_capture, 12, 0)
 
+        self.status_label=QLabel("状态：等待开始")
+        self.status_label.setWordWrap(True)  # 设置自动换行
+        grid_layout.addWidget(self.status_label,13,0)
+
         spacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
         grid_layout.addItem(spacer)
 
@@ -162,6 +185,9 @@ class CaptureRXCenterColorCameraWindow(QDialog):
             if self.exposure_map_obj=={}:
                 QMessageBox.warning(self,"警告","请点击曝光时间按钮设置曝光时间",QMessageBox.Ok)
                 return;
+            self.status_label.setText("<span style='color: green;'>状态: 正在拍图...</span>")  # 更新状态
+            self.btn_capture.setEnabled(False)
+            self.is_captureing=True
             nd_enum=[int(nd) for nd in self.line_edit_ndlist.text().strip().split()]
             self.nd_list=[mlcm.MLFilterEnum(nd) for nd in nd_enum]
             xyz_enum=[int(xyz) for xyz in self.line_edit_xyzlist.text().strip().split()]
@@ -175,19 +201,56 @@ class CaptureRXCenterColorCameraWindow(QDialog):
             self.roi=mlcm.pyCVRect(x,y,width,height)
             self.save_path=self.line_edit_path.text()
 
-            capture_RX_center(
-                colorimter=self.colorimeter,
-                save_path=self.save_path,
-                nd_list=self.nd_list,
-                xyz_list=self.xyz_list,
-                cyl_list=self.cyl_list,
-                axis_list=self.axis_list,
-                roi=self.roi,
-                exposure_map_obj=self.exposure_map_obj
-            )
-            QMessageBox.information(self,"完成","拍图已完成！",QMessageBox.Ok)
+            # capture_RX_center(
+            #     colorimter=self.colorimeter,
+            #     save_path=self.save_path,
+            #     nd_list=self.nd_list,
+            #     xyz_list=self.xyz_list,
+            #     cyl_list=self.cyl_list,
+            #     axis_list=self.axis_list,
+            #     roi=self.roi,
+            #     exposure_map_obj=self.exposure_map_obj
+            # )
+            parameters={
+                'colorimeter': self.colorimeter,
+                'save_path':self.save_path,
+                'nd_list': self.nd_list,
+                'xyz_list': self.xyz_list,
+                'cyl_list':self.cyl_list,
+                'axis_list':self.axis_list,
+                'roi':self.roi,
+                'exposure_map_obj':self.exposure_map_obj
+            }
+            self.captureRXcenter_thread=CaptureRXCenterColorCameraThread(parameters)
+            self.captureRXcenter_thread.finished.connect(self.on_captureRxcenter_finished)
+            self.captureRXcenter_thread.error.connect(self.on_captureRxcenter_error)
+            self.captureRXcenter_thread.status_update.connect(self.update_status)
+            self.captureRXcenter_thread.start()
         except Exception as e:
             QMessageBox.critical(self,"MLColorimeter","exception" + e, QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
+
+    def update_status(self,message):
+        self.status_label.setText(f"<span style='color: green;'>状态: {message}</span>")
+    
+    def on_captureRxcenter_finished(self):
+        QMessageBox.information(self,"MLColorimeter","拍图完成!",QMessageBox.Ok)
+        self.status_label.setText("<span style='color: green;'>状态: 拍图完成！</span>")  # 更新状态
+        self.btn_capture.setEnabled(True)
+        self.is_captureing=False # 标识定标完成
+
+    def on_captureRxcenter_error(self,error_message):
+        QMessageBox.critical(self, "MLColorimeter", "发生错误: " + error_message, QMessageBox.Ok)
+        self.status_label.setText(f"<span style='color: red;'>状态: 发生错误: {error_message}</span>")  # 更新状态为红色
+        self.btn_capture.setEnabled(True)
+        self.is_captureing=False # 标识定标完成
+
+    def closeEvent(self, event):
+        if self.is_captureing:
+            # 如果正在进行定标，拦截关闭事件
+            event.ignore()
+            QMessageBox.warning(self,"警告","程序运行中，请勿关闭窗口",QMessageBox.Ok)
+        else:
+            event.accept()   
 
     def load_exposure_config(self):
         try:
