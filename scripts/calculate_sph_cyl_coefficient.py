@@ -7,6 +7,7 @@ import numpy as np
 from datetime import datetime
 from typing import List
 import pandas as pd
+import time
 
 
 def datetime_str():
@@ -22,7 +23,14 @@ def calculate_sph_cyl_coefficinet(
         xyz_list:List[mlcm.MLFilterEnum],
         exposure_map_obj:Dict[mlcm.MLFilterEnum,Dict[mlcm.MLFilterEnum,mlcm.pyExposureSetting]]={},
         count:int=10,
+        status_callback=None
 ):
+    def update_status(message):
+        if status_callback:
+            status_callback(message)
+    update_status("calculate_sph_cyl_coefficinet start")
+    time.sleep(5)
+    update_status("calculate_sph_cyl_coefficinet finish")
     if not os.path.exists(save_path):
         os.makedirs(save_path)
     module_id = 1
