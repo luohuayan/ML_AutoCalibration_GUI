@@ -19,7 +19,7 @@ from PyQt5.QtWidgets import (
     QComboBox,
 )
 from core.app_config import AppConfig
-from PyQt5.QtCore import pyqtSignal, Qt
+from PyQt5.QtCore import pyqtSignal, Qt,QThread
 import mlcolorimeter as mlcm
 import os
 import cv2
@@ -28,6 +28,22 @@ import matplotlib.pyplot as plt
 from openpyxl import Workbook, load_workbook
 from openpyxl.drawing.image import Image
 from scripts.field_curve import field_curve
+
+class FiledCurveThread(QThread):
+    finished=pyqtSignal() # 线程完成信号
+    error=pyqtSignal(str) # 错误信号
+    status_update=pyqtSignal(str) # 状态更新信号
+
+    def __init__(self, parameters):
+        super().__init__()
+        self.parameters=parameters
+    
+    def run(self):
+        try:
+            field_curve(status_callback=self.status_update.emit, **self.parameters)
+            self.finished.emit() # 发送完成信号
+        except Exception as e:
+            self.error.emit(str(e)) # 发送错误信号
 
 class FiledCurveWindow(QDialog):
     def __init__(self, parent=None):
@@ -46,6 +62,8 @@ class FiledCurveWindow(QDialog):
         self.binning_mode=['AVERAGE','SUM']
         self.pixel_format=['MLMono8','MLMono10','MLMono12','MLMono16','MLRGB24','MLBayer','MLBayerGB8','MLBayerGB12']
         self._init_ui()
+
+        self.is_running=False
     
     def _init_ui(self):
         grid_layout = QGridLayout()
@@ -273,6 +291,10 @@ class FiledCurveWindow(QDialog):
         self.btn_capture.clicked.connect(self.start_capture)
         grid_layout.addWidget(self.btn_capture, 7, 0)
 
+        self.status_label=QLabel("状态：等待开始")
+        self.status_label.setWordWrap(True)  # 设置自动换行
+        grid_layout.addWidget(self.status_label,8,0)
+
 
         spacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
         grid_layout.addItem(spacer)
@@ -340,68 +362,99 @@ class FiledCurveWindow(QDialog):
     
     def start_capture(self):
         try:
-            pixel_format=self.get_current_pixel_format()
-            binn_selector=self.get_current_binning_selector()
-            binn_mode=self.get_current_binning_mode()
-            binn=mlcm.Binning(int(self.line_edit_binnlist.text().strip()))
-            exposure_mode=self.get_current_exposure_mode()
-            exposure_time=float(self.line_edit_exposure_time.text().strip())
-            focus_max=float(self.line_edit_focus_max.text().strip())
-            focus_min=float(self.line_edit_focus_min.text().strip())
-            inf_pos=float(self.line_edit_inf_pos.text().strip())
-            focal_length=float(self.line_edit_focal_length.text().strip())
-            pixel_size=float(self.line_edit_pixel_size.text().strip())
-            focal_space=float(self.line_edit_focal_space.text().strip())
-            use_chess_mode=self.line_edit_use_chess_mode.isChecked()
-            use_lpmm_unit=self.line_edit_use_lpmm_unit.isChecked()
-            rough_step=float(self.line_edit_rough_step.text().strip())
-            use_fine_adjust=self.line_edit_use_fine_adjust.isChecked()
-            average_count=int(self.line_edit_average_count.text().strip())
-            freq_list=[float(freq) for freq in self.line_edit_freq_list.text().strip().split()]
-            if not freq_list:
+            self.status_label.setText("<span style='color: green;'>状态: 正在进行单色定标...</span>")  # 更新状态
+            self.btn_capture.setEnabled(False)
+            self.is_running=True
+            self.pixel_format=self.get_current_pixel_format()
+            self.binn_selector=self.get_current_binning_selector()
+            self.binn_mode=self.get_current_binning_mode()
+            self.binn=mlcm.Binning(int(self.line_edit_binnlist.text().strip()))
+            self.exposure_mode=self.get_current_exposure_mode()
+            self.exposure_time=float(self.line_edit_exposure_time.text().strip())
+            self.focus_max=float(self.line_edit_focus_max.text().strip())
+            self.focus_min=float(self.line_edit_focus_min.text().strip())
+            self.inf_pos=float(self.line_edit_inf_pos.text().strip())
+            self.focal_length=float(self.line_edit_focal_length.text().strip())
+            self.pixel_size=float(self.line_edit_pixel_size.text().strip())
+            self.focal_space=float(self.line_edit_focal_space.text().strip())
+            self.use_chess_mode=self.line_edit_use_chess_mode.isChecked()
+            self.use_lpmm_unit=self.line_edit_use_lpmm_unit.isChecked()
+            self.rough_step=float(self.line_edit_rough_step.text().strip())
+            self.use_fine_adjust=self.line_edit_use_fine_adjust.isChecked()
+            self.average_count=int(self.line_edit_average_count.text().strip())
+            self.freq_list=[float(freq) for freq in self.line_edit_freq_list.text().strip().split()]
+            if not self.freq_list:
                 QMessageBox.critical(self,"MLColorimeter","请填写频率列表",QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
                 return
             if not self.roi_list:
                 QMessageBox.critical(self,"MLColorimeter","请添加roi",QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
                 return
-            out_path=self.line_edit_path.text().strip()
-            if not out_path:
+            self.out_path=self.line_edit_path.text().strip()
+            if not self.out_path:
                 QMessageBox.critical(self,"MLColorimeter","请选择保存路径",QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
                 return
             
-            focus_config = mlcm.pyThroughFocusConfig(
-                focus_max=focus_max,
-                focus_min=focus_min,
-                inf_position=inf_pos,
-                focal_length=focal_length,
-                pixel_size=pixel_size,
-                focal_space=focal_space,
+            self.focus_config = mlcm.pyThroughFocusConfig(
+                focus_max=self.focus_max,
+                focus_min=self.focus_min,
+                inf_position=self.inf_pos,
+                focal_length=self.focal_length,
+                pixel_size=self.pixel_size,
+                focal_space=self.focal_space,
                 rois=self.roi_list,
-                use_chess_mode=use_chess_mode,
-                use_lpmm_unit=use_lpmm_unit,
-                rough_step=rough_step,
-                use_fine_adjust=use_fine_adjust,
-                average_count=average_count,
+                use_chess_mode=self.use_chess_mode,
+                use_lpmm_unit=self.use_lpmm_unit,
+                rough_step=self.rough_step,
+                use_fine_adjust=self.use_fine_adjust,
+                average_count=self.average_count,
             )
 
-            field_curve(
-                colorimeter=self.colorimeter,
-                exposure_mode=exposure_mode,
-                binn_selector=binn_selector,
-                binn_mode=binn_mode,
-                binn=binn,
-                pixel_format=pixel_format,
-                exposure_time=exposure_time,
-                out_path=out_path,
-                focus_config=focus_config,
-                freq_list=freq_list,
-            )
+            parameters={
+                'colorimeter': self.colorimeter,
+                'exposure_mode':self.exposure_mode,
+                'binn_selector': self.binn_selector,
+                'binn_mode': self.binn_mode,
+                'binn': self.binn,
+                'pixel_format': self.pixel_format,
+                'exposure_time':self.exposure_time,
+                'out_path':self.out_path,
+                'focus_config':self.focus_config,
+                'freq_list':self.freq_list
+            }
 
-            QMessageBox.information(self,"MLColorimeter","finish", QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
+            self.filed_curve_thread=FiledCurveThread(parameters)
+            self.filed_curve_thread.finished.connect(self.on_filed_curve_finished)
+            self.filed_curve_thread.error.connect(self.on_filed_curve_error)
+            self.filed_curve_thread.status_update.connect(self.update_status)
+            self.filed_curve_thread.start()
+
         except Exception as e:
             QMessageBox.critical(self,"MLColorimeter","exception" + str(e), QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
-        
-        pass
+            self.btn_capture.setEnabled(True)
+            self.is_running=False
+
+    def update_status(self,message):
+        self.status_label.setText(f"<span style='color: green;'>状态: {message}</span>")
+    
+    def on_filed_curve_finished(self):
+        QMessageBox.information(self,"MLColorimeter","拍图完成!",QMessageBox.Ok)
+        self.status_label.setText("<span style='color: green;'>状态: 拍图完成！</span>")  # 更新状态
+        self.btn_capture.setEnabled(True)
+        self.is_running=False # 标识定标完成
+
+    def on_filed_curve_error(self,error_message):
+        QMessageBox.critical(self, "MLColorimeter", "发生错误: " + error_message, QMessageBox.Ok)
+        self.status_label.setText(f"<span style='color: red;'>状态: 发生错误: {error_message}</span>")  # 更新状态为红色
+        self.btn_capture.setEnabled(True)
+        self.is_running=False # 标识定标完成
+
+    def closeEvent(self, event):
+        if self.is_running:
+            # 如果正在进行定标，拦截关闭事件
+            event.ignore()
+            QMessageBox.warning(self,"警告","程序运行中，请勿关闭窗口",QMessageBox.Ok)
+        else:
+            event.accept()
 
     def get_current_pixel_format(self):
         # 获取当前选择的项

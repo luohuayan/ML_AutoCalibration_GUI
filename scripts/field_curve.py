@@ -1,6 +1,7 @@
 import mlcolorimeter as mlcm
 import os
 from typing import List
+import time
 
 """
     field_curve.py is an example script that shows a simplified way to do vid scan, then get field curve
@@ -18,8 +19,15 @@ def field_curve(
         out_path:str,
         focus_config:mlcm.pyThroughFocusConfig=None,
         freq_list:List[float]=[6.75,13.5],
-
+        status_callback=None
 ):
+    def update_status(message):
+        if status_callback:
+            status_callback(message)
+    # test
+    # update_status("field_curve start")
+    # time.sleep(5)
+    # update_status("field_curve finish")
     module_id = 1
     ml_mono = colorimeter.ml_bino_manage.ml_get_module_by_id(module_id)
     # exposure time for fixed exposure, initial time for auto exposure
@@ -66,7 +74,7 @@ def field_curve(
         if not ret.success:
             raise RuntimeError("ml_save_vid_scan_result error")
         os.rename(file_path, new_path)
-        # print("vid scan finish for freq " + str(freq))
+        update_status(f"vid scan finish for freq: {str(freq)} ")
 
 
 if __name__ == "__main__":
