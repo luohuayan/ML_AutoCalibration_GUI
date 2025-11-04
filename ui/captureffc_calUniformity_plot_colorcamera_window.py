@@ -362,6 +362,8 @@ class CaptureFFCCalUniformityPlotColorCameraWindow(QDialog):
 
         except Exception as e:
             QMessageBox.critical(self,"MLColorimeter","exception" + e, QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
+            self.btn_capture.setEnabled(True)
+            self.is_running=False
 
     def start_capture_ffc(self):
         if self.cb_captureffc.isChecked():

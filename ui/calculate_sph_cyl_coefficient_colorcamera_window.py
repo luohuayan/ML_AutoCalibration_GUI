@@ -229,6 +229,9 @@ class CalculateSphCylCoefficientColorCameraWindow(QDialog):
             self.calculate_thread.start() # 启动线程
         except Exception as e:
             QMessageBox.critical(self,"MLColorimeter","exception" + e, QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
+            self.btn_capture.setEnabled(True)
+            self.is_running=False
+            
     def update_status(self,message):
         self.status_label.setText(f"<span style='color: green;'>状态: {message}</span>")
     

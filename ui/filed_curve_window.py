@@ -362,7 +362,7 @@ class FiledCurveWindow(QDialog):
     
     def start_capture(self):
         try:
-            self.status_label.setText("<span style='color: green;'>状态: 正在进行单色定标...</span>")  # 更新状态
+            self.status_label.setText("<span style='color: green;'>状态: 正在进行拍图...</span>")  # 更新状态
             self.btn_capture.setEnabled(False)
             self.is_running=True
             self.pixel_format=self.get_current_pixel_format()
