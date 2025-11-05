@@ -27,6 +27,7 @@ from ui.capture_RX_center_colorcamera_window import CaptureRXCenterColorCameraWi
 from ui.captureffc_calUniformity_plot_colorcamera_window import CaptureFFCCalUniformityPlotColorCameraWindow
 from ui.mono_calibration_colorcamera_window import MonoCalibrationColorCameraWindow
 from ui.rx_selfrotation_window import RXSelfRotationWindow
+from ui.FFC_calculate_binning_window import FFCCalculateBinningWindow
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -52,6 +53,7 @@ class MainWindow(QMainWindow):
         self.capture_FFC_CalUniformityPlot_ColorCamera=None
         self.mono_calibration_Colorcamera=None
         self.rx_selfrotation_window=None
+        self.ffc_calculatebinning_window=None
         
 
 
@@ -112,6 +114,9 @@ class MainWindow(QMainWindow):
         script13_action = QAction("rx_selfroattion", self)
         script13_action.triggered.connect(self.rx_selfrotation)
 
+        script14_action = QAction("ffc_calculate_binning", self)
+        script14_action.triggered.connect(self.ffc_calculate_binning)
+
         scripts_menu.addAction(script1_action)
         scripts_menu.addAction(script2_action)
         scripts_menu.addAction(script3_action)
@@ -125,6 +130,7 @@ class MainWindow(QMainWindow):
         scripts_menu.addAction(script11_action)
         scripts_menu.addAction(script12_action)
         scripts_menu.addAction(script13_action)
+        scripts_menu.addAction(script14_action)
 
     def create_main_widget(self):
         # 主控件
@@ -256,3 +262,7 @@ class MainWindow(QMainWindow):
     def rx_selfrotation(self):
         self.rx_selfrotation_window=RXSelfRotationWindow()
         self.rx_selfrotation_window.exec_()
+
+    def ffc_calculate_binning(self):
+        self.ffc_calculatebinning_window=FFCCalculateBinningWindow()
+        self.ffc_calculatebinning_window.exec_()
