@@ -28,9 +28,11 @@ def calculate_sph_cyl_coefficinet(
     def update_status(message):
         if status_callback:
             status_callback(message)
-    update_status("calculate_sph_cyl_coefficinet start")
-    time.sleep(5)
-    update_status("calculate_sph_cyl_coefficinet finish")
+
+    #test
+    # update_status("calculate_sph_cyl_coefficinet start")
+    # time.sleep(5)
+    # update_status("calculate_sph_cyl_coefficinet finish")
     if not os.path.exists(save_path):
         os.makedirs(save_path)
     module_id = 1
@@ -89,9 +91,9 @@ def calculate_sph_cyl_coefficinet(
 
                     if sph == 0:
                         last_sph = gray
-                
                 # 格式化结果并添加到results列表中
                 formatted_results={sph:format(gray / last_sph, ".3f") for sph,gray in sph_coefficient.items()}
+                update_status(f"{i+1}_sph coefficient: {sph_coefficient} ")
                 formatted_results['循环次数']=i+1
                 sph_results.append(formatted_results)
 
@@ -115,6 +117,8 @@ def calculate_sph_cyl_coefficinet(
                     if cyl == 0:
                         last_cyl = gray
                 formatted_results={sph:format(gray / last_cyl, ".3f") for sph,gray in cyl_coefficient.items()}
+                update_status(f"{i+1}_cyl coefficient: {cyl_coefficient} ")
+
                 formatted_results['循环次数']=i+1
                 cyl_results.append(formatted_results)
             
@@ -124,6 +128,8 @@ def calculate_sph_cyl_coefficinet(
             df=pd.DataFrame(cyl_results)
             cyl_filename = f"cyl_{nd_enum.value}_{xyz_enum.value}_{datetime_str()}.xlsx"
             df.to_excel(os.path.join(save_path, cyl_filename), index=False)
+            update_status(f"第{i+1}次计算结束")
+
 
 if __name__ == "__main__":
     eye1_path = r"D:\MLColorimeter\config\EYE1"

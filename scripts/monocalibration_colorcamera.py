@@ -9,6 +9,7 @@ from tkinter import messagebox
 import pandas as pd
 from datetime import datetime
 from typing import List,Dict
+import time
 
 # Function to show a message box with the light source information
 def show_message(light_source):
@@ -78,7 +79,16 @@ def mono_calibration(
         binn_selector:mlcm.BinningSelector= mlcm.BinningSelector.Logic,
         binn_mode:mlcm.BinningMode = mlcm.BinningMode.AVERAGE,
         binn:mlcm.Binning=mlcm.Binning.ONE_BY_ONE,
+        status_callback=None
 ):
+    def update_status(message):
+        if status_callback:
+            status_callback(message)
+    #test
+    # update_status("mono_calibration start")
+    # time.sleep(5)
+    # update_status("mono_calibration finish")
+
     if len(image_point) >=2:
         image_x=int(image_point[0])
         image_y=int(image_point[1])
@@ -136,6 +146,7 @@ def mono_calibration(
                 results=results,
                 channel_name="X"
             )
+            update_status(f"{mlcm.MLFilterEnum_to_str(nd_enum)}_X_channel_averageGray:{str(average_gray_X)}_exposureTime:{str(exposure_time)}")
             
             average_gray_Y=process_image(Y,image_x,image_y,roi_width,roi_height)
             process_channel(
@@ -148,6 +159,8 @@ def mono_calibration(
                 results=results,
                 channel_name="Y"
             )
+            update_status(f"{mlcm.MLFilterEnum_to_str(nd_enum)}_Y_channel_averageGray:{str(average_gray_Y)}_exposureTime:{str(exposure_time)}")
+
 
             average_gray_Z=process_image(Z,image_x,image_y,roi_width,roi_height)
             process_channel(
@@ -160,6 +173,10 @@ def mono_calibration(
                 results=results,
                 channel_name="Z"
             )
+            update_status(f"{mlcm.MLFilterEnum_to_str(nd_enum)}_Z_channel_averageGray:{str(average_gray_Z)}_exposureTime:{str(exposure_time)}")
+    time.sleep(1)
+    update_status("写入配置中...")
+
     # 将results中灰度值在80%的luminance_k和radiance_k写入配置文件，b为0
     for item in results:
         if item["Gray Range"] == "80.0%":
@@ -193,7 +210,8 @@ def mono_calibration(
                 "Radiance": [[float(radiance_k),0]]
             }
             save_json(data1, radiance_json_file_path)
-    
+    time.sleep(1)
+    update_status("写入完成，保存数据表")
     save_results_to_excel(results,out_path)
 
 def process_channel(exposure_time,average_gray,luminance,radiance,gray,nd_enum,results,channel_name):
