@@ -20,16 +20,17 @@ def capture_RX_center(
         save_path:str,
         nd_list:List[mlcm.MLFilterEnum],
         xyz_list:List[mlcm.MLFilterEnum],
+        roi:mlcm.pyCVRect,
         exposure_map_obj:Dict[mlcm.MLFilterEnum,Dict[mlcm.MLFilterEnum,mlcm.pyExposureSetting]]={},
         status_callback=None
 ):
     def update_status(message):
         if status_callback:
             status_callback(message)
-    #test
-    update_status("capture_RX_center start")
-    time.sleep(10)
-    update_status("capture_RX_center finish")
+    # #test
+    # update_status("capture_RX_center start")
+    # time.sleep(10)
+    # update_status("capture_RX_center finish")
 
     module_id = 1
     ml_mono = colorimeter.ml_bino_manage.ml_get_module_by_id(module_id)
@@ -82,7 +83,7 @@ def capture_RX_center(
                         img_path = (
                             out_path + "\\" + mlcm.pyRXCombination_to_str(rx) + ".tif"
                         )
-                        roi_img = get_image[2680:3280, 3650:4250]
+                        roi_img = get_image[roi.y:roi.y+roi.height, roi.x:roi.x+roi.width]
                         cv2.imwrite(img_path, roi_img)
 
 
