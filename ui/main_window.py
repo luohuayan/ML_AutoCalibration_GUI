@@ -28,6 +28,7 @@ from ui.captureffc_calUniformity_plot_colorcamera_window import CaptureFFCCalUni
 from ui.mono_calibration_colorcamera_window import MonoCalibrationColorCameraWindow
 from ui.rx_selfrotation_window import RXSelfRotationWindow
 from ui.FFC_calculate_binning_window import FFCCalculateBinningWindow
+from ui.fit_online_window import FitOnlineWindow
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -54,6 +55,7 @@ class MainWindow(QMainWindow):
         self.mono_calibration_Colorcamera=None
         self.rx_selfrotation_window=None
         self.ffc_calculatebinning_window=None
+        self.fit_online_window_=None
         
 
 
@@ -87,7 +89,7 @@ class MainWindow(QMainWindow):
         script4_action = QAction("calculate_sph_cyl_coef", self)
         script4_action.triggered.connect(self.open_calculate_sph_cyl_coefficient)
 
-        script5_action = QAction("calculate_center", self)
+        script5_action = QAction("capture_center", self)
         script5_action.triggered.connect(self.open_capture_center)
 
         script6_action = QAction("capture_image_fixedLUM", self)
@@ -111,11 +113,14 @@ class MainWindow(QMainWindow):
         script12_action = QAction("mono_calibration_colorcamera", self)
         script12_action.triggered.connect(self.mono_calibration_colorcamera)
 
-        script13_action = QAction("rx_selfroattion", self)
+        script13_action = QAction("calculate_selfroattion_mtf", self)
         script13_action.triggered.connect(self.rx_selfrotation)
 
-        script14_action = QAction("ffc_calculate_binning", self)
+        script14_action = QAction("calculate_ffcUniformity_plot", self)
         script14_action.triggered.connect(self.ffc_calculate_binning)
+
+        script15_action = QAction("fit_online", self)
+        script15_action.triggered.connect(self.fit_online)
 
         scripts_menu.addAction(script1_action)
         scripts_menu.addAction(script2_action)
@@ -131,6 +136,7 @@ class MainWindow(QMainWindow):
         scripts_menu.addAction(script12_action)
         scripts_menu.addAction(script13_action)
         scripts_menu.addAction(script14_action)
+        scripts_menu.addAction(script15_action)
 
     def create_main_widget(self):
         # 主控件
@@ -266,3 +272,7 @@ class MainWindow(QMainWindow):
     def ffc_calculate_binning(self):
         self.ffc_calculatebinning_window=FFCCalculateBinningWindow()
         self.ffc_calculatebinning_window.exec_()
+
+    def fit_online(self):
+        self.fit_online_window_=FitOnlineWindow()
+        self.fit_online_window_.exec_()
