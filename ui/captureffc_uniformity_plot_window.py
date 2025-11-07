@@ -14,6 +14,7 @@ from PyQt5.QtWidgets import (
     QCheckBox,
     QRadioButton,
     QButtonGroup,
+    QDialog,
 )
 from core.app_config import AppConfig
 from PyQt5.QtCore import pyqtSignal, Qt
@@ -28,7 +29,7 @@ from scripts.captureffc_calUniformity_plot import (
     cal_synthetic_mean_images, capture_ffc_images, cal_uniformity)
 
 
-class CaptureFFC_CalUniformity_Plot_Window(QWidget):
+class CaptureFFC_CalUniformity_Plot_Window(QDialog):
     path_changed = pyqtSignal(str)
 
     def __init__(self, parent=None):
@@ -36,6 +37,7 @@ class CaptureFFC_CalUniformity_Plot_Window(QWidget):
         self.setWindowTitle(
             "capture ffc images; calculate ffc, fourcolor uniformity; generate plot")
         self.setGeometry(200, 200, 800, 700)
+        self.setWindowFlags(Qt.Window | Qt.WindowMaximizeButtonHint | Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint)
         self.colorimeter = AppConfig.get_colorimeter()
         self.dialog_title = "选择文件夹"
         self.default_path = ""

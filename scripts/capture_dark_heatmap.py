@@ -31,44 +31,34 @@ def generate_heatmap(image, block_size):
 
 def capture_dark_heatmap(
     colorimeter: mlcm.ML_Colorimeter,
+    binn_selector:mlcm.BinningSelector,
+    binn_mode:mlcm.BinningMode,
+    binn:mlcm.Binning,
+    pixel_format:mlcm.MLPixelFormat,
     nd_list: List[mlcm.MLFilterEnum],
     xyz_list: List[mlcm.MLFilterEnum],
     binn_list: List[mlcm.Binning],
-    et_list: List,
+    et_list: List[float],
     save_path: str,
     file_name: str,
     capture_times: int
 ):
     module_id = 1
     mono = colorimeter.ml_bino_manage.ml_get_module_by_id(module_id)
-    # camera binning selector
-    binn_selector = mlcm.BinningSelector.Logic
-    # camera binning
-    binn = mlcm.Binning.ONE_BY_ONE
-    # camera binning mode
-    binn_mode = mlcm.BinningMode.AVERAGE
-    # camera pixel format
-    pixel_format = mlcm.MLPixelFormat.MLMono12
 
     ret = mono.ml_set_binning_selector(binn_selector)
     if not ret.success:
         raise RuntimeError("ml_set_binning_selector error")
-    get_binn_selector = mono.ml_get_binning_selector()
-    print(get_binn_selector)
 
     # Set binning mode for camera.
     ret = mono.ml_set_binning_mode(binn_mode)
     if not ret.success:
         raise RuntimeError("ml_set_binning_mode error")
-    get_binn_mode = mono.ml_get_binning_mode()
-    print(get_binn_mode)
 
     # Format of the pixel to use for acquisition.
     ret = mono.ml_set_pixel_format(pixel_format)
     if not ret.success:
         raise RuntimeError("ml_set_pixel_format error")
-    get_pixel_format = mono.ml_get_pixel_format()
-    print(get_pixel_format)
 
     for nd in nd_list:
         nd_enum = mlcm.MLFilterEnum(nd)
@@ -94,7 +84,7 @@ def capture_dark_heatmap(
                 if not ret.success:
                     raise RuntimeError("ml_set_binning error")
                 get_binn = mono.ml_get_binning()
-                print(get_binn)
+                # print(get_binn)
 
                 # generate xlsx file
                 title = str(pow(2, binn)) + "X" + str(pow(2, binn))
@@ -153,7 +143,7 @@ def capture_dark_heatmap(
                     plt.imshow(heatmap, cmap="jet", interpolation="nearest")
                     plt.colorbar()
                     plt.title("raw_" + str(pow(2, binn)) + "X" +
-                              str(pow(2, binn)) + "_" + str(et_list[k]) + "ms")
+                            str(pow(2, binn)) + "_" + str(et_list[k]) + "ms")
                     plt.savefig(save_path + "\\raw\\raw_" + str(pow(2, binn)) +
                                 "X" + str(pow(2, binn)) + "_" + str(et_list[k]) + "ms.png")
                     # plt.show()
@@ -178,12 +168,12 @@ def capture_dark_heatmap(
                     plt.imshow(heatmap, cmap="jet", interpolation="nearest")
                     plt.colorbar()
                     plt.title("processed_" + str(pow(2, binn)) + "X" +
-                              str(pow(2, binn)) + "_" + str(et_list[k]) + "ms")
+                            str(pow(2, binn)) + "_" + str(et_list[k]) + "ms")
                     plt.savefig(save_path + "\\processed\\processed_" + str(pow(2, binn)) +
                                 "X" + str(pow(2, binn)) + "_" + str(et_list[k]) + "ms.png")
                     plt.close()
                     img2 = Image(save_path + "\\processed\\processed_" + str(pow(2, binn)) +
-                                 "X" + str(pow(2, binn)) + "_" + str(et_list[k]) + "ms.png")
+                                "X" + str(pow(2, binn)) + "_" + str(et_list[k]) + "ms.png")
 
                     img2.width = 300  # 像素宽度
                     img2.height = 200  # 像素高度
@@ -211,7 +201,7 @@ def capture_dark_heatmap(
 
                 wb.save(file_path)
 
-            print("finish")
+            # print("finish")
 
 
 if __name__ == "__main__":
@@ -249,6 +239,7 @@ if __name__ == "__main__":
         # multi frame averaging
         capture_times = 5
         capture_dark_heatmap(ml_colorimeter, nd_list, xyz_list,
-                             binn_list, et_list, save_path, file_name, capture_times)
+                            binn_list, et_list, save_path, file_name, capture_times)
     except Exception as e:
-        print(e)
+        # print(e)
+        pass

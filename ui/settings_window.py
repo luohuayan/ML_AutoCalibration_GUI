@@ -7,19 +7,21 @@ from PyQt5.QtWidgets import (
     QPushButton,
     QFileDialog,
     QSizePolicy,
-    QMessageBox
+    QMessageBox,
+    QDialog,
 )
 from core.app_config import AppConfig
 from PyQt5.QtCore import pyqtSignal, Qt
 
 
-class SettingsWindow(QWidget):
+class SettingsWindow(QDialog):
     path_changed = pyqtSignal(str)
 
     def __init__(self, parent=None, dialog_title="选择文件夹", default_path=""):
         super().__init__(parent)
         self.setWindowTitle("Setting")
         self.setGeometry(300, 300, 500, 200)
+        self.setWindowFlags(Qt.Window | Qt.WindowMaximizeButtonHint | Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint)
         self.dialog_title = dialog_title
         self.default_path = default_path
         self.colorimeter = AppConfig.get_colorimeter()

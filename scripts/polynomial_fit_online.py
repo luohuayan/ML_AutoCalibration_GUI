@@ -8,23 +8,35 @@ import os
 """
 
 
-def polynomial_fit_online():
-    # change color filter according to your image
-    xyz_list = [mlcm.MLFilterEnum.X]
-    nd_list = [mlcm.MLFilterEnum.ND0]
-    # change binning according to your image
-    binn = mlcm.Binning.ONE_BY_ONE
+def polynomial_fit_online(
+        colorimeter:mlcm.ML_Colorimeter,
+        nd_list:List[mlcm.MLFilterEnum],
+        xyz_list:List[mlcm.MLFilterEnum],
+        binn:mlcm.Binning,
+        pixel_format:mlcm.MLPixelFormat,
+        cyl_list:List[float],
+        axis_list:List[int],
+        fit_file_path:str,
+        out_path:str,
+        status_callback=None
+):
+    def update_status(message):
+        if status_callback:
+            status_callback(message)
+    #test
+    # update_status("circle_fit_online start")
+    # time.sleep(5)
+    # update_status("circle_fit_online finish")
+    module_id = 1
+    ml_mono = colorimeter.ml_bino_manage.ml_get_module_by_id(module_id)
     ret = ml_mono.ml_set_binning(binn)
     if not ret.success:
         raise RuntimeError("ml_set_binning error")
 
-    pixel_format = mlcm.MLPixelFormat.MLMono12
     ret = ml_mono.ml_set_pixel_format(pixel_format)
     if not ret.success:
         raise RuntimeError("ml_set_pixel_format error")
 
-    cyl_list = [-4, -3.5, -3, -2.5, -2, -1.5, -1, -0.5, 0]
-    axis_list = [0, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165, 180]
     for nd in nd_list:
         ret = ml_mono.ml_move_nd_syn(nd)
         if not ret.success:
@@ -48,7 +60,7 @@ def polynomial_fit_online():
                     ml_center_fit = mlcm.pyMLCenterFit(mlcm.MLCenterFit())
 
                     # load polynomial fit config
-                    ml_center_fit.ml_load_polynomialFit_config(circle_fit_file)
+                    ml_center_fit.ml_load_polynomialFit_config(fit_file_path)
 
                     # excute polynomial fit, after finish, return the fitted image
                     fitted_img = ml_center_fit.ml_polynomial_fit(
@@ -61,42 +73,42 @@ def polynomial_fit_online():
                         out_path + "\\" + mlcm.pyRXCombination_to_str(rx) + ".tif",
                         roi_img,
                     )
-                    print("polynomial fit for: " + mlcm.pyRXCombination_to_str(rx))
-            print("polynomial fit for: " + mlcm.MLFilterEnum_to_str(xyz))
-        print("polynomial fit for: " + mlcm.MLFilterEnum_to_str(nd))
-    print("polynomial fit finish online")
+                    update_status(f"polynomial fit for: {mlcm.pyRXCombination_to_str(rx)}")
+            update_status(f"polynomial fit for: {mlcm.MLFilterEnum_to_str(xyz)}")
+        update_status(f"polynomial fit for: {mlcm.MLFilterEnum_to_str(nd)}")
+    update_status("polynomial fit finish online")
 
 
-if __name__ == "__main__":
-    # polynomial fit config
-    circle_fit_file = (
-        r"D:\projectFile01\aolanduo\aolanduo3_RX_center\PolynomialFit.json"
-    )
-    # path to save image after center fit
-    out_path = r"D:\projectFile01\aolanduo\aolanduo3_RX_center\ND0_X_fitted"
-    if not os.path.exists(out_path):
-        os.makedirs(out_path)
+# if __name__ == "__main__":
+#     # polynomial fit config
+#     circle_fit_file = (
+#         r"D:\projectFile01\aolanduo\aolanduo3_RX_center\PolynomialFit.json"
+#     )
+#     # path to save image after center fit
+#     out_path = r"D:\projectFile01\aolanduo\aolanduo3_RX_center\ND0_X_fitted"
+#     if not os.path.exists(out_path):
+#         os.makedirs(out_path)
 
-    # set mono module calibration configuration path
-    eye1_path = r"D:\MLColorimeter\config\EYE1"
-    path_list = [
-        eye1_path,
-    ]
-    try:
-        # create a ML_Colorimeter system instance
-        ml_colorimeter = mlcm.ML_Colorimeter()
-        # add mono module into ml_colorimeter system, according to path_list create one or more mono module
-        ret = ml_colorimeter.ml_add_module(path_list=path_list)
-        if not ret.success:
-            raise RuntimeError("ml_add_module error")
-        # connect all module in the ml_colorimeter system
-        ret = ml_colorimeter.ml_connect()
-        if not ret.success:
-            raise RuntimeError("ml_connect error")
+#     # set mono module calibration configuration path
+#     eye1_path = r"D:\MLColorimeter\config\EYE1"
+#     path_list = [
+#         eye1_path,
+#     ]
+#     try:
+#         # create a ML_Colorimeter system instance
+#         ml_colorimeter = mlcm.ML_Colorimeter()
+#         # add mono module into ml_colorimeter system, according to path_list create one or more mono module
+#         ret = ml_colorimeter.ml_add_module(path_list=path_list)
+#         if not ret.success:
+#             raise RuntimeError("ml_add_module error")
+#         # connect all module in the ml_colorimeter system
+#         ret = ml_colorimeter.ml_connect()
+#         if not ret.success:
+#             raise RuntimeError("ml_connect error")
 
-        module_id = 1
-        ml_mono = ml_colorimeter.ml_bino_manage.ml_get_module_by_id(module_id)
+#         module_id = 1
+#         ml_mono = ml_colorimeter.ml_bino_manage.ml_get_module_by_id(module_id)
 
-        polynomial_fit_online()
-    except Exception as e:
-        print(e)
+#         polynomial_fit_online()
+#     except Exception as e:
+#         print(e)
