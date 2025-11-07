@@ -119,7 +119,7 @@ class MainWindow(QMainWindow):
         script14_action = QAction("calculate_ffcUniformity_plot", self)
         script14_action.triggered.connect(self.ffc_calculate_binning)
 
-        script15_action = QAction("fit_online", self)
+        script15_action = QAction("circle_polynomial_fit_online", self)
         script15_action.triggered.connect(self.fit_online)
 
         scripts_menu.addAction(script1_action)
