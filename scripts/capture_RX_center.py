@@ -5,6 +5,7 @@ import csv
 import os
 import numpy as np
 from datetime import datetime
+import time
 
 
 def datetime_str():
@@ -20,7 +21,16 @@ def capture_RX_center(
         nd_list:List[mlcm.MLFilterEnum],
         xyz_list:List[mlcm.MLFilterEnum],
         exposure_map_obj:Dict[mlcm.MLFilterEnum,Dict[mlcm.MLFilterEnum,mlcm.pyExposureSetting]]={},
+        status_callback=None
 ):
+    def update_status(message):
+        if status_callback:
+            status_callback(message)
+    #test
+    update_status("capture_RX_center start")
+    time.sleep(10)
+    update_status("capture_RX_center finish")
+
     module_id = 1
     ml_mono = colorimeter.ml_bino_manage.ml_get_module_by_id(module_id)
     if not os.path.exists(save_path):
