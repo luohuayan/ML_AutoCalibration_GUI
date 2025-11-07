@@ -28,7 +28,7 @@ import matplotlib.pyplot as plt
 from openpyxl import Workbook, load_workbook
 from openpyxl.drawing.image import Image
 from scripts.monocalibration_colorcamera import mono_calibration
-from ui.settings import SettingsWindow
+from ui.settings_window import SettingsWindow
 
 class CalibrationColorThread(QThread):
     finished=pyqtSignal() # 线程完成信号
