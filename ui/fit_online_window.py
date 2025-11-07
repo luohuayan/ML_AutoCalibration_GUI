@@ -29,6 +29,7 @@ import matplotlib.pyplot as plt
 from openpyxl import Workbook, load_workbook
 from openpyxl.drawing.image import Image
 from scripts.circle_fit_online import circle_fit_online
+from scripts.polynomial_fit_online import polynomial_fit_online
 
 class FitOnlineThread(QThread):
     finished=pyqtSignal() # 线程完成信号
@@ -46,6 +47,22 @@ class FitOnlineThread(QThread):
         except Exception as e:
             self.error.emit(str(e)) # 发送错误信号
 
+class PolynomialFitOnlineThread(QThread):
+    finished=pyqtSignal() # 线程完成信号
+    error=pyqtSignal(str) # 错误信号
+    status_update=pyqtSignal(str) # 状态更新信号
+
+    def __init__(self, parameters):
+        super().__init__()
+        self.parameters=parameters
+    
+    def run(self):
+        try:
+            polynomial_fit_online(status_callback=self.status_update.emit, **self.parameters)
+            self.finished.emit() # 发送完成信号
+        except Exception as e:
+            self.error.emit(str(e)) # 发送错误信号
+
 class FitOnlineWindow(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -59,6 +76,7 @@ class FitOnlineWindow(QDialog):
         self.roi_list=[]
         self.vrange={}
         self.pixel_format=['MLMono8','MLMono10','MLMono12','MLMono16','MLRGB24','MLBayer','MLBayerGB8','MLBayerGB12']
+        self.fit_type=['circle','polynomial']
         self._init_ui()
 
         # 标识当前流程是否正在进行
@@ -149,41 +167,50 @@ class FitOnlineWindow(QDialog):
         group_box1.setLayout(from_layout1)
         grid_layout.addWidget(group_box1, 9, 0)
 
+        self.label_fit_type = QLabel("fit_type：")
+        grid_layout.addWidget(self.label_fit_type, 10, 0)
+
+        self.cb_fit_type = QComboBox()
+        self.cb_fit_type.addItems(self.fit_type)
+        self.cb_fit_type.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        grid_layout.addWidget(self.cb_fit_type, 11, 0)
+
+
         self.label_fit_path = QLabel()
         self.label_fit_path.setText("fit_file path:")
-        grid_layout.addWidget(self.label_fit_path, 10, 0)
+        grid_layout.addWidget(self.label_fit_path, 12, 0)
 
         self.line_edit_fit_path = QLineEdit()
         self.line_edit_fit_path.setReadOnly(True)  # 设置为只读
         self.line_edit_fit_path.setPlaceholderText("未选择文件夹")
         self.line_edit_fit_path.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        grid_layout.addWidget(self.line_edit_fit_path, 11, 0)
+        grid_layout.addWidget(self.line_edit_fit_path, 13, 0)
 
         self.btn_browse1 = QPushButton("浏览...")
         self.btn_browse1.clicked.connect(self._open_file_dialog)
-        grid_layout.addWidget(self.btn_browse1, 11, 1)
+        grid_layout.addWidget(self.btn_browse1, 13, 1)
 
         self.label_path = QLabel()
         self.label_path.setText("保存路径:")
-        grid_layout.addWidget(self.label_path, 12, 0)
+        grid_layout.addWidget(self.label_path, 14, 0)
 
         self.line_edit_path = QLineEdit()
         self.line_edit_path.setReadOnly(True)  # 设置为只读
         self.line_edit_path.setPlaceholderText("未选择文件夹")
         self.line_edit_path.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        grid_layout.addWidget(self.line_edit_path, 13, 0)
+        grid_layout.addWidget(self.line_edit_path, 15, 0)
 
         self.btn_browse = QPushButton("浏览...")
         self.btn_browse.clicked.connect(self._open_folder_dialog)
-        grid_layout.addWidget(self.btn_browse, 13, 1)
+        grid_layout.addWidget(self.btn_browse, 15, 1)
 
         self.btn_capture = QPushButton("开始")
         self.btn_capture.clicked.connect(self.start_fit_online)
-        grid_layout.addWidget(self.btn_capture, 14, 0)
+        grid_layout.addWidget(self.btn_capture, 16, 0)
 
         self.status_label=QLabel("状态：等待开始")
         self.status_label.setWordWrap(True)  # 设置自动换行
-        grid_layout.addWidget(self.status_label,15,0)
+        grid_layout.addWidget(self.status_label,17,0)
 
         spacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
         grid_layout.addItem(spacer)
@@ -232,11 +259,18 @@ class FitOnlineWindow(QDialog):
                 'fit_file_path':self.fit_file_path,
                 'out_path':self.out_path
             }
-            self.fit_online_thread=FitOnlineThread(parameters)
-            self.fit_online_thread.finished.connect(self.on_fitonline_finished)
-            self.fit_online_thread.error.connect(self.on_fitoneline_error)
-            self.fit_online_thread.status_update.connect(self.update_status)
-            self.fit_online_thread.start()
+            if self.cb_fit_type.currentText=='circle':
+                self.fit_online_thread=FitOnlineThread(parameters)
+                self.fit_online_thread.finished.connect(self.on_fitonline_finished)
+                self.fit_online_thread.error.connect(self.on_fitoneline_error)
+                self.fit_online_thread.status_update.connect(self.update_status)
+                self.fit_online_thread.start()
+            else:
+                self.fit_online_thread=PolynomialFitOnlineThread(parameters)
+                self.fit_online_thread.finished.connect(self.on_fitonline_finished)
+                self.fit_online_thread.error.connect(self.on_fitoneline_error)
+                self.fit_online_thread.status_update.connect(self.update_status)
+                self.fit_online_thread.start()
 
         except Exception as e:
             QMessageBox.critical(self,"MLColorimeter","exception" + e, QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
