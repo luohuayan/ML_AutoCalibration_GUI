@@ -42,7 +42,7 @@ def measurement2(
     ffc_xlsx,
     fourcolor_xlsx
 ):
-    ml_mono = colorimeter.ml_bino_manage.ml_get_module_by_id(module_id)
+    mono = colorimeter.ml_bino_manage.ml_get_module_by_id(module_id)
     # capture data
     capture_data_dict = dict()
     ret = ml_mono.ml_set_exposure(exposure)
@@ -93,7 +93,7 @@ def measurement2(
         gray_list = []
         for rect in roi_list:
             roi_img = img[rect.y: rect.y+rect.height,
-                        rect.x: rect.x+rect.width]
+                          rect.x: rect.x+rect.width]
             gray = cv2.mean(roi_img)[0]
             gray_list.append(gray)
             line.append(gray)
@@ -122,7 +122,7 @@ def measurement2(
         plt.ylabel("Row(pixel)")
         plt.colorbar(label="(FFC)")
         plt.title("FFC_" + mlcm.Binning_to_str(binn) +
-                "_" + mlcm.MLFilterEnum_to_str(xyz))
+                  "_" + mlcm.MLFilterEnum_to_str(xyz))
         plt.subplot(1, 2, 2)
         plt.plot(
             img[center_row, int(center_col - half_size)
@@ -191,12 +191,7 @@ def cal_synthetic_mean_images2(
     nd_list: List[mlcm.MLFilterEnum],
     xyz_list: List[mlcm.MLFilterEnum],
     save_path: str,
-    status_callback=None
 ):
-    def update_status(message):
-        if status_callback:
-            status_callback(message)
-    update_status("cal_synthetic_mean_images start...")
     module_id = 1
     mono = colorimeter.ml_bino_manage.ml_get_module_by_id(module_id)
     for nd in nd_list:
@@ -210,9 +205,11 @@ def cal_synthetic_mean_images2(
                 sphere_list=[0],
                 light_source=mono.ml_get_light_source()
             )
-            update_status(f"calculate mean images for: {mlcm.MLFilterEnum_to_str(xyz)}")
-        update_status(f"calculate mean images for: {mlcm.MLFilterEnum_to_str(nd)}")
-    update_status("calculate ffc synthetic mean finish")
+            print("calculate mean images for: " +
+                  mlcm.MLFilterEnum_to_str(xyz))
+        print("calculate mean images for: " +
+              mlcm.MLFilterEnum_to_str(nd))
+    print("calculate ffc synthetic mean finish")
 
 
 def capture_ffc_images2(
@@ -225,20 +222,14 @@ def capture_ffc_images2(
     use_RX: bool = False,
     sph_list: List = [],
     cyl_list: List = [],
-    axis_list: List = [],
-    status_callback=None
+    axis_list: List = []
 ):
-    def update_status(message):
-        if status_callback:
-            status_callback(message)
-    update_status("capture FFC Image Start...")
-
     module_id = 1
     mono = colorimeter.ml_bino_manage.ml_get_module_by_id(module_id)
 
     for nd in nd_list:
         ret = mono.ml_move_nd_syn(nd)
-        # print(mlcm.MLFilterEnum_to_str(nd))
+        print(mlcm.MLFilterEnum_to_str(nd))
         if not ret.success:
             raise RuntimeError("ml_move_nd_syn error")
 
@@ -246,7 +237,7 @@ def capture_ffc_images2(
         if not ret.success:
             raise RuntimeError("ml_set_binning error")
         get_binn = mono.ml_get_binning()
-        # print(mlcm.Binning_to_str(get_binn))
+        print(mlcm.Binning_to_str(get_binn))
 
         if use_RX == False or (not sph_list) or (not cyl_list) or (not axis_list):
             rx = mlcm.pyRXCombination(0, 0, 0)
@@ -273,7 +264,7 @@ def capture_ffc_images2(
                     avg_count=capture_times,
                     exposure_map=exposure_map[nd]
                 )
-                update_status(f"capture image for: {mlcm.pyRXCombination_to_str(rx)}")
+                print("capture image for: " + mlcm.pyRXCombination_to_str(rx))
                 if not ret.success:
                     raise RuntimeError("ml_capture_ffc_colorcamera error")
 
@@ -288,11 +279,12 @@ def capture_ffc_images2(
                         avg_count=capture_times,
                         exposure=exposure_map[nd]
                     )
-                    update_status(f"capture image for: {mlcm.pyRXCombination_to_str(rx)}")
+                    print("capture image for: " +
+                          mlcm.pyRXCombination_to_str(rx))
                     if not ret.success:
                         raise RuntimeError("ml_capture_ffc_colorcamera error")
 
-    update_status("capture color camera ffc images finish")
+    print("capture color camera ffc images finish")
 
 
 def cal_uniformity2(
@@ -307,13 +299,7 @@ def cal_uniformity2(
     roi_dict: Dict[mlcm.Binning, List[mlcm.pyCVRect]],
     use_RX: bool = False,
     rx_dict: Dict[mlcm.MLFilterEnum, List] = None,
-    status_callback=None
 ):
-    def update_status(message):
-        if status_callback:
-            status_callback(message)
-    update_status("cal_uniformity2 start...")
-
     module_id = 1
     mono = colorimeter.ml_bino_manage.ml_get_module_by_id(module_id)
 
@@ -342,7 +328,7 @@ def cal_uniformity2(
             if not ret.success:
                 raise RuntimeError("ml_set_binning error")
             get_binn = mono.ml_get_binning()
-            # print(get_binn)
+            print(get_binn)
 
             ffc_wb = Workbook()
             ffc_wb.save(ffc_xlsx)
@@ -351,7 +337,7 @@ def cal_uniformity2(
             title = str(pow(2, int(binn))) + "X" + str(pow(2, int(binn)))
             ffc_ws = ffc_wb.create_sheet(title=title)
             ffc_title = ["RX", "ColorFilter", "NDFilter", "Light Source", "ROI1", "ROI2", "ROI3",
-                        "ROI4", "ROI5", "ROI6", "ROI7", "ROI8", "ROI9", "Mean", "Std", "Min", "Max", "Min/Max", "Uniformity"]
+                         "ROI4", "ROI5", "ROI6", "ROI7", "ROI8", "ROI9", "Mean", "Std", "Min", "Max", "Min/Max", "Uniformity"]
             ffc_ws.append(ffc_title)
 
             fourcolor_wb = Workbook()
@@ -361,7 +347,7 @@ def cal_uniformity2(
             title = str(pow(2, int(binn))) + "X" + str(pow(2, int(binn)))
             fourcolor_ws = fourcolor_wb.create_sheet(title=title)
             fourcolor_title = ["RX", "CxCyLuminance", "NDFilter", "Light Source", "ROI1", "ROI2", "ROI3",
-                                    "ROI4", "ROI5", "ROI6", "ROI7", "ROI8", "ROI9", "Mean", "Std", "Min", "Max", "Min/Max", "Uniformity"]
+                                     "ROI4", "ROI5", "ROI6", "ROI7", "ROI8", "ROI9", "Mean", "Std", "Min", "Max", "Min/Max", "Uniformity"]
             fourcolor_ws.append(fourcolor_title)
 
             if not use_RX:
@@ -468,7 +454,7 @@ def cal_uniformity2(
                                 ffc_xlsx, 
                                 fourcolor_xlsx
                             )
-                            update_status(f"measurement for rx: {RX_str}")
+                            print("measurement for rx: " + RX_str)
 
 
 if __name__ == '__main__':
@@ -664,5 +650,4 @@ if __name__ == '__main__':
             )
 
     except Exception as e:
-        # print(e)
-        pass
+        print(e)

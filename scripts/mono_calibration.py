@@ -9,7 +9,6 @@ from tkinter import messagebox
 import pandas as pd
 from datetime import datetime
 from typing import List,Dict
-import time
 
 
 # Function to modify the exposure configuration
@@ -18,8 +17,8 @@ def modify_exposure_config(
 ):
     # Check if the file exists
     if not os.path.exists(config_path):
-        # print(f"Configuration file not found: {config_path}")
-        # logging.error(f"Configuration file not found: {config_path}")
+        print(f"Configuration file not found: {config_path}")
+        logging.error(f"Configuration file not found: {config_path}")
         return
 
     # Read the JSON configuration
@@ -38,7 +37,7 @@ def modify_exposure_config(
     with open(config_path, "w") as file:
         json.dump(config, file, indent=4)
 
-    # print(f"Configuration file updated: {config_path}")
+    print(f"Configuration file updated: {config_path}")
 
 
 # Function to show a message box with the light source information
@@ -96,10 +95,6 @@ def save_results_to_excel(results,out_path):
 
 def mono_calibration(
         colorimeter:mlcm.ML_Colorimeter,
-        binn_selector:mlcm.BinningSelector,
-        binn_mode:mlcm.BinningMode,
-        binn:mlcm.Binning,
-        pixel_format:mlcm.MLPixelFormat,
         nd_list:List[mlcm.MLFilterEnum],
         xyz_list:List[mlcm.MLFilterEnum],
         gray_range:List[float],
@@ -112,12 +107,7 @@ def mono_calibration(
         out_path:str,
         image_point:List[int],
         roi_size:List[int],
-        status_callback=None
 ):
-    def update_status(message):
-        if status_callback:
-            status_callback(message)
-    
     if len(image_point) >=2:
         image_x=int(image_point[0])
         image_y=int(image_point[1])
@@ -128,19 +118,22 @@ def mono_calibration(
     mono = colorimeter.ml_bino_manage.ml_get_module_by_id(module_id)
     # set light source
     mono.ml_set_light_source(light_source)
-    
+
+    binn_selector=mlcm.BinningSelector.Logic
+    # camera binning
+    binning = mlcm.Binning.ONE_BY_ONE
+    # camera binning mode
+    binning_mode = mlcm.BinningMode.AVERAGE
+    # camera pixel format
+    pixel_format = mlcm.MLPixelFormat.MLMono12
     ret = mono.ml_set_binning_selector(binn_selector)
     if not ret.success:
         raise RuntimeError("ml_set_binning_selector error")
 
     # Set binning mode for camera.
-    ret = mono.ml_set_binning_mode(binn_mode)
+    ret = mono.ml_set_binning_mode(binning_mode)
     if not ret.success:
         raise RuntimeError("ml_set_binning_mode error")
-    
-    ret = mono.ml_set_binning(binn)
-    if not ret.success:
-        raise RuntimeError("ml_set_binning error")
     
     # Format of the pixel to use for acquisition.
     ret = mono.ml_set_pixel_format(pixel_format)
@@ -153,7 +146,7 @@ def mono_calibration(
     results = []
     for nd in nd_list:
         # switch nd filter
-        nd_enum = mlcm.MLFilterEnum(int(nd)) # et MLFilterEnum.ND0
+        nd_enum = mlcm.MLFilterEnum(nd)
         mono.ml_move_nd_syn(nd_enum)
         for gray in gray_range:
             aeparams = mlcm.pyAEParams(dynamic_range=gray,target_max=gray + 0.05,target_min=gray - 0.05, max_time=19000, rate=1000000)
@@ -164,13 +157,12 @@ def mono_calibration(
                 img = mono.ml_get_image()
                 average_gray = process_image(img,image_x,image_y,roi_width,roi_height)
                 exposure_time = mono.ml_get_exposure_time()
-                update_status(f"{mlcm.MLFilterEnum_to_str(nd_enum)}_{str(gray)}_averageGray:{str(average_gray)}_exposureTime:{str(exposure_time)}")
                 gray_ET= average_gray / exposure_time if exposure_time > 0 else 0
                 luminance_k= luminance_no_xyz / gray_ET if gray_ET > 0 else 0
                 radiance_k = radiance / gray_ET if gray_ET > 0 else 0
                 results.append({
                     "Gray Range": f"{gray * 100}" + "%",
-                    "NDFilter": mlcm.MLFilterEnum_to_str(nd_enum),
+                    "NDFilter": mlcm.MLFilterEnum_to_str(nd),
                     "AVEGray": average_gray,
                     "ExposureTime": exposure_time,
                     "G/ET": gray_ET,
@@ -181,7 +173,7 @@ def mono_calibration(
                 })
             else:
                 for xyz in xyz_list:
-                    xyz_enum = mlcm.MLFilterEnum(int(xyz))
+                    xyz_enum = mlcm.MLFilterEnum(xyz)
                     Luminance = luminance_values[xyz_enum]
                     # move color filter
                     mono.ml_move_xyz_syn(xyz_enum)
@@ -194,15 +186,14 @@ def mono_calibration(
                     average_gray = process_image(img,image_x,image_y,roi_width,roi_height)
                     # get exposure time
                     exposure_time = mono.ml_get_exposure_time()
-                    update_status(f"{mlcm.MLFilterEnum_to_str(nd_enum)}_{str(gray)}_{mlcm.MLFilterEnum_to_str(xyz_enum)}_averageGray:{str(average_gray)}_exposureTime:{str(exposure_time)}")
                     gray_ET= average_gray / exposure_time if exposure_time > 0 else 0
                     luminance_k= Luminance / gray_ET if gray_ET > 0 else 0
                     radiance_k = radiance / gray_ET if gray_ET > 0 else 0
                     # add result to the list
                     results.append({
                         "Gray Range": f"{gray * 100}" + "%",
-                        "NDFilter": mlcm.MLFilterEnum_to_str(nd_enum),
-                        "XYZFilter": mlcm.MLFilterEnum_to_str(xyz_enum),
+                        "NDFilter": mlcm.MLFilterEnum_to_str(nd),
+                        "XYZFilter": mlcm.MLFilterEnum_to_str(xyz),
                         "AVEGray": average_gray,
                         "ExposureTime": exposure_time,
                         "G/ET": gray_ET,
@@ -211,8 +202,6 @@ def mono_calibration(
                         "Radiance": radiance,
                         "K(R)": radiance_k
                     })
-    time.sleep(1)
-    update_status("写入配置中...")
     
     # 将results中灰度值在80%的luminance_k和radiance_k写入配置文件，b为0
     for item in results:
@@ -231,25 +220,24 @@ def mono_calibration(
             radiance_config_path = os.path.join(eye1_path, "Radiance")
             create_directory(radiance_config_path)
 
-            luminance_file_path = os.path.join(luminance_config_path, file_name)
+            luminance_file_path = os.path.join(out_path, file_name)
             os.makedirs(luminance_file_path, exist_ok=True)
             # 完整的文件路径
-            luminance_json_file_path= os.path.join(luminance_file_path, "Luminance.json")
+            luminance_json_file_path= os.path.join(luminance_config_path, "Luminance.json")
             # 创建要写入的字典
             data={
                 "Luminance": [[float(luminance_k),0]]
             }
             save_json(data, luminance_json_file_path)
 
-            radiance_file_path = os.path.join(radiance_config_path, file_name)
+            radiance_file_path = os.path.join(out_path, file_name)
             os.makedirs(radiance_file_path, exist_ok=True)
             # 完整的文件路径
-            radiance_json_file_path= os.path.join(radiance_file_path, "Radiance.json")
+            radiance_json_file_path= os.path.join(radiance_config_path, "Radiance.json")
             # 创建要写入的字典
             data1={
                 "Radiance": [[float(radiance_k),0]]
             }
             save_json(data1, radiance_json_file_path)
-    time.sleep(1)
-    update_status("写入完成，保存数据表")
+    
     save_results_to_excel(results,out_path)

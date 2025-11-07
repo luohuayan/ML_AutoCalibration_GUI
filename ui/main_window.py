@@ -13,21 +13,12 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import QRect, QMetaObject
 from core.app_config import AppConfig
-from ui.settings import SettingsWindow
-from ui.dark_heatmap import DarkHeatMapWindow
-from ui.captureffc_uniformity_plot import CaptureFFC_CalUniformity_Plot_Window
+from ui.settings_window import SettingsWindow
+from ui.dark_heatmap_window import DarkHeatMapWindow
+from ui.captureffc_uniformity_plot_window import CaptureFFC_CalUniformity_Plot_Window
 from ui.mono_calibration import MonoCalibrationWindow
-from ui.calculate_sph_cyl_coefficient_window import CalculateSphCylCoefficientWindow
-from ui.capture_center_window import CaptureCenterWindow
-from ui.capture_image_fixedLUM_window import CaptureImageFixedLUMWindow
-from ui.filed_curve_window import FiledCurveWindow
-from ui.fourcolor_calibration_window import FourColorCalabrationWindow
-from ui.calculate_sph_cyl_coefficient_colorcamera_window import CalculateSphCylCoefficientColorCameraWindow
-from ui.capture_RX_center_colorcamera_window import CaptureRXCenterColorCameraWindow
-from ui.captureffc_calUniformity_plot_colorcamera_window import CaptureFFCCalUniformityPlotColorCameraWindow
-from ui.mono_calibration_colorcamera_window import MonoCalibrationColorCameraWindow
-from ui.rx_selfrotation_window import RXSelfRotationWindow
-from ui.FFC_calculate_binning_window import FFCCalculateBinningWindow
+from ui.calculate_sph_cyl_coefficient import CalculateSphCylCoefficientWindow
+from ui.capture_center import CaptureCenterWindow
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -37,25 +28,6 @@ class MainWindow(QMainWindow):
         self._init_ui()
         self.colorimeter = AppConfig.get_colorimeter()
         self.select_path=""
-
-        # 初始化子窗口调用
-        self.settings_window = None
-        self.dark_heatmap_window = None
-        self.captureffc_caluniformity_window = None
-        self.monocalibration_window = None
-        self.calculate_sph_cyl_coefficient_window = None
-        self.capture_center_window = None
-        self.capture_image_fixedLUM_window = None
-        self.filed_curve_window = None
-        self.fourcolor_calibration=None
-        self.calculate_sph_cyl_coefficient_colorcamera_window=None
-        self.capture_rx_center_colorcamera=None
-        self.capture_FFC_CalUniformityPlot_ColorCamera=None
-        self.mono_calibration_Colorcamera=None
-        self.rx_selfrotation_window=None
-        self.ffc_calculatebinning_window=None
-        
-
 
     def _init_ui(self):
         # 创建菜单栏
@@ -90,47 +62,11 @@ class MainWindow(QMainWindow):
         script5_action = QAction("calculate_center", self)
         script5_action.triggered.connect(self.open_capture_center)
 
-        script6_action = QAction("capture_image_fixedLUM", self)
-        script6_action.triggered.connect(self.open_capture_image_fixedLUM)
-
-        script7_action = QAction("filed_curve", self)
-        script7_action.triggered.connect(self.open_filed_curve)
-
-        script8_action = QAction("fourcolor_calibration", self)
-        script8_action.triggered.connect(self.open_fourcolor_calibration)
-
-        script9_action = QAction("calculate_sph_cyl_coefficient_colorcamera", self)
-        script9_action.triggered.connect(self.calculate_sph_cyl_coefficient_colorcamera)
-
-        script10_action = QAction("capture_RX_center_colorcamera", self)
-        script10_action.triggered.connect(self.capture_RX_center_colorcamera)
-
-        script11_action = QAction("capture_ffc_CalUniformityPlot_ColorCamera", self)
-        script11_action.triggered.connect(self.capture_ffc_CalUniformityPlot_ColorCamera)
-
-        script12_action = QAction("mono_calibration_colorcamera", self)
-        script12_action.triggered.connect(self.mono_calibration_colorcamera)
-
-        script13_action = QAction("rx_selfroattion", self)
-        script13_action.triggered.connect(self.rx_selfrotation)
-
-        script14_action = QAction("ffc_calculate_binning", self)
-        script14_action.triggered.connect(self.ffc_calculate_binning)
-
         scripts_menu.addAction(script1_action)
         scripts_menu.addAction(script2_action)
         scripts_menu.addAction(script3_action)
         scripts_menu.addAction(script4_action)
         scripts_menu.addAction(script5_action)
-        scripts_menu.addAction(script6_action)
-        scripts_menu.addAction(script7_action)
-        scripts_menu.addAction(script8_action)
-        scripts_menu.addAction(script9_action)
-        scripts_menu.addAction(script10_action)
-        scripts_menu.addAction(script11_action)
-        scripts_menu.addAction(script12_action)
-        scripts_menu.addAction(script13_action)
-        scripts_menu.addAction(script14_action)
 
     def create_main_widget(self):
         # 主控件
@@ -173,7 +109,6 @@ class MainWindow(QMainWindow):
                 QMessageBox.Yes | QMessageBox.No,
                 QMessageBox.Yes,
             )
-            return
         QMessageBox.information(
                 self,
                 "MLColorimeter",
@@ -192,7 +127,6 @@ class MainWindow(QMainWindow):
                 QMessageBox.Yes | QMessageBox.No,
                 QMessageBox.Yes,
             )
-            return
         QMessageBox.information(
                 self,
                 "MLColorimeter",
@@ -202,9 +136,9 @@ class MainWindow(QMainWindow):
             )
 
     def open_settings(self):
-        self.settings_window = SettingsWindow(self)
+        self.settings_window = SettingsWindow()
         self.settings_window.path_changed.connect(self.handle_path_changed)
-        self.settings_window.exec_()
+        self.settings_window.show()
     
     
     def handle_path_changed(self,path):
@@ -213,56 +147,20 @@ class MainWindow(QMainWindow):
 
     def open_dark_heatmap(self):
         self.dark_heatmap_window = DarkHeatMapWindow()
-        self.dark_heatmap_window.exec_()
+        self.dark_heatmap_window.show()
 
     def open_captureffc_caluniformity(self):
         self.captureffc_caluniformity_window = CaptureFFC_CalUniformity_Plot_Window()
-        self.captureffc_caluniformity_window.exec_()
+        self.captureffc_caluniformity_window.show()
 
     def open_monocalibration(self):
         self.monocalibration_window = MonoCalibrationWindow(self.select_path)
-        self.monocalibration_window.exec_()
+        self.monocalibration_window.show()
 
     def open_calculate_sph_cyl_coefficient(self):
         self.calculate_sph_cyl_coefficient_window = CalculateSphCylCoefficientWindow()
-        self.calculate_sph_cyl_coefficient_window.exec_()
+        self.calculate_sph_cyl_coefficient_window.show()
 
     def open_capture_center(self):
         self.capture_center_window = CaptureCenterWindow()
-        self.capture_center_window.exec_()
-
-    def open_capture_image_fixedLUM(self):
-        self.capture_image_fixedLUM_window = CaptureImageFixedLUMWindow(self.select_path)
-        self.capture_image_fixedLUM_window.exec_()
-
-    def open_filed_curve(self):
-        self.filed_curve_window = FiledCurveWindow()
-        self.filed_curve_window.exec_()
-
-    def open_fourcolor_calibration(self):
-        self.fourcolor_calibration=FourColorCalabrationWindow()
-        self.fourcolor_calibration.exec_()
-
-    def calculate_sph_cyl_coefficient_colorcamera(self):
-        self.calculate_sph_cyl_coefficient_colorcamera_window=CalculateSphCylCoefficientColorCameraWindow()
-        self.calculate_sph_cyl_coefficient_colorcamera_window.exec_()
-
-    def capture_RX_center_colorcamera(self):
-        self.capture_rx_center_colorcamera=CaptureRXCenterColorCameraWindow()
-        self.capture_rx_center_colorcamera.exec_()
-
-    def capture_ffc_CalUniformityPlot_ColorCamera(self):
-        self.capture_FFC_CalUniformityPlot_ColorCamera=CaptureFFCCalUniformityPlotColorCameraWindow(self.select_path)
-        self.capture_FFC_CalUniformityPlot_ColorCamera.exec_()
-
-    def mono_calibration_colorcamera(self):
-        self.mono_calibration_Colorcamera=MonoCalibrationColorCameraWindow(self.select_path)
-        self.mono_calibration_Colorcamera.exec_()
-
-    def rx_selfrotation(self):
-        self.rx_selfrotation_window=RXSelfRotationWindow()
-        self.rx_selfrotation_window.exec_()
-
-    def ffc_calculate_binning(self):
-        self.ffc_calculatebinning_window=FFCCalculateBinningWindow()
-        self.ffc_calculatebinning_window.exec_()
+        self.capture_center_window.show()

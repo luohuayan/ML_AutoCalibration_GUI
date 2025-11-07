@@ -212,9 +212,18 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
             QSizePolicy.Expanding, QSizePolicy.Fixed)
         grid_layout.addWidget(self.line_edit_pixelcount, 22, 0)
 
+        self.label_vrange = QLabel()
+        self.label_vrange.setText("Plot图坐标轴范围: 例如: 1500 3900")
+        grid_layout.addWidget(self.label_vrange, 23, 0)
+
+        self.line_edit_vrange = QLineEdit()
+        self.line_edit_vrange.setSizePolicy(
+            QSizePolicy.Expanding, QSizePolicy.Fixed)
+        grid_layout.addWidget(self.line_edit_vrange, 24, 0)
+
         self.btn_capture = QPushButton("开始拍图及计算FFC,FourColor均匀性")
         self.btn_capture.clicked.connect(self._start_capture_calculate)
-        grid_layout.addWidget(self.btn_capture, 23, 0)
+        grid_layout.addWidget(self.btn_capture, 25, 0)
 
         spacer = QSpacerItem(20, 40, QSizePolicy.Minimum,
                              QSizePolicy.Expanding)
@@ -290,8 +299,7 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
             self.ndlist = [mlcm.MLFilterEnum(int(nd)) for nd in self.ndlist]
 
             self.xyzlist = self.line_edit_xyzlist.text().split()
-            self.xyzlist = [mlcm.MLFilterEnum(
-                int(xyz)) for xyz in self.xyzlist]
+            self.xyzlist = [mlcm.MLFilterEnum(int(xyz)) for xyz in self.xyzlist]
 
             self.useRX = self.cb_useRX.isChecked()
             self.sphlist = self.line_edit_sphlist.text().split()
@@ -301,7 +309,9 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
             self.capture_ffc = self.cb_captureffc.isChecked()
             self.cal_synthetic = self.cb_calculate_synthetic.isChecked()
             self.cal_uniformity = self.cb_calculate_uniformity.isChecked()
+
             self.pixelcount = int(self.line_edit_pixelcount.text())
+            self.vrange = self.line_edit_vrange.text().split()
 
             # different exposure map of nd while capture ffc images
             exposure_map_obj = {
@@ -444,6 +454,7 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
                 cal_uniformity(
                     self.colorimeter,
                     self.pixelcount/2,
+                    self.vrange,
                     self.ndlist,
                     self.xyzlist,
                     self.out_path,

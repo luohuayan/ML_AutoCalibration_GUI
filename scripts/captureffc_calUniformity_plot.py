@@ -25,6 +25,7 @@ def datetime_str2():
 def measurement(
     colorimeter: mlcm.ML_Colorimeter,
     half_size: int,
+    vrange: List,
     nd: mlcm.MLFilterEnum,
     xyz_list: List[mlcm.MLFilterEnum],
     RX_str: str,
@@ -41,7 +42,6 @@ def measurement(
     ffc_xlsx,
     fourcolor_xlsx
 ):
-    module_id = 1
     mono = colorimeter.ml_bino_manage.ml_get_module_by_id(module_id)
     # capture data
     capture_data_dict = Dict()
@@ -61,13 +61,12 @@ def measurement(
         capture_data = ml_mono.ml_get_CaptureData()
         capture_data_dict[xyz] = capture_data
     # set capture data for measurement
-    ret = colorimeter.ml_set_CaptureData(
-        module_id=module_id, data=capture_data_dict)
+    ret = colorimeter.ml_set_CaptureData(module_id, capture_data_dict)
     if not ret.success:
         raise RuntimeError("ml_set_CaptureData error")
 
     # load calibration data by calbration config
-    ret = colorimeter.ml_load_calibration_data(cali_config=cali_config)
+    ret = colorimeter.ml_load_calibration_data(cali_config)
     if not ret.success:
         raise RuntimeError("ml_load_calibration_data error")
 
@@ -80,12 +79,11 @@ def measurement(
     processed_data = colorimeter.ml_get_processed_data(module_id)
 
     # save calibration data
-    ret = colorimeter.ml_save_processed_data(
-        module_id=module_id, processed_data=processed_data, save_config=save_config)
+    ret = colorimeter.ml_save_processed_data(module_id, processed_data, save_config)
     if not ret.success:
         raise RuntimeError("ml_save_processed_data error")
 
-    roi_list = roi_dict[mlcm.Binning(binn)]
+    roi_list = roi_dict[binn]
 
     for xyz in xyz_list:
         img = processed_data[mlcm.CalibrationEnum.FFC][xyz].image
@@ -120,15 +118,15 @@ def measurement(
 
         row, col = img.shape[0], img.shape[1]
         center_row, center_col = int(row / 2), int(col / 2)
-        half_size = half_size / mlcm.Binning_to_Int(mlcm.Binning(binn))
+        half_size = half_size / mlcm.Binning_to_Int(binn)
 
         fig = plt.figure(figsize=(16, 4))
         plt.subplot(1, 2, 1)
-        plt.imshow(img, cmap="jet", vmin=1500, vmax=3900)
+        plt.imshow(img, cmap="jet", vmin=vrange[0], vmax=vrange[1])
         plt.xlabel("Col(pixel)")
         plt.ylabel("Row(pixel)")
         plt.colorbar(label="(FFC)")
-        plt.title("FFC_" + mlcm.Binning_to_str(mlcm.Binning(binn)) +
+        plt.title("FFC_" + mlcm.Binning_to_str(binn) +
                   "_" + mlcm.MLFilterEnum_to_str(xyz))
         plt.subplot(1, 2, 2)
         plt.plot(
@@ -142,15 +140,14 @@ def measurement(
         plt.grid(which="both")
         plt.xlabel("Position(pixel)")
         plt.ylabel("gray value")
-        plt.ylim([1500, 3900])
+        plt.ylim(vrange)
         plt.legend(["Along-Col", "Along-Row"])
         # 显示图形
         # plt.show(block=True)
         # 保存图形
         plt.savefig(
             uniformity_path + "\\FFC_ " +
-            mlcm.Binning_to_str(
-                mlcm.Binning(binn)) + "_" + mlcm.MLFilterEnum_to_str(xyz) + ".png",
+            mlcm.Binning_to_str(binn) + "_" + mlcm.MLFilterEnum_to_str(xyz) + ".png",
             bbox_inches="tight",
         )
         plt.close(fig)
@@ -213,11 +210,11 @@ def cal_synthetic_mean_images(
                 sphere_list=[0],
                 light_source=mono.ml_get_light_source()
             )
-    #         print("calculate mean images for: " +
-    #               mlcm.MLFilterEnum_to_str(xyz))
-    #     print("calculate mean images for: " +
-    #           mlcm.MLFilterEnum_to_str(nd))
-    # print("calculate ffc synthetic mean finish")
+            print("calculate mean images for: " +
+                  mlcm.MLFilterEnum_to_str(xyz))
+        print("calculate mean images for: " +
+              mlcm.MLFilterEnum_to_str(nd))
+    print("calculate ffc synthetic mean finish")
 
 
 def capture_ffc_images(
@@ -238,7 +235,7 @@ def capture_ffc_images(
 
     for nd in nd_list:
         ret = mono.ml_move_nd_syn(nd)
-        # print(mlcm.MLFilterEnum_to_str(nd))
+        print(mlcm.MLFilterEnum_to_str(nd))
         if not ret.success:
             raise RuntimeError("ml_move_nd_syn error")
 
@@ -246,7 +243,7 @@ def capture_ffc_images(
         if not ret.success:
             raise RuntimeError("ml_set_binning error")
         get_binn = mono.ml_get_binning()
-        # print(mlcm.Binning_to_str(get_binn))
+        print(mlcm.Binning_to_str(get_binn))
 
         if use_RX == False or (not sph_list) or (not cyl_list) or (not axis_list):
             rx = mlcm.pyRXCombination(0, 0, 0)
@@ -275,7 +272,7 @@ def capture_ffc_images(
                     avg_count=capture_times,
                     exposure_map=exposure_map[nd]
                 )
-                # print("capture image for: " + mlcm.pyRXCombination_to_str(rx))
+                print("capture image for: " + mlcm.pyRXCombination_to_str(rx))
                 if not ret.success:
                     raise RuntimeError("ml_capture_ffc2 error")
 
@@ -291,17 +288,18 @@ def capture_ffc_images(
                         avg_count=capture_times,
                         exposure_map=exposure_map[nd]
                     )
-                    # print("capture image for: " +
-                    #       mlcm.pyRXCombination_to_str(rx))
+                    print("capture image for: " +
+                          mlcm.pyRXCombination_to_str(rx))
                     if not ret.success:
                         raise RuntimeError("ml_capture_ffc2 error")
 
-    # print("capture ffc images finish")
+    print("capture ffc images finish")
 
 
 def cal_uniformity(
     colorimeter: mlcm.ML_Colorimeter,
     half_size: int,
+    vrange: List,
     nd_list: List[mlcm.MLFilterEnum],
     xyz_list: List[mlcm.MLFilterEnum],
     uniformity_path: str,
@@ -339,7 +337,7 @@ def cal_uniformity(
             if not ret.success:
                 raise RuntimeError("ml_set_binning error")
             get_binn = mono.ml_get_binning()
-            # print(get_binn)
+            print(get_binn)
 
             ffc_wb = Workbook()
             ffc_wb.save(ffc_xlsx)
@@ -348,7 +346,7 @@ def cal_uniformity(
             title = str(pow(2, int(binn))) + "X" + str(pow(2, int(binn)))
             ffc_ws = ffc_wb.create_sheet(title=title)
             ffc_title = ["RX", "ColorFilter", "NDFilter", "Light Source", "ROI1", "ROI2", "ROI3",
-                        "ROI4", "ROI5", "ROI6", "ROI7", "ROI8", "ROI9", "Mean", "Std", "Min", "Max", "Min/Max", "Uniformity"]
+                         "ROI4", "ROI5", "ROI6", "ROI7", "ROI8", "ROI9", "Mean", "Std", "Min", "Max", "Min/Max", "Uniformity"]
             ffc_ws.append(ffc_title)
 
             fourcolor_wb = Workbook()
@@ -392,6 +390,7 @@ def cal_uniformity(
                 measurement(
                     colorimeter, 
                     half_size, 
+                    vrange,
                     nd, 
                     xyz_list, 
                     RX_str, 
@@ -447,6 +446,7 @@ def cal_uniformity(
                             measurement(
                                 colorimeter, 
                                 half_size, 
+                                vrange,
                                 nd, 
                                 xyz_list, 
                                 RX_str, 
@@ -463,7 +463,7 @@ def cal_uniformity(
                                 ffc_xlsx, 
                                 fourcolor_xlsx
                             )
-                            # print("measurement for rx: " + RX_str)
+                            print("measurement for rx: " + RX_str)
 
 
 if __name__ == '__main__':
@@ -630,22 +630,22 @@ if __name__ == '__main__':
         }
 
         half_size = 3600
+        vrange = [1500, 3900]
         is_capture_ffc = True
         is_calculate_synthetic = True
         is_calculate_uniformity = True
 
         if is_capture_ffc:
             capture_ffc_images(ml_colorimeter, nd_list, xyz_list,
-                            binn, exposure_map_obj, capture_times, save_path, use_RX, sph_list, cyl_list, axis_list)
+                               binn, exposure_map_obj, capture_times, save_path, use_RX, sph_list, cyl_list, axis_list)
 
         if use_RX and is_calculate_synthetic:
             cal_synthetic_mean_images(
                 ml_colorimeter, nd_list, xyz_list, save_path)
 
         if is_calculate_uniformity:
-            cal_uniformity(ml_colorimeter, half_size, nd_list, xyz_list,
-                        uniformity_path, binn_list, exposure_map, roi_dict, use_RX, rx_dict)
+            cal_uniformity(ml_colorimeter, half_size, vrange, nd_list, xyz_list,
+                           uniformity_path, binn_list, exposure_map, roi_dict, use_RX, rx_dict)
 
     except Exception as e:
-        # print(e)
-        pass
+        print(e)

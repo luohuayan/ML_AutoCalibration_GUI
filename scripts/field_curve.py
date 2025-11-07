@@ -1,37 +1,26 @@
 import mlcolorimeter as mlcm
 import os
-from typing import List
-import time
+import shutil
 
 """
     field_curve.py is an example script that shows a simplified way to do vid scan, then get field curve
 """
 
 
-def field_curve(
-        colorimeter:mlcm.ML_Colorimeter,
-        exposure_mode:mlcm.ExposureMode,
-        binn_selector:mlcm.BinningSelector,
-        binn_mode:mlcm.BinningMode,
-        binn:mlcm.Binning,
-        pixel_format:mlcm.MLPixelFormat,
-        exposure_time:float,
-        out_path:str,
-        focus_config:mlcm.pyThroughFocusConfig=None,
-        freq_list:List[float]=[6.75,13.5],
-        status_callback=None
-):
-    def update_status(message):
-        if status_callback:
-            status_callback(message)
-    # test
-    # update_status("field_curve start")
-    # time.sleep(5)
-    # update_status("field_curve finish")
-    module_id = 1
-    ml_mono = colorimeter.ml_bino_manage.ml_get_module_by_id(module_id)
+def field_curve():
+    # exposure mode setting, Auto or Fixed
+    exposure_mode = mlcm.ExposureMode.Auto
     # exposure time for fixed exposure, initial time for auto exposure
+    exposure_time = 100
     exposure = mlcm.pyExposureSetting(exposure_mode, exposure_time)
+    # camera binning selector
+    binn_selector = mlcm.BinningSelector.Logic
+    # camera binning
+    binn = mlcm.Binning.ONE_BY_ONE
+    # camera binning mode
+    binn_mode = mlcm.BinningMode.AVERAGE
+    # camera pixel format
+    pixel_format = mlcm.MLPixelFormat.MLMono12
 
     ret = ml_mono.ml_set_binning_selector(binn_selector)
     if not ret.success:
@@ -56,30 +45,62 @@ def field_curve(
     if not ret.success:
         raise RuntimeError("ml_set_exposure error")
 
-    for freq in freq_list:
-        file_path = out_path + "\\through_focus\\coarse_result.csv"
-        new_path = out_path + f"\\through_focus\\coarse_result_{str(freq)}.csv"
+    for freq in [6.75, 13.75]:
+        file_path = out_path + "\\focus_scan\\coarse_result.csv"
+        new_path = out_path + f"\\focus_scan\\coarse_result_{str(freq)}.csv"
         if os.path.exists(file_path):
             os.remove(file_path)
         if os.path.exists(new_path):
             os.remove(new_path)
-        focus_config.freq = freq
+        image_path = out_path + "\\focus_scan\\coarse_images"
+        new_image_path = out_path + f"\\focus_scan\\coarse_images_{str(freq)}"
+        if os.path.exists(image_path):
+            shutil.rmtree(image_path)
+        if not os.path.exists(new_image_path):
+            os.makedirs(new_image_path)
+
+        focus_config = mlcm.pyThroughFocusConfig(
+            focus_max=13,
+            focus_min=12,
+            inf_position=14.48,
+            focal_length=50,
+            pixel_size=0.00345,
+            focal_space=0,
+            freq=freq,
+            rois=roi_list,
+            use_chess_mode=True,
+            use_lpmm_unit=False,
+            rough_step=0.02,
+            use_fine_adjust=False,
+            fine_step=0.01,
+            average_count=3,
+            store_image=True
+        )
         motion_name = "CameraMotion"
 
         ret = ml_mono.ml_vid_scan(motion_name=motion_name, focus_config=focus_config)
         if not ret.success:
             raise RuntimeError("ml_vid_scan error")
 
-        ret = ml_mono.ml_save_vid_scan_result(out_path)
+        ret = ml_mono.ml_save_vid_scan_result(out_path, True, "")
         if not ret.success:
             raise RuntimeError("ml_save_vid_scan_result error")
         os.rename(file_path, new_path)
-        update_status(f"vid scan finish for freq: {str(freq)} ")
+        print("vid scan finish for freq " + str(freq))
+
+        for filename in os.listdir(image_path):
+            src_path = os.path.join(image_path, filename)
+            
+            # 只拷贝文件，不拷贝子文件夹
+            if os.path.isfile(src_path):
+                dst_path = os.path.join(new_image_path, filename)
+                shutil.copy2(src_path, dst_path)
+                print(f"已拷贝: {filename}")
 
 
 if __name__ == "__main__":
     # set mono module calibration configuration path
-    eye1_path = r"D:\ml_software\EYE1"
+    eye1_path = r"D:\config\weilaixing\EYE1"
     path_list = [
         eye1_path,
     ]
@@ -99,27 +120,9 @@ if __name__ == "__main__":
         ml_mono = ml_colorimeter.ml_bino_manage.ml_get_module_by_id(module_id)
 
         roi_list = [
-            mlcm.pyCVRect(6369, 	4054 , 250, 250),
-            mlcm.pyCVRect(6377, 	4407 , 250, 250),
-            mlcm.pyCVRect(6174, 	4225 , 250, 250),
-            mlcm.pyCVRect(6564, 	4208 , 250, 250),
-            mlcm.pyCVRect(12160, 1211, 250, 250),
-            mlcm.pyCVRect(11733, 762, 250, 250),
-            mlcm.pyCVRect(757, 4042, 250, 250),
-            mlcm.pyCVRect(1199, 4446, 250, 250),
-            mlcm.pyCVRect(6419, 4068, 250, 250),
-            mlcm.pyCVRect(6844, 4548, 250, 250),
-            mlcm.pyCVRect(12173, 4057, 250, 250),
-            mlcm.pyCVRect(11738, 4568, 250, 250),
-            mlcm.pyCVRect(819, 8065, 250, 250),
-            mlcm.pyCVRect(1313, 8614, 250, 250),
-            mlcm.pyCVRect(6448, 8342, 250, 250),
-            mlcm.pyCVRect(5956, 8802, 250, 250),
-            mlcm.pyCVRect(12192, 8229, 250, 250),
-            mlcm.pyCVRect(11748, 8741, 250, 250),
+            mlcm.pyCVRect(5500, 4800, 600, 600),
         ]
-        out_path = r"D:\ml_software"
+        out_path = r"D:\output"
         field_curve()
     except Exception as e:
-        # print(e)
-        pass
+        print(e)
