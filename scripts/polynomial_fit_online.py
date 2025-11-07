@@ -2,6 +2,7 @@ import mlcolorimeter as mlcm
 import cv2
 from typing import List, Dict
 import os
+import time
 
 """
     center_fit.py is an example script that shows a simplified way to fit rx cross center with circle.
@@ -24,9 +25,9 @@ def polynomial_fit_online(
         if status_callback:
             status_callback(message)
     #test
-    # update_status("circle_fit_online start")
-    # time.sleep(5)
-    # update_status("circle_fit_online finish")
+    update_status("circle_fit_online start")
+    time.sleep(5)
+    update_status("circle_fit_online finish")
     module_id = 1
     ml_mono = colorimeter.ml_bino_manage.ml_get_module_by_id(module_id)
     ret = ml_mono.ml_set_binning(binn)
