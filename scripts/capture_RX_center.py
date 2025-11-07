@@ -85,6 +85,8 @@ def capture_RX_center(
                         )
                         roi_img = get_image[roi.y:roi.y+roi.height, roi.x:roi.x+roi.width]
                         cv2.imwrite(img_path, roi_img)
+                        update_status(f"{mlcm.MLFilterEnum_to_str(nd_enum)}_{mlcm.MLFilterEnum_to_str(xyz_enum)}_{mlcm.pyRXCombination_to_str(rx)} save success")
+    update_status("finish")
 
 
 if __name__ == "__main__":

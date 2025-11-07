@@ -24,9 +24,9 @@ def capture_colorfilter_center(
         if status_callback:
             status_callback(message)
     #test
-    update_status("capture_colorfilter_center start")
-    time.sleep(10)
-    update_status("capture_colorfilter_center finish")
+    # update_status("capture_colorfilter_center start")
+    # time.sleep(10)
+    # update_status("capture_colorfilter_center finish")
     module_id = 1
     ml_mono = colorimeter.ml_bino_manage.ml_get_module_by_id(module_id)
     if not os.path.exists(save_path):
@@ -73,6 +73,8 @@ def capture_colorfilter_center(
             )
 
             cv2.imwrite(img_path, get_image)
+            update_status(f"{mlcm.MLFilterEnum_to_str(nd_enum)}_{mlcm.MLFilterEnum_to_str(xyz_enum)} save success")
+    update_status("finish")
 
 if __name__ == "__main__":
     eye1_path = r"I:\duling ffc\EYE1"
