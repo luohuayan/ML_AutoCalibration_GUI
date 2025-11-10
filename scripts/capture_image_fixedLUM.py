@@ -3,6 +3,7 @@ from typing import List, Dict
 import numpy as np
 import cv2
 import os
+import time
 
 def capture_image_fixedLUM(
         colorimeter:mlcm.ML_Colorimeter,
@@ -14,7 +15,15 @@ def capture_image_fixedLUM(
         nd_list:List[mlcm.MLFilterEnum],
         xyz_list:List[mlcm.MLFilterEnum],
         ET_list:List[float],
+        status_callback=None
 ):
+    def update_status(message):
+        if status_callback:
+            status_callback(message)
+    #test
+    update_status("capture_image_fixedLUM start")
+    time.sleep(10)
+    update_status("capture_image_fixedLUM finish")
     module_id = 1
     ml_mono = colorimeter.ml_bino_manage.ml_get_module_by_id(module_id)
     if not os.path.exists(save_path):
@@ -57,6 +66,9 @@ def capture_image_fixedLUM(
                 img_name = f"ET_{ET}ms.tiff"
                 img_path = os.path.join(out_path, img_name)
                 cv2.imwrite(img_path, img)
+                update_status(f"{mlcm.MLFilterEnum_to_str(nd_enum)}_{mlcm.MLFilterEnum_to_str(xyz_enum)}_{str(ET)} save success")
+            
+    update_status("finish!")
 
 def capture_image_ficedLUM_afterFFC(
         colorimeter:mlcm.ML_Colorimeter,
@@ -72,7 +84,15 @@ def capture_image_ficedLUM_afterFFC(
         xyz_list:List[mlcm.MLFilterEnum],
         ET_list:List[float],
         cali_config: mlcm.pyCalibrationConfig=mlcm.pyCalibrationConfig(),
+        status_callback=None
 ):
+    def update_status(message):
+        if status_callback:
+            status_callback(message)
+    #test
+    # update_status("capture_image_ficedLUM_afterFFC start")
+    # time.sleep(10)
+    # update_status("capture_image_ficedLUM_afterFFC finish")
     module_id=1
     ml_mono=colorimeter.ml_bino_manage.ml_get_module_by_id(module_id)
     ret = ml_mono.ml_set_binning_selector(binn_selector)
@@ -149,10 +169,9 @@ def capture_image_ficedLUM_afterFFC(
                             img_name=f"sph{str(sph)}_cyl{str(cyl)}_axis{str(axis)}_ND{mlcm.MLFilterEnum_to_str(nd)}_Color{mlcm.MLFilterEnum_to_str(xyz)}_ET{et}ms.tiff"
                             img_path=os.path.join(save_path,img_name)
                             cv2.imwrite(img_path,img)
-
-
-
-    pass
+                        update_status(f"ET_{str(et)}_{mlcm.pyRXCombination_to_str(rx)} image save success")
+        update_status(f"{mlcm.MLFilterEnum_to_str(nd_enum)} capture finish")
+    update_status("finish!")
 
 if __name__ == "__main__":
     pass

@@ -19,7 +19,7 @@ from PyQt5.QtWidgets import (
     QCheckBox,
 )
 from core.app_config import AppConfig
-from PyQt5.QtCore import pyqtSignal, Qt
+from PyQt5.QtCore import pyqtSignal, Qt,QThread
 import mlcolorimeter as mlcm
 import os
 import cv2
@@ -28,6 +28,38 @@ import matplotlib.pyplot as plt
 from openpyxl import Workbook, load_workbook
 from openpyxl.drawing.image import Image
 from scripts.capture_image_fixedLUM import capture_image_fixedLUM, capture_image_ficedLUM_afterFFC
+
+class CaptureImageFixedLUMThread(QThread):
+    finished=pyqtSignal() # 线程完成信号
+    error=pyqtSignal(str) # 错误信号
+    status_update=pyqtSignal(str) # 状态更新信号
+
+    def __init__(self, parameters):
+        super().__init__()
+        self.parameters=parameters
+    
+    def run(self):
+        try:
+            capture_image_fixedLUM(status_callback=self.status_update.emit, **self.parameters)
+            self.finished.emit() # 发送完成信号
+        except Exception as e:
+            self.error.emit(str(e)) # 发送错误信号
+
+class CaptureImageFixedLUMafterFFCThread(QThread):
+    finished=pyqtSignal() # 线程完成信号
+    error=pyqtSignal(str) # 错误信号
+    status_update=pyqtSignal(str) # 状态更新信号
+
+    def __init__(self, parameters):
+        super().__init__()
+        self.parameters=parameters
+    
+    def run(self):
+        try:
+            capture_image_ficedLUM_afterFFC(status_callback=self.status_update.emit, **self.parameters)
+            self.finished.emit() # 发送完成信号
+        except Exception as e:
+            self.error.emit(str(e)) # 发送错误信号
 
 class CaptureImageFixedLUMWindow(QDialog):
 
@@ -47,6 +79,7 @@ class CaptureImageFixedLUMWindow(QDialog):
         self.pixel_format=['MLMono8','MLMono10','MLMono12','MLMono16','MLRGB24','MLBayer','MLBayerGB8','MLBayerGB12']
         self.select_path=path
         self._init_ui()
+        self.is_running=False
 
     def _init_ui(self):
         grid_layout = QGridLayout()
@@ -235,6 +268,11 @@ class CaptureImageFixedLUMWindow(QDialog):
         self.btn_start_capture.clicked.connect(self.capture_images)
         grid_layout.addWidget(self.btn_start_capture, 12, 0)
 
+        
+        self.status_label=QLabel("状态：等待开始")
+        self.status_label.setWordWrap(True)  # 设置自动换行
+        grid_layout.addWidget(self.status_label,13,0)
+
         spacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
         grid_layout.addItem(spacer)
 
@@ -272,6 +310,9 @@ class CaptureImageFixedLUMWindow(QDialog):
 
     def capture_images(self):
         try:
+            self.status_label.setText("<span style='color: green;'>状态: 正在运行...</span>")  # 更新状态
+            self.btn_start_capture.setEnabled(False)
+            self.is_running=True
             self.pixel_format=self.get_current_pixel_format()
             self.binn_selector=self.get_current_binning_selector()
             self.binn_mode=self.get_current_binning_mode()
@@ -284,17 +325,33 @@ class CaptureImageFixedLUMWindow(QDialog):
                 QMessageBox.critical(self,"MLColorimeter","请完整填写所有参数",QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
                 return
             if self.radio_fixedLUM.isChecked():
-                capture_image_fixedLUM(
-                    colorimeter=self.colorimeter,
-                    binn_selector=self.binn_selector,
-                    binn_mode=self.binn_mode,
-                    binn=self.binn,
-                    pixel_format=self.pixel_format,
-                    save_path=self.save_path,
-                    nd_list=self.nd_list,
-                    xyz_list=self.xyz_list,
-                    ET_list=self.et_list
-                )
+                # capture_image_fixedLUM(
+                #     colorimeter=self.colorimeter,
+                #     binn_selector=self.binn_selector,
+                #     binn_mode=self.binn_mode,
+                #     binn=self.binn,
+                #     pixel_format=self.pixel_format,
+                #     save_path=self.save_path,
+                #     nd_list=self.nd_list,
+                #     xyz_list=self.xyz_list,
+                #     ET_list=self.et_list
+                # )
+                parameters={
+                    'colorimeter':self.colorimeter,
+                    'binn_selector':self.binn_selector,
+                    'binn_mode':self.binn_mode,
+                    'binn':self.binn,
+                    'pixel_format':self.pixel_format,
+                    'save_path':self.save_path,
+                    'nd_list':self.nd_list,
+                    'xyz_list':self.xyz_list,
+                    'ET_list':self.et_list
+                }
+                self.captureimagefixedLUMThread=CaptureImageFixedLUMThread(parameters)
+                self.captureimagefixedLUMThread.finished.connect(self.on_capture_finished)
+                self.captureimagefixedLUMThread.error.connect(self.on_capture_error)
+                self.captureimagefixedLUMThread.status_update.connect(self.update_status)
+                self.captureimagefixedLUMThread.start()
             else:
                 if self.cb_useRX.isChecked():
                     self.sph_list=[float(sph) for sph in self.line_edit_sphlist.text().strip().split()]
@@ -319,21 +376,68 @@ class CaptureImageFixedLUMWindow(QDialog):
                     exposure_flag=self.exposure_flag,
                     four_color_flag=self.four_color_flag
                 )
-                capture_image_ficedLUM_afterFFC(
-                    colorimeter=self.colorimeter,
-                    binn_selector=self.binn_selector,
-                    binn_mode=self.binn_mode,
-                    binn=self.binn,
-                    pixel_format=self.pixel_format,
-                    sph_list=self.sph_list,
-                    cyl_list=self.cyl_list,
-                    axis_list=self.axis_list,
-                    save_path=self.save_path,
-                    nd_list=self.nd_list,
-                    cali_config=self.cali_config
-                )
+                # capture_image_ficedLUM_afterFFC(
+                #     colorimeter=self.colorimeter,
+                #     binn_selector=self.binn_selector,
+                #     binn_mode=self.binn_mode,
+                #     binn=self.binn,
+                #     pixel_format=self.pixel_format,
+                #     sph_list=self.sph_list,
+                #     cyl_list=self.cyl_list,
+                #     axis_list=self.axis_list,
+                #     save_path=self.save_path,
+                #     nd_list=self.nd_list,
+                #     xyz_list=self.xyz_list,
+                #     ET_list=self.et_list,
+                #     cali_config=self.cali_config
+                # )
+                parameters={
+                    'colorimeter':self.colorimeter,
+                    'binn_selector':self.binn_selector,
+                    'binn_mode':self.binn_mode,
+                    'binn':self.binn,
+                    'pixel_format':self.pixel_format,
+                    'sph_list':self.sph_list,
+                    'cyl_list':self.cyl_list,
+                    'axis_list':self.axis_list,
+                    'save_path':self.save_path,
+                    'nd_list':self.nd_list,
+                    'xyz_list':self.xyz_list,
+                    'ET_list':self.et_list,
+                    'cali_config':self.cali_config
+                }
+                self.captureimagefixedLUMafterFFCThread=CaptureImageFixedLUMafterFFCThread(parameters)
+                self.captureimagefixedLUMafterFFCThread.finished.connect(self.on_capture_finished)
+                self.captureimagefixedLUMafterFFCThread.error.connect(self.on_capture_error)
+                self.captureimagefixedLUMafterFFCThread.status_update.connect(self.update_status)
+                self.captureimagefixedLUMafterFFCThread.start()
         except Exception as e:
-            QMessageBox.critical(self,"MLColorimeter","exception" + str(e), QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)     
+            QMessageBox.critical(self,"MLColorimeter","exception" + str(e), QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes) 
+            self.btn_start_capture.setEnabled(True)
+            self.is_running=False   
+
+    def update_status(self,message):
+        self.status_label.setText(f"<span style='color: green;'>状态: {message}</span>")
+    
+    def on_capture_finished(self):
+        QMessageBox.information(self,"MLColorimeter","完成!",QMessageBox.Ok)
+        self.status_label.setText("<span style='color: green;'>状态: 完成！</span>")  # 更新状态
+        self.btn_start_capture.setEnabled(True)
+        self.is_running=False 
+
+    def on_capture_error(self,error_message):
+        QMessageBox.critical(self, "MLColorimeter", "发生错误: " + error_message, QMessageBox.Ok)
+        self.status_label.setText(f"<span style='color: red;'>状态: 发生错误: {error_message}</span>")  # 更新状态为红色
+        self.btn_start_capture.setEnabled(True)
+        self.is_running=False 
+
+    def closeEvent(self, event):
+        if self.is_running:
+            # 如果正在进行定标，拦截关闭事件
+            event.ignore()
+            QMessageBox.warning(self,"警告","程序运行中，请勿关闭窗口",QMessageBox.Ok)
+        else:
+            event.accept()
             
     def _open_folder_dialog(self):
         # 打开文件夹选择对话框
