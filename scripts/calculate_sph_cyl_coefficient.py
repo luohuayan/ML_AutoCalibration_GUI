@@ -21,6 +21,7 @@ def calculate_sph_cyl_coefficinet(
         save_path:str,
         nd_list:List[mlcm.MLFilterEnum],
         xyz_list:List[mlcm.MLFilterEnum],
+        roi:mlcm.pyCVRect,
         exposure_map_obj:Dict[mlcm.MLFilterEnum,Dict[mlcm.MLFilterEnum,mlcm.pyExposureSetting]]={},
         count:int=10,
         status_callback=None
@@ -75,7 +76,7 @@ def calculate_sph_cyl_coefficinet(
                     cv2.imwrite(
                         save_path + "\\" + mlcm.pyRXCombination_to_str(rx) + ".tif", img
                     )
-                    gray = cv2.mean(img[2502:3502, 3460:4460])[0]
+                    gray = cv2.mean(img[roi.y:roi.y+roi.height, roi.x:roi.x+roi.width])[0]
                     sph_coefficient[sph]=gray
 
                     if sph == 0:
@@ -100,7 +101,7 @@ def calculate_sph_cyl_coefficinet(
                     cv2.imwrite(
                         save_path + "\\" + mlcm.pyRXCombination_to_str(rx) + ".tif", img
                     )
-                    gray = cv2.mean(img[2502:3502, 3460:4460])[0]
+                    gray = cv2.mean(img[roi.y:roi.y+roi.height, roi.x:roi.x+roi.width])[0]
                     cyl_coefficient[cyl]=gray
 
                     if cyl == 0:
