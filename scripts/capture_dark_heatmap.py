@@ -6,6 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from openpyxl import Workbook, load_workbook
 from openpyxl.drawing.image import Image
+import time
 
 __all__ = ["capture_dark_heatmap"]
 
@@ -41,8 +42,16 @@ def capture_dark_heatmap(
     et_list: List[float],
     save_path: str,
     file_name: str,
-    capture_times: int
+    capture_times: int,
+    status_callback=None
 ):
+    def update_status(message):
+        if status_callback:
+            status_callback(message)
+    update_status("capture_dark_heatmap start...")
+    time.sleep(10)
+    update_status("capture_dark_heatmap finish...")
+
     module_id = 1
     mono = colorimeter.ml_bino_manage.ml_get_module_by_id(module_id)
 
