@@ -55,6 +55,7 @@ class DarkHeatMapWindow(QDialog):
         
         self.dialog_title = "选择文件夹"
         self.default_path = ""
+        self.save_path=""
         self.file_name = "dark_heatmap.xlsx"
         self.exposure_mode=['Auto','Fixed']
         self.binning_selector=['Logic','Sensor']
@@ -121,6 +122,7 @@ class DarkHeatMapWindow(QDialog):
         grid_layout.addWidget(self.label_etlist, 3, 0)
 
         self.line_edit_etlist = QLineEdit()
+        self.line_edit_etlist.setText("1 10")
         self.line_edit_etlist.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         grid_layout.addWidget(self.line_edit_etlist, 4, 0)
 
@@ -131,6 +133,7 @@ class DarkHeatMapWindow(QDialog):
         grid_layout.addWidget(self.label_binnlist, 5, 0)
 
         self.line_edit_binnlist = QLineEdit()
+        self.line_edit_binnlist.setText("0 1")
         self.line_edit_binnlist.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         grid_layout.addWidget(self.line_edit_binnlist, 6, 0)
 
@@ -139,6 +142,7 @@ class DarkHeatMapWindow(QDialog):
         grid_layout.addWidget(self.label_ndlist, 7, 0)
 
         self.line_edit_ndlist = QLineEdit()
+        self.line_edit_ndlist.setText("4")
         self.line_edit_ndlist.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         grid_layout.addWidget(self.line_edit_ndlist, 8, 0)
 
@@ -147,6 +151,7 @@ class DarkHeatMapWindow(QDialog):
         grid_layout.addWidget(self.label_xyzlist, 9, 0)
 
         self.line_edit_xyzlist = QLineEdit()
+        self.line_edit_xyzlist.setText("1")
         self.line_edit_xyzlist.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         grid_layout.addWidget(self.line_edit_xyzlist, 10, 0)
 
@@ -204,17 +209,25 @@ class DarkHeatMapWindow(QDialog):
 
     def start_capture(self):
         try:
+            binn_text=self.line_edit_binn.text().strip()
+            if not binn_text:
+                QMessageBox.warning(self, "输入错误", "请输入必填项：Binning 值不能为空。")
+                return
+            else:
+                self.binn=mlcm.Binning(int(binn_text))
+            if not self.save_path:
+                QMessageBox.warning(self, "提示", "请选择保存路径")
+                return
             self.status_label.setText("<span style='color: green;'>状态: 正在进行拍图或计算...</span>")  # 更新状态
             self.btn_capture.setEnabled(False)
             self.is_running=True
             self.pixel_format=self.get_current_pixel_format()
             self.binn_selector=self.get_current_binning_selector()
             self.binn_mode=self.get_current_binning_mode()
-            self.binn=mlcm.Binning(int(self.line_edit_binn.text().strip()))
             self.capture_times = int(self.line_edit_times.text())
             self.etlist = [float(et) for et in self.line_edit_etlist.text().split()]
-            binn_enum=[int(binn) for binn in self.line_edit_binnlist.text().strip().split()]
-            self.binnlist = [mlcm.Binning(B) for B in binn_enum]
+            self.binnlist=[int(binn) for binn in self.line_edit_binnlist.text().strip().split()]
+            # self.binnlist = [mlcm.Binning(B) for B in binn_enum]
             self.ndlist = [int(nd) for nd in self.line_edit_ndlist.text().split()]
             self.xyzlist = [int(xyz) for xyz in self.line_edit_xyzlist.text().split()]
             self.file_name = self.line_edit_filename.text() + ".xlsx"

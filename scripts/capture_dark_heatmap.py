@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 from openpyxl import Workbook, load_workbook
 from openpyxl.drawing.image import Image
 import time
+from datetime import datetime
 
 __all__ = ["capture_dark_heatmap"]
 
@@ -48,9 +49,9 @@ def capture_dark_heatmap(
     def update_status(message):
         if status_callback:
             status_callback(message)
-    update_status("capture_dark_heatmap start...")
-    time.sleep(10)
-    update_status("capture_dark_heatmap finish...")
+    # update_status("capture_dark_heatmap start...")
+    # time.sleep(10)
+    # update_status("capture_dark_heatmap finish...")
 
     module_id = 1
     mono = colorimeter.ml_bino_manage.ml_get_module_by_id(module_id)
@@ -80,9 +81,10 @@ def capture_dark_heatmap(
             ret = mono.ml_move_xyz_syn(xyz_enum)
             if not ret.success:
                 raise RuntimeError("ml_move_xyz_syn error")
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
             temp_str = mlcm.MLFilterEnum_to_str(
-                nd_enum) + "_" + mlcm.MLFilterEnum_to_str(xyz_enum) + "_"
+                nd_enum) + "_" + mlcm.MLFilterEnum_to_str(xyz_enum) + "_" + timestamp +"_"
             file_path = save_path + "\\" + temp_str + file_name
             wb = Workbook()
             wb.save(file_path)
@@ -210,7 +212,7 @@ def capture_dark_heatmap(
 
                 wb.save(file_path)
 
-            # print("finish")
+            update_status("finish")
 
 
 if __name__ == "__main__":
