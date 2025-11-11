@@ -222,7 +222,7 @@ class MainWindow(QMainWindow):
         self.dark_heatmap_window.exec_()
 
     def open_captureffc_caluniformity(self):
-        self.captureffc_caluniformity_window = CaptureFFC_CalUniformity_Plot_Window()
+        self.captureffc_caluniformity_window = CaptureFFC_CalUniformity_Plot_Window(self.select_path)
         self.captureffc_caluniformity_window.exec_()
 
     def open_monocalibration(self):
