@@ -66,7 +66,7 @@ class PolynomialFitOnlineThread(QThread):
 class FitOnlineWindow(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("ffc calculate binning")
+        self.setWindowTitle("fit online")
         self.setGeometry(200, 200, 800, 500)
         self.setWindowFlags(Qt.Window | Qt.WindowMaximizeButtonHint | Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint)
 

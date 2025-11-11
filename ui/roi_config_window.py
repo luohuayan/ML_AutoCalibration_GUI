@@ -10,7 +10,7 @@ class ROIConfigWindow(QDialog):
 
     def __init__(self, binn_list: List[mlcm.Binning], parent=None):
         super().__init__(parent)
-        self.setWindowTitle("Exposure Configuration")
+        self.setWindowTitle("roi config")
         self.setGeometry(250, 250, 400, 300)
         self.setWindowFlags(Qt.Window | Qt.WindowMaximizeButtonHint | Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint)
         self.binn_list = binn_list

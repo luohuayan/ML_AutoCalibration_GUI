@@ -28,7 +28,7 @@ class RXSelfRotationWindow(QDialog):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("mono calibration Colorcamera")
+        self.setWindowTitle("RX selfrotation mtf calculate")
         self.setGeometry(200, 200, 800, 500)
         self.setWindowFlags(Qt.Window | Qt.WindowMaximizeButtonHint | Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint)
 

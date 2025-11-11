@@ -31,7 +31,7 @@ from ui.exposureconfig_window import ExposureConfigWindow
 class FourColorCalabrationWindow(QDialog):
     def __init__(self, parent = None):
         super().__init__(parent)
-        self.setWindowTitle("four calibration")
+        self.setWindowTitle("fourcolor calibration")
         self.setGeometry(200,200,800,500)
         self.colorimeter=AppConfig.get_colorimeter()
         self.setWindowFlags(Qt.Window | Qt.WindowMaximizeButtonHint | Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint)

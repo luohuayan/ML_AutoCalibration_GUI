@@ -9,7 +9,7 @@ class RXConfigWindow(QDialog):
 
     def __init__(self, nd_list: List[mlcm.MLFilterEnum], parent=None):
         super().__init__(parent)
-        self.setWindowTitle("Exposure Configuration")
+        self.setWindowTitle("RX config")
         self.setGeometry(250, 250, 400, 300)
         self.setWindowFlags(Qt.Window | Qt.WindowMaximizeButtonHint | Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint)
         self.nd_list = nd_list
