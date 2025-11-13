@@ -1,5 +1,6 @@
 import mlcolorimeter as mlcm
 from typing import List, Dict
+import time
 
 """
     fourcolor_calibration.py is an example script that shows a simplified way to do fourcolor calibration.
@@ -47,12 +48,19 @@ def fourcolor_calibration_capture(
         save_path: str,
         light_source: str,
         nd: mlcm.MLFilterEnum,
-        rx: mlcm.pyRXCombination = mlcm.pyRXCombination(),
         avg_count: int = 5,
         exposure_map: Dict[mlcm.MLFilterEnum, mlcm.pyExposureSetting] ={},
         roi: mlcm.pyCVRect = mlcm.pyCVRect(),
         is_do_ffc: bool = False,
+        status_callback=None
 ):
+    def update_status(message):
+        if status_callback:
+            status_callback(message)
+    update_status("fourcolor_calibration_capture start")
+    # time.sleep(10)
+    # update_status("fourcolor_calibration_capture finish")
+
     module_id = 1
     ml_mono = colorimeter.ml_bino_manage.ml_get_module_by_id(module_id)
     # set pixel format to MLMono12 during capture
@@ -72,10 +80,10 @@ def fourcolor_calibration_capture(
     if not ret.success:
         raise RuntimeError("ml_set_binning error")
     
+    rx = mlcm.pyRXCombination(0, 0, 0)
     ret = ml_mono.ml_set_rx_syn(rx=rx)
     if not ret.success:
         raise RuntimeError("ml_set_rx_syn error")
-    
     # capture M images and calculate M matrix
     ret = ml_colorimeter.ml_capture_and_calMMatrix2(
         module_id=module_id,
@@ -89,6 +97,7 @@ def fourcolor_calibration_capture(
         is_do_ffc=is_do_ffc,
     )
     if not ret.success:
+        update_status("ml_capture_and_calMMatrix2 error")
         raise RuntimeError("ml_capture_and_calMMatrix2 error")
 
 
@@ -97,11 +106,18 @@ def fourcolor_calibration_calculate(
     save_path: str,
     nd: mlcm.MLFilterEnum,
     NMatrix_path: str,
-    rx: mlcm.pyRXCombination = mlcm.pyRXCombination(),
+    status_callback=None
 ):
+    def update_status(message):
+        if status_callback:
+            status_callback(message)
+    update_status("fourcolor_calibration_calculate start")
+    # time.sleep(10)
+    # update_status("fourcolor_calibration_calculate finish")
     module_id = 1
     ml_mono = colorimeter.ml_bino_manage.ml_get_module_by_id(module_id)
     aperture = ml_mono.ml_get_aperture()
+    rx = mlcm.pyRXCombination(0, 0, 0)
     ret = ml_mono.ml_set_rx_syn(rx=rx)
     if not ret.success:
         raise RuntimeError("ml_set_rx_syn error")
