@@ -151,7 +151,8 @@ def capture_dark_heatmap(
                     block_size = 10
                     cropped_img = preprocess_image(get_img, block_size)
                     heatmap = generate_heatmap(cropped_img, block_size)
-                    plt.imshow(heatmap, cmap="jet", interpolation="nearest")
+                    # plt.imshow(heatmap, cmap="jet", interpolation="nearest")
+                    plt.imshow(heatmap, cmap="jet", interpolation="nearest", vmin=0, vmax=10)
                     plt.colorbar()
                     plt.title("raw_" + str(pow(2, binn)) + "X" +
                             str(pow(2, binn)) + "_" + str(et_list[k]) + "ms")
@@ -176,7 +177,8 @@ def capture_dark_heatmap(
                         raw_list[k], dtype=np.int16))
                     cropped_img = preprocess_image(get_img, block_size)
                     heatmap = generate_heatmap(cropped_img, block_size)
-                    plt.imshow(heatmap, cmap="jet", interpolation="nearest")
+                    plt.imshow(heatmap, cmap="jet", interpolation="nearest", vmin=0, vmax=10)
+                    # plt.imshow(heatmap, cmap="jet", interpolation="nearest")
                     plt.colorbar()
                     plt.title("processed_" + str(pow(2, binn)) + "X" +
                             str(pow(2, binn)) + "_" + str(et_list[k]) + "ms")
