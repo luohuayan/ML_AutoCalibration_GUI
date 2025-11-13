@@ -208,9 +208,6 @@ class CalculateSphCylCoefficientWindow(QDialog):
 
     def start_calculate(self):
         try:
-            self.status_label.setText("<span style='color: green;'>状态: 正在进行计算...</span>")  # 更新状态
-            self.btn_capture.setEnabled(False)
-            self.is_running=True
             self.nd_list=self.line_edit_ndlist.text().strip().split()
             self.xyz_list=self.line_edit_xyzlist.text().strip().split()
             self.sph_list=[float(sph) for sph in self.line_edit_sphlist.text().strip().split()]
@@ -221,6 +218,9 @@ class CalculateSphCylCoefficientWindow(QDialog):
             width=int(self.line_edit_width_input.text())
             height=int(self.line_edit_height_input.text())
             self.roi=mlcm.pyCVRect(x,y,width,height)
+            self.status_label.setText("<span style='color: green;'>状态: 正在进行计算...</span>")  # 更新状态
+            self.btn_capture.setEnabled(False)
+            self.is_running=True
             parameters={
                 'colorimeter':self.colorimeter,
                 'sph_list':self.sph_list,

@@ -182,9 +182,6 @@ class CalculateSphCylCoefficientColorCameraWindow(QDialog):
 
     def start_calculate(self):
         try:
-            self.status_label.setText("<span style='color: green;'>状态: 正在进行系数计算...</span>")  # 更新状态
-            self.btn_capture.setEnabled(False)
-            self.is_running=True
             self.nd=self.get_current_filter(self.line_edit_nd_selector.currentText())
             self.xyz=self.get_current_filter(self.line_edit_xyz_selector.currentText())
             self.exposure_time=float(self.line_edit_exposure_time.text())
@@ -198,18 +195,10 @@ class CalculateSphCylCoefficientColorCameraWindow(QDialog):
             height=int(self.line_edit_height_input.text())
             self.roi=mlcm.pyCVRect(x,y,width,height)
             self.save_path=self.line_edit_path.text()
-            # calculate_sph_cyl_coefficinet(
-            #     colorimeter=self.colorimeter,
-            #     save_path=self.save_path,
-            #     file_name=self.file_name,
-            #     nd=self.nd,
-            #     xyz=self.xyz,
-            #     exposure=self.exposure,
-            #     avg_count=self.avg_count,
-            #     sph_list=self.sph_list,
-            #     cyl_list=self.cyl_list,
-            #     roi=self.roi
-            # )
+            
+            self.status_label.setText("<span style='color: green;'>状态: 正在进行系数计算...</span>")  # 更新状态
+            self.btn_capture.setEnabled(False)
+            self.is_running=True
             parameters={
                 'colorimeter': self.colorimeter,
                 'save_path':self.save_path,

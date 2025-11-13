@@ -212,6 +212,8 @@ class CaptureImageFixedLUMWindow(QDialog):
         
         self.label_input_path=QLabel("input_path: ")
         self.line_edit_input_path = QLineEdit()
+        self.line_edit_input_path.setReadOnly(True)
+        self.line_edit_input_path.setText(self.select_path)
         self.line_edit_input_path.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         from_layout.addRow(self.label_input_path,self.line_edit_input_path)
 
@@ -310,9 +312,6 @@ class CaptureImageFixedLUMWindow(QDialog):
 
     def capture_images(self):
         try:
-            self.status_label.setText("<span style='color: green;'>状态: 正在运行...</span>")  # 更新状态
-            self.btn_start_capture.setEnabled(False)
-            self.is_running=True
             self.pixel_format=self.get_current_pixel_format()
             self.binn_selector=self.get_current_binning_selector()
             self.binn_mode=self.get_current_binning_mode()
@@ -325,17 +324,9 @@ class CaptureImageFixedLUMWindow(QDialog):
                 QMessageBox.critical(self,"MLColorimeter","请完整填写所有参数",QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
                 return
             if self.radio_fixedLUM.isChecked():
-                # capture_image_fixedLUM(
-                #     colorimeter=self.colorimeter,
-                #     binn_selector=self.binn_selector,
-                #     binn_mode=self.binn_mode,
-                #     binn=self.binn,
-                #     pixel_format=self.pixel_format,
-                #     save_path=self.save_path,
-                #     nd_list=self.nd_list,
-                #     xyz_list=self.xyz_list,
-                #     ET_list=self.et_list
-                # )
+                self.status_label.setText("<span style='color: green;'>状态: 正在运行...</span>")  # 更新状态
+                self.btn_start_capture.setEnabled(False)
+                self.is_running=True
                 parameters={
                     'colorimeter':self.colorimeter,
                     'binn_selector':self.binn_selector,
@@ -353,6 +344,9 @@ class CaptureImageFixedLUMWindow(QDialog):
                 self.captureimagefixedLUMThread.status_update.connect(self.update_status)
                 self.captureimagefixedLUMThread.start()
             else:
+                self.status_label.setText("<span style='color: green;'>状态: 正在运行...</span>")  # 更新状态
+                self.btn_start_capture.setEnabled(False)
+                self.is_running=True
                 if self.cb_useRX.isChecked():
                     self.sph_list=[float(sph) for sph in self.line_edit_sphlist.text().strip().split()]
                     self.cyl_list=[float(cyl) for cyl in self.line_edit_cyllist.text().strip().split()]
@@ -376,21 +370,6 @@ class CaptureImageFixedLUMWindow(QDialog):
                     exposure_flag=self.exposure_flag,
                     four_color_flag=self.four_color_flag
                 )
-                # capture_image_ficedLUM_afterFFC(
-                #     colorimeter=self.colorimeter,
-                #     binn_selector=self.binn_selector,
-                #     binn_mode=self.binn_mode,
-                #     binn=self.binn,
-                #     pixel_format=self.pixel_format,
-                #     sph_list=self.sph_list,
-                #     cyl_list=self.cyl_list,
-                #     axis_list=self.axis_list,
-                #     save_path=self.save_path,
-                #     nd_list=self.nd_list,
-                #     xyz_list=self.xyz_list,
-                #     ET_list=self.et_list,
-                #     cali_config=self.cali_config
-                # )
                 parameters={
                     'colorimeter':self.colorimeter,
                     'binn_selector':self.binn_selector,

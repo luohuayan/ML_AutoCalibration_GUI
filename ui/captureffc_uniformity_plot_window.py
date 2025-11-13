@@ -463,9 +463,6 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
 
     def _start_capture_calculate(self):
         try:
-            self.status_label.setText("<span style='color: green;'>状态: 正在进行拍图或计算...</span>")  # 更新状态
-            self.btn_capture.setEnabled(False)
-            self.is_running=True
             self.capture_times = int(self.line_edit_times.text())
 
             self.binn = mlcm.Binning(int(self.line_edit_binn.text()))
@@ -498,6 +495,10 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
                 mlcm.MLFilterEnum.Clear: mlcm.pyExposureSetting(
                     exposure_mode=mlcm.ExposureMode.Auto, exposure_time=100)
             }
+            
+            self.status_label.setText("<span style='color: green;'>状态: 正在进行拍图或计算...</span>")  # 更新状态
+            self.btn_capture.setEnabled(False)
+            self.is_running=True
             self.start_capture_ffc()
 
         except Exception as e:

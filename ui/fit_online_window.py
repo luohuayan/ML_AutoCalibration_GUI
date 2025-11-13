@@ -219,9 +219,6 @@ class FitOnlineWindow(QDialog):
 
     def start_fit_online(self):
         try:
-            self.status_label.setText("<span style='color: green;'>状态: 正在运行...</span>")  # 更新状态
-            self.btn_capture.setEnabled(False)
-            self.is_running=True
             self.pixel_format=self.get_current_pixel_format()
             self.binn=mlcm.Binning(int(self.line_edit_binnlist.text().strip()))
             self.fit_file_path=self.line_edit_fit_path.text()
@@ -237,16 +234,10 @@ class FitOnlineWindow(QDialog):
             width=int(self.line_edit_width_input.text())
             height=int(self.line_edit_height_input.text())
             self.roi=mlcm.pyCVRect(x,y,width,height)
-            # circle_fit_online(
-            #     colorimeter=self.colorimeter,
-            #     nd_list=self.nd_list,
-            #     xyz_list=self.xyz_list,
-            #     binn=self.binn,
-            #     pixel_format=self.pixel_format,
-            #     cyl_list=self.cyl_list,
-            #     axis_list=self.axis_list,
-            #     roi=self.roi
-            # )
+            
+            self.status_label.setText("<span style='color: green;'>状态: 正在运行...</span>")  # 更新状态
+            self.btn_capture.setEnabled(False)
+            self.is_running=True
             parameters={
                 'colorimeter':self.colorimeter,
                 'nd_list':self.nd_list,

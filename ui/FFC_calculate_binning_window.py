@@ -288,19 +288,12 @@ class FFCCalculateBinningWindow(QDialog):
 
     def start_ffc_calculate(self):
         try:
-            self.status_label.setText("<span style='color: green;'>状态: 正在计算...</span>")  # 更新状态
-            self.btn_capture.setEnabled(False)
-            self.is_running=True
             self.file_path=self.line_edit_path.text()
             self.xyz_list=self.line_edit_xyzlist.text().strip().split()
             self.half_size=int(self.line_edit_half_size.text())
-            # FFC_calculate_1(
-            #     xyz_list=self.xyz_list,
-            #     filepath=self.file_path,
-            #     vrange=self.vrange,
-            #     half_size=self.half_size,
-            #     roi_list=self.roi_list
-            # )
+            self.status_label.setText("<span style='color: green;'>状态: 正在计算...</span>")  # 更新状态
+            self.btn_capture.setEnabled(False)
+            self.is_running=True
             parameters={
                     'xyz_list':self.xyz_list,
                     'filepath':self.file_path,

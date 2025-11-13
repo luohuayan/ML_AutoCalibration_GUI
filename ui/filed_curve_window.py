@@ -362,9 +362,6 @@ class FiledCurveWindow(QDialog):
     
     def start_capture(self):
         try:
-            self.status_label.setText("<span style='color: green;'>状态: 正在进行拍图...</span>")  # 更新状态
-            self.btn_capture.setEnabled(False)
-            self.is_running=True
             self.pixel_format=self.get_current_pixel_format()
             self.binn_selector=self.get_current_binning_selector()
             self.binn_mode=self.get_current_binning_mode()
@@ -408,6 +405,10 @@ class FiledCurveWindow(QDialog):
                 use_fine_adjust=self.use_fine_adjust,
                 average_count=self.average_count,
             )
+            
+            self.status_label.setText("<span style='color: green;'>状态: 正在进行拍图...</span>")  # 更新状态
+            self.btn_capture.setEnabled(False)
+            self.is_running=True
 
             parameters={
                 'colorimeter': self.colorimeter,

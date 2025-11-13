@@ -218,9 +218,6 @@ class DarkHeatMapWindow(QDialog):
             if not self.save_path:
                 QMessageBox.warning(self, "提示", "请选择保存路径")
                 return
-            self.status_label.setText("<span style='color: green;'>状态: 正在进行拍图或计算...</span>")  # 更新状态
-            self.btn_capture.setEnabled(False)
-            self.is_running=True
             self.pixel_format=self.get_current_pixel_format()
             self.binn_selector=self.get_current_binning_selector()
             self.binn_mode=self.get_current_binning_mode()
@@ -231,20 +228,9 @@ class DarkHeatMapWindow(QDialog):
             self.ndlist = [int(nd) for nd in self.line_edit_ndlist.text().split()]
             self.xyzlist = [int(xyz) for xyz in self.line_edit_xyzlist.text().split()]
             self.file_name = self.line_edit_filename.text() + ".xlsx"
-            # capture_dark_heatmap(
-            #     colorimeter=self.colorimeter,
-            #     binn_selector=self.binn_selector,
-            #     binn_mode=self.binn_mode,
-            #     binn=self.binn,
-            #     pixel_format=self.pixel_format,
-            #     nd_list=self.ndlist,
-            #     xyz_list=self.xyzlist,
-            #     binn_list=self.binnlist,
-            #     et_list=self.etlist,
-            #     save_path=self.save_path,
-            #     file_name=self.file_name,
-            #     capture_times=self.capture_times
-            # )
+            self.status_label.setText("<span style='color: green;'>状态: 正在进行拍图或计算...</span>")  # 更新状态
+            self.btn_capture.setEnabled(False)
+            self.is_running=True
             parameters={
                 'colorimeter':self.colorimeter,
                 'binn_selector':self.binn_selector,

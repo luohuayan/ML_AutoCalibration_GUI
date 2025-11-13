@@ -92,6 +92,10 @@ class CaptureCenterWindow(QDialog):
         self.line_edit_xyzlist = QLineEdit()
         self.line_edit_xyzlist.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         grid_layout.addWidget(self.line_edit_xyzlist, 3, 0)
+        
+        self.btn_load_config = QPushButton("曝光时间配置")
+        self.btn_load_config.clicked.connect(self.load_exposure_config)
+        grid_layout.addWidget(self.btn_load_config, 3, 1)
 
         self.cb_useRX = QCheckBox()
         self.cb_useRX.setText("启用RX")
@@ -184,9 +188,6 @@ class CaptureCenterWindow(QDialog):
         self.btn_capture.clicked.connect(self.start_capture)
         grid_layout.addWidget(self.btn_capture, 14, 0)
 
-        self.btn_load_config = QPushButton("曝光时间配置")
-        self.btn_load_config.clicked.connect(self.load_exposure_config)
-        grid_layout.addWidget(self.btn_load_config, 14, 1)
 
         self.status_label=QLabel("状态：等待开始")
         self.status_label.setWordWrap(True)  # 设置自动换行
@@ -206,9 +207,6 @@ class CaptureCenterWindow(QDialog):
 
     def start_capture(self):
         try:
-            self.status_label.setText("<span style='color: green;'>状态: 正在运行...</span>")  # 更新状态
-            self.btn_capture.setEnabled(False)
-            self.is_running=True
             self.nd_list=self.line_edit_ndlist.text().strip().split()
             self.xyz_list=self.line_edit_xyzlist.text().strip().split()
             self.save_path=self.line_edit_path.text().strip()
@@ -221,6 +219,9 @@ class CaptureCenterWindow(QDialog):
                 width=int(self.line_edit_width_input.text())
                 height=int(self.line_edit_height_input.text())
                 self.roi=mlcm.pyCVRect(x,y,width,height)
+                self.status_label.setText("<span style='color: green;'>状态: 正在运行...</span>")  # 更新状态
+                self.btn_capture.setEnabled(False)
+                self.is_running=True
                 parameters={
                     'colorimeter':self.colorimeter,
                     'sph_list':self.sph_list,
@@ -239,6 +240,9 @@ class CaptureCenterWindow(QDialog):
                 self.captureRXcenterThread.start()
                 
             else:
+                self.status_label.setText("<span style='color: green;'>状态: 正在运行...</span>")  # 更新状态
+                self.btn_capture.setEnabled(False)
+                self.is_running=True
                 parameters={
                     'colorimeter':self.colorimeter,
                     'save_path':self.save_path,

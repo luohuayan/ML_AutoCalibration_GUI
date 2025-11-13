@@ -16,7 +16,7 @@ from PyQt5.QtWidgets import (
     QCheckBox,
     QDialog,
     QComboBox,
-    QFormLayout
+    QFormLayout,
 )
 from core.app_config import AppConfig
 from PyQt5.QtCore import pyqtSignal, Qt,QThread
@@ -264,9 +264,6 @@ class MonoCalibrationWindow(QDialog):
 
     def start_mono_calibration(self):
         try:
-            self.status_label.setText("<span style='color: green;'>状态: 正在进行单色定标...</span>")  # 更新状态
-            self.btn_capture.setEnabled(False)
-            self.is_calibrating=True
             self.pixel_format=self.get_current_pixel_format()
             self.binn_selector=self.get_current_binning_selector()
             self.binn_mode=self.get_current_binning_mode()
@@ -281,7 +278,10 @@ class MonoCalibrationWindow(QDialog):
                 self.luminance_no_xyz=float(lum_list[0]) if len(lum_list)>0 else 0.0
             else:
                 self.xyz_list=self.line_edit_xyzlist.text().split()
-                self.lum_dict=self.generate_luminance_dict()
+                if self.generate_luminance_dict():
+                    self.lum_dict=self.generate_luminance_dict()
+                else:
+                    return
             self.aperture = self.line_edit_aperture.text()
             self.nd_list=self.line_edit_ndlist.text().split()
             self.light_source=self.rgbw_btngroup.checkedButton().text()
@@ -290,25 +290,10 @@ class MonoCalibrationWindow(QDialog):
             self.image_point=self.line_edit_image_size.text().split()
             self.roi_size=self.line_edit_roi_size.text().split()
             self.out_path=self.line_edit_path.text()
-            # mono_calibration(
-            #     colorimeter=self.colorimeter,
-            #     binn_selector=self.binn_selector,
-            #     binn_mode=self.binn_mode,
-            #     binn=self.binn,
-            #     pixel_format=self.pixel_format,
-            #     nd_list=self.nd_list,
-            #     xyz_list=self.xyz_list,
-            #     gray_range=self.gray_list,
-            #     apturate=self.aperture,
-            #     light_source=self.light_source,
-            #     luminance_values=self.lum_dict,
-            #     luminance_no_xyz=self.luminance_no_xyz,
-            #     radiance=self.radiance,
-            #     eye1_path=self.eye1_path,
-            #     out_path=self.out_path,
-            #     image_point=self.image_point,
-            #     roi_size=self.roi_size
-            # )
+            
+            self.status_label.setText("<span style='color: green;'>状态: 正在进行单色定标...</span>")  # 更新状态
+            self.btn_capture.setEnabled(False)
+            self.is_calibrating=True
             # 将参数打包到字典中
             parameters = {
                 'colorimeter': self.colorimeter,
@@ -369,6 +354,9 @@ class MonoCalibrationWindow(QDialog):
         try:
             xyzlist = self.line_edit_xyzlist.text().strip().split()
             xyzlist_lum = self.line_edit_xyzlist_lum.text().strip().split()
+            if len(xyzlist)!=len(xyzlist_lum):
+                QMessageBox.warning(self,"MLColorimeter","亮度个数与xyz滤光片不相同，请检查并保持一一对应",QMessageBox.Ok)
+                return lum_dict
             for i,xyz in enumerate(xyzlist):
                 if xyz=='1':
                     lum_dict[mlcm.MLFilterEnum.X]=float(xyzlist_lum[i])

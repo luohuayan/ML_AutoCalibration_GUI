@@ -232,9 +232,6 @@ class FourColorCalabrationWindow(QDialog):
 
     def _start_calibration(self):
         try:
-            self.status_label.setText("<span style='color: green;'>状态: 正在计算...</span>")  # 更新状态
-            self.btn_start_calibration.setEnabled(False)
-            self.is_running=True
             self.pixel_format=self.get_current_pixel_format()
             self.binn_selector=self.get_current_binning_selector()
             self.binn_mode=self.get_current_binning_mode()
@@ -253,6 +250,10 @@ class FourColorCalabrationWindow(QDialog):
             self.nmatrix_path=self.line_edit_NMatrix_path.text().strip()
             self.is_do_ffc=self.checkbox_is_do_ffc.isChecked()
             self.light_source_list=["R", "G", "B", "W"]
+            
+            self.status_label.setText("<span style='color: green;'>状态: 正在计算...</span>")  # 更新状态
+            self.btn_start_calibration.setEnabled(False)
+            self.is_running=True
             
             # 从第一个ND开始捕获光源
             self.current_nd_index=0

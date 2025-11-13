@@ -242,9 +242,6 @@ class MonoCalibrationColorCameraWindow(QDialog):
 
     def start_mono_calibration(self):
         try:
-            self.status_label.setText("<span style='color: green;'>状态: 正在进行单色定标...</span>")  # 更新状态
-            self.btn_capture.setEnabled(False)
-            self.is_calibrating=True
             self.binn_selector=self.get_current_binning_selector()
             self.binn_mode=self.get_current_binning_mode()
             self.binn=mlcm.Binning(int(self.line_edit_binnlist.text().strip()))
@@ -259,6 +256,10 @@ class MonoCalibrationColorCameraWindow(QDialog):
             self.image_point=self.line_edit_image_size.text().split()
             self.roi_size=self.line_edit_roi_size.text().split()
             self.out_path=self.line_edit_path.text()
+            
+            self.status_label.setText("<span style='color: green;'>状态: 正在进行单色定标...</span>")  # 更新状态
+            self.btn_capture.setEnabled(False)
+            self.is_calibrating=True
             # 将参数打包到字典中
             parameters = {
                 'colorimeter': self.colorimeter,

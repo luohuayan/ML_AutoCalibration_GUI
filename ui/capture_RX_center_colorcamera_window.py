@@ -100,7 +100,7 @@ class CaptureRXCenterColorCameraWindow(QDialog):
             QSizePolicy.Expanding, QSizePolicy.Fixed)
         grid_layout.addWidget(self.line_edit_axislist,8,0)
 
-        group_box1=QGroupBox("roi设置(calculate M matrix)")
+        group_box1=QGroupBox("roi设置")
         from_layout1=QFormLayout()
 
         self.label_x_input=QLabel("x_input: ")
@@ -185,9 +185,6 @@ class CaptureRXCenterColorCameraWindow(QDialog):
             if self.exposure_map_obj=={}:
                 QMessageBox.warning(self,"警告","请点击曝光时间按钮设置曝光时间",QMessageBox.Ok)
                 return;
-            self.status_label.setText("<span style='color: green;'>状态: 正在拍图...</span>")  # 更新状态
-            self.btn_capture.setEnabled(False)
-            self.is_captureing=True
             nd_enum=[int(nd) for nd in self.line_edit_ndlist.text().strip().split()]
             self.nd_list=[mlcm.MLFilterEnum(nd) for nd in nd_enum]
             xyz_enum=[int(xyz) for xyz in self.line_edit_xyzlist.text().strip().split()]
@@ -200,17 +197,9 @@ class CaptureRXCenterColorCameraWindow(QDialog):
             height=int(self.line_edit_height_input.text())
             self.roi=mlcm.pyCVRect(x,y,width,height)
             self.save_path=self.line_edit_path.text()
-
-            # capture_RX_center(
-            #     colorimter=self.colorimeter,
-            #     save_path=self.save_path,
-            #     nd_list=self.nd_list,
-            #     xyz_list=self.xyz_list,
-            #     cyl_list=self.cyl_list,
-            #     axis_list=self.axis_list,
-            #     roi=self.roi,
-            #     exposure_map_obj=self.exposure_map_obj
-            # )
+            self.status_label.setText("<span style='color: green;'>状态: 正在拍图...</span>")  # 更新状态
+            self.btn_capture.setEnabled(False)
+            self.is_captureing=True
             parameters={
                 'colorimeter': self.colorimeter,
                 'save_path':self.save_path,

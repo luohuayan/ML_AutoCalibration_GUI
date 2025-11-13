@@ -341,9 +341,6 @@ class CaptureFFCCalUniformityPlotColorCameraWindow(QDialog):
 
     def _start_capture_calculate(self):
         try:
-            self.status_label.setText("<span style='color: green;'>状态: 正在进行拍图或计算...</span>")  # 更新状态
-            self.btn_capture.setEnabled(False)
-            self.is_running=True
             nd_enum=[int(nd) for nd in self.line_edit_ndlist.text().strip().split()]
             self.nd_list=[mlcm.MLFilterEnum(nd) for nd in nd_enum]
             self.binn=int(self.line_edit_binn.text())
@@ -357,6 +354,10 @@ class CaptureFFCCalUniformityPlotColorCameraWindow(QDialog):
             self.xyz_list=[mlcm.MLFilterEnum(xyz) for xyz in xyz_enum]
             self.half_size=int(self.line_edit_half_size.text())
             self.vrange=[float(vrange) for vrange in self.line_edit_vrange.text().strip().split()]
+            
+            self.status_label.setText("<span style='color: green;'>状态: 正在进行拍图或计算...</span>")  # 更新状态
+            self.btn_capture.setEnabled(False)
+            self.is_running=True
 
             self.start_capture_ffc()
 
