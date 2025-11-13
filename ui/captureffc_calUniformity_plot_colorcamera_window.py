@@ -367,6 +367,11 @@ class CaptureFFCCalUniformityPlotColorCameraWindow(QDialog):
 
     def start_capture_ffc(self):
         if self.cb_captureffc.isChecked():
+            if not self.exposure_map_obj:
+                QMessageBox.warning(self,"MLColorimeter","曝光时间未设置",QMessageBox.Ok)
+                self.btn_capture.setEnabled(True)
+                self.is_running=False
+                return
             ffc_parameters={
                     'colorimeter': self.colorimeter,
                     'nd_list': self.nd_list,
@@ -407,6 +412,16 @@ class CaptureFFCCalUniformityPlotColorCameraWindow(QDialog):
 
     def start_calculate_uniformity(self):
         if self.cb_calculate_uniformity.isChecked():
+            if not self.roi_dict:
+                QMessageBox.warning(self,"MLColorimeter","ROI未配置",QMessageBox.Ok)
+                self.btn_capture.setEnabled(True)
+                self.is_running=False
+                return
+            if not self.rx_dict:
+                QMessageBox.warning(self,"MLColorimeter","RX未配置",QMessageBox.Ok)
+                self.btn_capture.setEnabled(True)
+                self.is_running=False
+                return
             exposure_mode=self.get_current_exposure_mode()
             exposure_time=float(self.line_edit_exposure_time.text())
             self.exposure=mlcm.pyExposureSetting(exposure_mode=exposure_mode,exposure_time=exposure_time)
@@ -466,6 +481,10 @@ class CaptureFFCCalUniformityPlotColorCameraWindow(QDialog):
 
     def _rx_config(self):
         try:
+            nd_text=self.line_edit_ndlist.text().strip().split()
+            if not nd_text:
+                QMessageBox.warning(self,"MLColorimeter","nd列表不能为空",QMessageBox.Ok)
+                return
             nd_enum=[int(nd) for nd in self.line_edit_ndlist.text().strip().split()]
             nd_list=[mlcm.MLFilterEnum(nd) for nd in nd_enum]
             self.rx_config_window = RXConfigWindow(nd_list)
@@ -477,6 +496,10 @@ class CaptureFFCCalUniformityPlotColorCameraWindow(QDialog):
 
     def _roi_config(self):
         try:
+            binn_text = self.line_edit_binnlist.text().strip().split()
+            if not binn_text:
+                QMessageBox.warning(self,"MLColorimeter","binning列表不能为空",QMessageBox.Ok)
+                return
             binn_enum=[int(binn) for binn in self.line_edit_binnlist.text().strip().split()]
             binn_list=[mlcm.Binning(binn) for binn in binn_enum]
             self.roi_config_window = ROIConfigWindow(binn_list)
@@ -529,7 +552,6 @@ class CaptureFFCCalUniformityPlotColorCameraWindow(QDialog):
             self.label_axislist.show()
             self.line_edit_axislist.show()
             self.cb_calculate_synthetic.show()
-            self.cb_calculate_synthetic.setChecked(True)
         else:
             self.label_sphlist.hide()
             self.line_edit_sphlist.hide()
@@ -538,7 +560,6 @@ class CaptureFFCCalUniformityPlotColorCameraWindow(QDialog):
             self.label_axislist.hide()
             self.line_edit_axislist.hide()
             self.cb_calculate_synthetic.hide()
-            self.cb_calculate_synthetic.setChecked(False)
 
     def load_exposure_config(self):
         try:
