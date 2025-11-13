@@ -1,8 +1,9 @@
-from PyQt5.QtWidgets import QDialog, QVBoxLayout, QScrollArea, QWidget, QFormLayout, QLabel, QLineEdit, QPushButton, QGroupBox,QMessageBox
+from PyQt5.QtWidgets import QDialog, QVBoxLayout, QScrollArea, QWidget, QFormLayout, QLabel, QLineEdit, QPushButton, QGroupBox,QMessageBox,QFileDialog
 from PyQt5.QtCore import pyqtSignal
 from typing import List
 import mlcolorimeter as mlcm
 from PyQt5.QtCore import pyqtSignal, Qt
+import json
 
 class RXConfigWindow(QDialog):
     config_saved = pyqtSignal(dict)
@@ -60,21 +61,26 @@ class RXConfigWindow(QDialog):
 
     def save_config(self):
         rx_dict = {}
-        for nd_str, (input_1, input_2, input_3) in self.nd_input_fields.items():
-            try:
-                # 解析输入的字符串为列表
-                list_1 = [float(x) for x in input_1.text().split()]
-                list_2 = [float(x) for x in input_2.text().split()]
-                list_3 = [int(x) for x in input_3.text().split()]
-                
-                # 将解析后的列表添加到字典中
-                rx_dict[nd_str] = [list_1, list_2, list_3]
-            except ValueError:
-                print(f"输入格式错误: {nd_str}")  # 处理输入错误
+        options = QFileDialog.Options()
+        file_name, _ = QFileDialog.getSaveFileName(self, "Save ROI Config", "", "JSON Files (*.json);;All Files (*)", options=options)
+        if file_name:
+            for nd_str, (input_1, input_2, input_3) in self.nd_input_fields.items():
+                try:
+                    # 解析输入的字符串为列表
+                    list_1 = [float(x) for x in input_1.text().split()]
+                    list_2 = [float(x) for x in input_2.text().split()]
+                    list_3 = [int(x) for x in input_3.text().split()]
+                    
+                    # 将解析后的列表添加到字典中
+                    rx_dict[nd_str] = [list_1, list_2, list_3]
+                except ValueError:
+                    print(f"输入格式错误: {nd_str}")  # 处理输入错误
+            with open(file_name,'w') as f:
+                json.dump(rx_dict,f,ensure_ascii=False,indent=4)
 
-        # 发出信号携带生成的字典
-        self.config_saved.emit(rx_dict)
-        reply = QMessageBox.information(self,"成功","保存成功！",QMessageBox.Ok)
+            # 发出信号携带生成的字典
+            self.config_saved.emit(rx_dict)
+            reply = QMessageBox.information(self,"成功","保存成功！",QMessageBox.Ok)
 
-        if reply==QMessageBox.Ok:
-            self.close()
+            if reply==QMessageBox.Ok:
+                self.close()

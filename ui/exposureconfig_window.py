@@ -113,32 +113,32 @@ class ExposureConfigWindow(QDialog):
                 QMessageBox.critical(self,"MLColorimeter","Load config error: " + str(e), QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
 
     def save_config(self):
-        # options = QFileDialog.Options()
-        # file_name, _ = QFileDialog.getSaveFileName(self, "Save Exposure Config", "", "JSON Files (*.json);;All Files (*)", options=options)
-        # if file_name:
-        try:
-            for nd in self.nd_list:
-                nd_enum = mlcm.MLFilterEnum(int(nd))
-                nd_str=mlcm.MLFilterEnum_to_str(nd_enum)
-                self.exposure_map[nd_str]={}
-                for xyz in self.xyz_list:
-                    xyz_enum = mlcm.MLFilterEnum(int(xyz))
-                    xyz_str=mlcm.MLFilterEnum_to_str(xyz_enum)
-                    mode_combobox,time_entry=self.settings[(nd_str,xyz_str)]
-                    mode=mode_combobox.currentText()
-                    time=float(time_entry.text())
-                    self.exposure_map[nd_str][xyz_str]={
-                        'exposure_mode':mode,
-                        'exposure_time':time
-                    }
-            # with open(file_name, 'w') as f:
-            #     json.dump(self.exposure_map, f, ensure_ascii=False, indent=4)
-            
-            # 发射信号传递配置
-            self.config_saved.emit(self.exposure_map)
-            reply = QMessageBox.information(self,"成功","保存成功！",QMessageBox.Ok)
+        options = QFileDialog.Options()
+        file_name, _ = QFileDialog.getSaveFileName(self, "Save Exposure Config", "", "JSON Files (*.json);;All Files (*)", options=options)
+        if file_name:
+            try:
+                for nd in self.nd_list:
+                    nd_enum = mlcm.MLFilterEnum(int(nd))
+                    nd_str=mlcm.MLFilterEnum_to_str(nd_enum)
+                    self.exposure_map[nd_str]={}
+                    for xyz in self.xyz_list:
+                        xyz_enum = mlcm.MLFilterEnum(int(xyz))
+                        xyz_str=mlcm.MLFilterEnum_to_str(xyz_enum)
+                        mode_combobox,time_entry=self.settings[(nd_str,xyz_str)]
+                        mode=mode_combobox.currentText()
+                        time=float(time_entry.text())
+                        self.exposure_map[nd_str][xyz_str]={
+                            'exposure_mode':mode,
+                            'exposure_time':time
+                        }
+                with open(file_name, 'w') as f:
+                    json.dump(self.exposure_map, f, ensure_ascii=False, indent=4)
+                
+                # 发射信号传递配置
+                self.config_saved.emit(self.exposure_map)
+                reply = QMessageBox.information(self,"成功","保存成功！",QMessageBox.Ok)
 
-            if reply==QMessageBox.Ok:
-                self.close()
-        except Exception as e:
-            QMessageBox.critical(self,"MLColorimeter","Save config error: " + str(e), QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
+                if reply==QMessageBox.Ok:
+                    self.close()
+            except Exception as e:
+                QMessageBox.critical(self,"MLColorimeter","Save config error: " + str(e), QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)

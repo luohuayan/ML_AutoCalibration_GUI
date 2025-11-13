@@ -1,9 +1,10 @@
-from PyQt5.QtWidgets import QDialog, QVBoxLayout, QScrollArea, QWidget, QFormLayout, QLabel, QLineEdit, QPushButton, QGroupBox,QMessageBox,QHBoxLayout,QSizePolicy,QListWidget
+from PyQt5.QtWidgets import QDialog, QVBoxLayout, QScrollArea, QWidget, QFormLayout, QLabel, QLineEdit, QPushButton, QGroupBox,QMessageBox,QHBoxLayout,QSizePolicy,QListWidget,QFileDialog
 from PyQt5.QtCore import pyqtSignal
 from typing import List
 import mlcolorimeter as mlcm
 from PyQt5.QtCore import pyqtSignal, Qt
 from functools import partial
+import json
 
 class ROIConfigWindow(QDialog):
     roi_config_saved = pyqtSignal(dict)
@@ -126,13 +127,34 @@ class ROIConfigWindow(QDialog):
             QMessageBox.critical(self,"MLColorimeter","exception" + str(e), QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
     
     def save_config(self):
-        # 发出信号携带生成的字典
-        self.roi_config_saved.emit(self.roi_dict)
-        reply = QMessageBox.information(self,"成功","保存成功！",QMessageBox.Ok)
+        options = QFileDialog.Options()
+        file_name, _ = QFileDialog.getSaveFileName(self, "Save ROI Config", "", "JSON Files (*.json);;All Files (*)", options=options)
+        if file_name:
+            # 序列化
+            serialized_dict={}
+            for key,value in self.roi_dict.items():
+                if isinstance(key,mlcm.Binning):
+                    key=str(key)
+                if isinstance(value,list) and all(isinstance(item,mlcm.pyCVRect) for item in value):
+                    serialized_dict[key]=[self.serialize_pyCVRect(rect) for rect in value]
+                else:
+                    serialized_dict[key]=value
+            with open(file_name,'w') as f:
+                json.dump(serialized_dict,f,ensure_ascii=False,indent=4)
+            # 发出信号携带生成的字典
+            self.roi_config_saved.emit(self.roi_dict)
+            reply = QMessageBox.information(self,"成功","保存成功！",QMessageBox.Ok)
 
-        if reply==QMessageBox.Ok:
-            self.close()
+            if reply==QMessageBox.Ok:
+                self.close()
 
+    def serialize_pyCVRect(self,rect:mlcm.pyCVRect):
+        return{
+            'x':rect.x,
+            'y':rect.y,
+            'width':rect.width,
+            'height':rect.height
+        }
     def delete_roi(self,binn):
         try:
             current_item=self.roi_displays[binn].currentItem()
