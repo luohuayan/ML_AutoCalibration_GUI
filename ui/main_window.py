@@ -29,6 +29,7 @@ from ui.mono_calibration_colorcamera_window import MonoCalibrationColorCameraWin
 from ui.rx_selfrotation_window import RXSelfRotationWindow
 from ui.FFC_calculate_binning_window import FFCCalculateBinningWindow
 from ui.fit_online_window import FitOnlineWindow
+from ui.version_window import VersionWindow
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -56,6 +57,7 @@ class MainWindow(QMainWindow):
         self.rx_selfrotation_window=None
         self.ffc_calculatebinning_window=None
         self.fit_online_window_=None
+        self.version_window=None
         
 
 
@@ -74,7 +76,11 @@ class MainWindow(QMainWindow):
         settings_action.triggered.connect(self.open_settings)
 
         # Scripts 菜单
-        scripts_menu = menubar.addMenu("&Scripts")
+        scripts_menu = menubar.addMenu("&Scripts_GrayScaleCamera")
+        scripts_menu1 = menubar.addMenu("&Scripts_ColorCamera")
+
+        help_Action=menubar.addAction("Help")
+        help_Action.triggered.connect(self.open_version)
 
         # 子菜单项
         script1_action = QAction("capture_dark_heatmap", self)
@@ -130,10 +136,10 @@ class MainWindow(QMainWindow):
         scripts_menu.addAction(script6_action)
         scripts_menu.addAction(script7_action)
         scripts_menu.addAction(script8_action)
-        scripts_menu.addAction(script9_action)
-        scripts_menu.addAction(script10_action)
-        scripts_menu.addAction(script11_action)
-        scripts_menu.addAction(script12_action)
+        scripts_menu1.addAction(script9_action)
+        scripts_menu1.addAction(script10_action)
+        scripts_menu1.addAction(script11_action)
+        scripts_menu1.addAction(script12_action)
         scripts_menu.addAction(script13_action)
         scripts_menu.addAction(script14_action)
         scripts_menu.addAction(script15_action)
@@ -149,6 +155,7 @@ class MainWindow(QMainWindow):
 
         # 设置按钮样式
         self.connect_btn.setStyleSheet("QPushButton { padding: 8px 16px; }")
+        self.connect_btn.setEnabled(False)
         self.disconnect_btn.setStyleSheet("QPushButton { padding: 8px 16px; }")
 
         # 按钮布局
@@ -170,23 +177,27 @@ class MainWindow(QMainWindow):
         self.disconnect_btn.clicked.connect(self.disconnect_colorimeter)
 
     def connect_colorimeter(self):
-        ret = self.colorimeter.ml_connect()
-        if not ret.success:
-            QMessageBox.critical(
-                self,
-                "MLColorimeter",
-                "ml_connect error",
-                QMessageBox.Yes | QMessageBox.No,
-                QMessageBox.Yes,
-            )
-            return
-        QMessageBox.information(
-                self,
-                "MLColorimeter",
-                "连接成功",
-                QMessageBox.Yes | QMessageBox.No,
-                QMessageBox.Yes,
-            )
+        try:
+            ret = self.colorimeter.ml_connect()
+            if not ret.success:
+                QMessageBox.critical(
+                    self,
+                    "MLColorimeter",
+                    "ml_connect error",
+                    QMessageBox.Yes | QMessageBox.No,
+                    QMessageBox.Yes,
+                )
+                return
+            QMessageBox.information(
+                    self,
+                    "MLColorimeter",
+                    "连接成功",
+                    QMessageBox.Yes | QMessageBox.No,
+                    QMessageBox.Yes,
+                )
+        except Exception as e:
+            QMessageBox.critical(self, "MLColorimeter", "exception" + e,
+                                QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
 
     def disconnect_colorimeter(self):
         ret = self.colorimeter.ml_disconnect()
@@ -210,8 +221,16 @@ class MainWindow(QMainWindow):
     def open_settings(self):
         self.settings_window = SettingsWindow(self)
         self.settings_window.path_changed.connect(self.handle_path_changed)
+        self.settings_window.enables_connect_button.connect(self.enable_connect_button) # 连接信号
         self.settings_window.exec_()
+
+    def open_version(self):
+        self.version_window=VersionWindow(self)
+        self.version_window.exec_()
     
+    def enable_connect_button(self):
+        """启用连接按钮"""
+        self.connect_btn.setEnabled(True)  # 启用 connect 按钮
     
     def handle_path_changed(self,path):
         self.select_path=path
