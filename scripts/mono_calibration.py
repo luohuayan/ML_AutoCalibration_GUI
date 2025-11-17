@@ -112,6 +112,7 @@ def mono_calibration(
         out_path:str,
         image_point:List[int],
         roi_size:List[int],
+        expusure_offset:float=0,
         status_callback=None
 ):
     def update_status(message):
@@ -163,7 +164,7 @@ def mono_calibration(
                 mono.ml_capture_image_syn()
                 img = mono.ml_get_image()
                 average_gray = process_image(img,image_x,image_y,roi_width,roi_height)
-                exposure_time = mono.ml_get_exposure_time()
+                exposure_time = mono.ml_get_exposure_time() + expusure_offset
                 update_status(f"{mlcm.MLFilterEnum_to_str(nd_enum)}_{str(gray)}_averageGray:{str(average_gray)}_exposureTime:{str(exposure_time)}")
                 gray_ET= average_gray / exposure_time if exposure_time > 0 else 0
                 luminance_k= luminance_no_xyz / gray_ET if gray_ET > 0 else 0
@@ -193,7 +194,7 @@ def mono_calibration(
                     # mono calibration
                     average_gray = process_image(img,image_x,image_y,roi_width,roi_height)
                     # get exposure time
-                    exposure_time = mono.ml_get_exposure_time()
+                    exposure_time = mono.ml_get_exposure_time() + expusure_offset
                     update_status(f"{mlcm.MLFilterEnum_to_str(nd_enum)}_{str(gray)}_{mlcm.MLFilterEnum_to_str(xyz_enum)}_averageGray:{str(average_gray)}_exposureTime:{str(exposure_time)}")
                     gray_ET= average_gray / exposure_time if exposure_time > 0 else 0
                     luminance_k= Luminance / gray_ET if gray_ET > 0 else 0
