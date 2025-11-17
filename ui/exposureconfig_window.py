@@ -46,6 +46,7 @@ class ExposureConfigWindow(QDialog):
         self.exposure_modes=['Auto','Fixed']
         self.settings={}  # (nd,xyz):(mode_combobox,time_entry)
         self.exposure_map={}
+        self.is_config_saved=False
         self._init_ui()
 
     def _init_ui(self):
@@ -137,9 +138,22 @@ class ExposureConfigWindow(QDialog):
                 
                 # 发射信号传递配置
                 self.config_saved.emit(self.exposure_map)
+
+                self.is_config_saved=True
                 reply = QMessageBox.information(self,"成功","保存成功！",QMessageBox.Ok)
 
                 if reply==QMessageBox.Ok:
                     self.close()
             except Exception as e:
                 QMessageBox.critical(self,"MLColorimeter","Save config error: " + str(e), QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
+    
+    def closeEvent(self, event):
+        if not self.is_config_saved:
+            # 如果配置未保存，弹出提示并阻止关闭窗口
+            reply=QMessageBox.question(self,"MLColorimeter","配置未保存，确定要关闭窗口吗？",QMessageBox.Yes|QMessageBox.No,QMessageBox.No)
+            if reply==QMessageBox.Yes:
+                event.accept()
+            else:
+                event.ignore()
+        else:
+            event.accept()
