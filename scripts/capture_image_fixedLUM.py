@@ -165,11 +165,15 @@ def capture_image_ficedLUM_afterFFC(
                         # get calibration data after calibration process
                         processed_data=colorimeter.ml_get_processed_data(module_id)
                         for xyz in xyz_list:
-                            img=processed_data[mlcm.CalibrationEnum.FFC][mlcm.MLFilterEnum(int(xyz))].image
-                            img_name=f"sph{str(sph)}_cyl{str(cyl)}_axis{str(axis)}_ND{mlcm.MLFilterEnum_to_str(nd)}_Color{mlcm.MLFilterEnum_to_str(xyz)}_ET{et}ms.tiff"
-                            img_path=os.path.join(save_path,img_name)
-                            cv2.imwrite(img_path,img)
-                        update_status(f"ET_{str(et)}_{mlcm.pyRXCombination_to_str(rx)} image save success")
+                            img_ffc=processed_data[mlcm.CalibrationEnum.FFC][mlcm.MLFilterEnum(int(xyz))].image
+                            img_raw=processed_data[mlcm.CalibrationEnum.Raw][mlcm.MLFilterEnum(int(xyz))].image
+                            img_name_ffc=f"FFC_sph{str(sph)}_cyl{str(cyl)}_axis{str(axis)}_ND{mlcm.MLFilterEnum_to_str(nd)}_Color{mlcm.MLFilterEnum_to_str(xyz)}_ET{et}ms.tiff"
+                            img_name_raw=f"Raw_sph{str(sph)}_cyl{str(cyl)}_axis{str(axis)}_ND{mlcm.MLFilterEnum_to_str(nd)}_Color{mlcm.MLFilterEnum_to_str(xyz)}_ET{et}ms.tiff"
+                            img_path_raw=os.path.join(save_path,img_name_raw)
+                            cv2.imwrite(img_path_raw,img_raw)
+                            img_path_ffc=os.path.join(save_path,img_name_ffc)
+                            cv2.imwrite(img_path_ffc,img_ffc)
+                        update_status(f"ET_{str(et)}_{mlcm.pyRXCombination_to_str(rx)} ffc and raw image save success")
         update_status(f"{mlcm.MLFilterEnum_to_str(nd_enum)} capture finish")
     update_status("finish!")
 
