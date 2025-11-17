@@ -19,7 +19,7 @@ class VersionWindow(QDialog):
         super().__init__(parent)
         self.setWindowTitle("About AutoCalibration GUI")
         self.setGeometry(300, 300, 500, 200)
-        self.version="0.1.1.1"
+        self.version="0.1.1.2"
         self.setWindowFlags(Qt.Window | Qt.WindowMaximizeButtonHint | Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint)
         self._init_ui()
 
