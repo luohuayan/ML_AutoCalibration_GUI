@@ -19,6 +19,9 @@ class ROIConfigWindow(QDialog):
         self.binn_input_fields = {}  # 用于存储输入框
         self.roi_displays={} # 用于存储每个Binning对应的QListWidget
         self.roi_counts={} # 用于存储每个Binning对应的ROI数量
+
+        # 跟踪配置是否保存
+        self.is_config_saved=False
         self._init_ui()
 
     def _init_ui(self):
@@ -95,7 +98,10 @@ class ROIConfigWindow(QDialog):
             layout.addWidget(group_box)
             self.roi_displays[binn]=self.roi_display
             self.roi_counts[binn]=self.line_edit_roi_count
-        
+        load_button = QPushButton("Load Config")
+        load_button.clicked.connect(self.load_config)
+        layout.addWidget(load_button)
+
         save_button = QPushButton("Save Config")
         save_button.clicked.connect(self.save_config)
         layout.addWidget(save_button)
@@ -106,6 +112,40 @@ class ROIConfigWindow(QDialog):
         main_layout = QVBoxLayout()
         main_layout.addWidget(scroll_area)
         self.setLayout(main_layout)
+
+    def load_config(self):
+        options = QFileDialog.Options()
+        file_name, _ = QFileDialog.getOpenFileName(self, "Load roi Config", "", "JSON Files (*.json);;All Files (*)", options=options)
+        if file_name:
+            try:
+                with open(file_name, 'r') as f:
+                    roi_map=json.load(f)
+                    for binn in self.binn_list:
+                        binn_str=mlcm.Binning_to_str(binn)
+                        if binn_str in roi_map:
+                            # 获取roi列表
+                            roi_list=roi_map[binn_str]
+                            self.roi_dict[binn]=[] # 清空当前的ROI列表
+
+                            # 更新QListWeight和ROI计数
+                            self.roi_displays[binn].clear() # 清空当前显示的条目
+                            for roi_data in roi_list:
+                                # 解析每个roi数据
+                                roi=mlcm.pyCVRect(roi_data['x'],roi_data['y'],roi_data['width'],roi_data['height'])
+                                self.roi_dict[binn].append(roi)
+
+                                # 构建显示的字符串
+                                roi_str=f"{roi.x},{roi.y},{roi.width},{roi.height}"
+                                self.roi_displays[binn].addItem(roi_str)
+                            # 更新roi计数
+                            self.roi_counts[binn].setText(str(len(self.roi_dict[binn])))
+                        else:
+                            # 如果没有找到当前对应的Binning，清空当前的ROI列表
+                            self.roi_dict[binn]=[]
+                            self.roi_displays[binn].clear()
+                            self.roi_counts[binn].setText("0")
+            except Exception as e:
+                QMessageBox.critical(self,"MLColorimeter","Load config error: " + str(e), QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
 
     def add_roi(self,binn):
 
@@ -134,7 +174,7 @@ class ROIConfigWindow(QDialog):
             serialized_dict={}
             for key,value in self.roi_dict.items():
                 if isinstance(key,mlcm.Binning):
-                    key=str(key)
+                    key=mlcm.Binning_to_str(key)
                 if isinstance(value,list) and all(isinstance(item,mlcm.pyCVRect) for item in value):
                     serialized_dict[key]=[self.serialize_pyCVRect(rect) for rect in value]
                 else:
@@ -143,10 +183,24 @@ class ROIConfigWindow(QDialog):
                 json.dump(serialized_dict,f,ensure_ascii=False,indent=4)
             # 发出信号携带生成的字典
             self.roi_config_saved.emit(self.roi_dict)
+
+            # 设置标志为已保存
+            self.is_config_saved=True
             reply = QMessageBox.information(self,"成功","保存成功！",QMessageBox.Ok)
 
             if reply==QMessageBox.Ok:
                 self.close()
+
+    def closeEvent(self, event):
+        if not self.is_config_saved:
+            # 如果配置未保存，弹出提示并阻止关闭窗口
+            reply=QMessageBox.question(self,"MLColorimeter","配置未保存，确定要关闭窗口吗？",QMessageBox.Yes|QMessageBox.No,QMessageBox.No)
+            if reply==QMessageBox.Yes:
+                event.accept()
+            else:
+                event.ignore()
+        else:
+            event.accept()
 
     def serialize_pyCVRect(self,rect:mlcm.pyCVRect):
         return{
