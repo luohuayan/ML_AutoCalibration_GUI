@@ -15,6 +15,7 @@ class RXConfigWindow(QDialog):
         self.setWindowFlags(Qt.Window | Qt.WindowMaximizeButtonHint | Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint)
         self.nd_list = nd_list
         self.nd_input_fields = {}  # 用于存储输入框
+        self.is_config_saved=False
         self._init_ui()
 
     def _init_ui(self):
@@ -48,6 +49,10 @@ class RXConfigWindow(QDialog):
             # 保存输入框的引用
             self.nd_input_fields[nd_str] = (inputs_1, inputs_2, inputs_3)
 
+        load_button = QPushButton("Load Config")
+        load_button.clicked.connect(self.load_config)
+        layout.addWidget(load_button)
+
         save_button = QPushButton("Save Config")
         save_button.clicked.connect(self.save_config)
         layout.addWidget(save_button)
@@ -58,6 +63,24 @@ class RXConfigWindow(QDialog):
         main_layout = QVBoxLayout()
         main_layout.addWidget(scroll_area)
         self.setLayout(main_layout)
+
+    def load_config(self):
+        options = QFileDialog.Options()
+        file_name, _ = QFileDialog.getOpenFileName(self, "Load roi Config", "", "JSON Files (*.json);;All Files (*)", options=options)
+        if file_name:
+            try:
+                with open(file_name,'r') as f:
+                    rx_map=json.load(f)
+                
+                # 遍历字典并填充输入框
+                for nd_str, (input_1, input_2, input_3) in self.nd_input_fields.items():
+                    if nd_str in rx_map:
+                        list_1,list_2,list_3=rx_map[nd_str]
+                        input_1.setText(' '.join(map(str,list_1)))
+                        input_2.setText(' '.join(map(str,list_2)))
+                        input_3.setText(' '.join(map(str,list_3)))
+            except Exception as e:
+                QMessageBox.critical(self, "错误", f"加载配置时出错: {str(e)}", QMessageBox.Ok)
 
     def save_config(self):
         rx_dict = {}
@@ -80,7 +103,20 @@ class RXConfigWindow(QDialog):
 
             # 发出信号携带生成的字典
             self.config_saved.emit(rx_dict)
+            self.is_config_saved=True
             reply = QMessageBox.information(self,"成功","保存成功！",QMessageBox.Ok)
 
             if reply==QMessageBox.Ok:
                 self.close()
+    
+    
+    def closeEvent(self, event):
+        if not self.is_config_saved:
+            # 如果配置未保存，弹出提示并阻止关闭窗口
+            reply=QMessageBox.question(self,"MLColorimeter","配置未保存，确定要关闭窗口吗？",QMessageBox.Yes|QMessageBox.No,QMessageBox.No)
+            if reply==QMessageBox.Yes:
+                event.accept()
+            else:
+                event.ignore()
+        else:
+            event.accept()
