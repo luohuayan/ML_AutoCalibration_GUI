@@ -73,9 +73,9 @@ class ExposureConfigWindow(QDialog):
                 self.settings[(nd_str,xyz_str)]=(mode_combobox,time_entry)
             group_box.setLayout(from_layout)
             layout.addWidget(group_box)
-        # load_button = QPushButton("Load Config")
-        # load_button.clicked.connect(self.load_config)
-        # layout.addWidget(load_button)
+        load_button = QPushButton("Load Config")
+        load_button.clicked.connect(self.load_config)
+        layout.addWidget(load_button)
 
         save_button = QPushButton("Save Config")
         save_button.clicked.connect(self.save_config)
@@ -107,6 +107,7 @@ class ExposureConfigWindow(QDialog):
                                 mode_combobox.setCurrentText(setting['exposure_mode'])
                                 time_entry.setText(str(setting['exposure_time']))
                             else:
+                                mode_combobox,time_entry=self.settings[(nd_str,xyz_str)]
                                 mode_combobox.setCurrentIndex(0)
                                 time_entry.setText("100")
             except Exception as e:
