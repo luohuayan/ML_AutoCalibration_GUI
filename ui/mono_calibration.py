@@ -157,29 +157,37 @@ class MonoCalibrationWindow(QDialog):
         self.line_edit_exposure_offset.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)  
         grid_layout.addWidget(self.line_edit_exposure_offset, 12, 0)
 
+        self.label_gray_offset=QLabel()
+        self.label_gray_offset.setText("gray offset：")
+        grid_layout.addWidget(self.label_gray_offset, 13, 0)
+        self.line_edit_gray_offset = QLineEdit()
+        self.line_edit_gray_offset.setText("0")
+        self.line_edit_gray_offset.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)  
+        grid_layout.addWidget(self.line_edit_gray_offset, 14, 0)
+
         self.label_gray_range=QLabel()
         self.label_gray_range.setText("灰度值(例如: 0.5,0.8)，多个灰度值以空格隔开")
-        grid_layout.addWidget(self.label_gray_range, 13, 0)
+        grid_layout.addWidget(self.label_gray_range, 15, 0)
         self.line_edit_gray_range = QLineEdit()
         self.line_edit_gray_range.setText("0.8")
         self.line_edit_gray_range.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        grid_layout.addWidget(self.line_edit_gray_range, 14, 0)
+        grid_layout.addWidget(self.line_edit_gray_range, 16, 0)
 
         self.label_image_size = QLabel()
         self.label_image_size.setText("图像中心点坐标x y（打开相机软件查看）：例如像素为13376 9528，则中心点为6688 4764以空格隔开")
-        grid_layout.addWidget(self.label_image_size, 15, 0)
+        grid_layout.addWidget(self.label_image_size, 17, 0)
         self.line_edit_image_size = QLineEdit()
         self.line_edit_image_size.setText("6688 4764")
         self.line_edit_image_size.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        grid_layout.addWidget(self.line_edit_image_size, 16, 0)
+        grid_layout.addWidget(self.line_edit_image_size, 18, 0)
 
         self.label_roi_size = QLabel()
         self.label_roi_size.setText("ROI宽高：例如200 200，以空格隔开")
-        grid_layout.addWidget(self.label_roi_size, 17, 0)
+        grid_layout.addWidget(self.label_roi_size, 19, 0)
         self.line_edit_roi_size = QLineEdit()
         self.line_edit_roi_size.setText("200 200")
         self.line_edit_roi_size.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        grid_layout.addWidget(self.line_edit_roi_size, 18, 0)
+        grid_layout.addWidget(self.line_edit_roi_size, 20, 0)
 
         h_layout = QHBoxLayout()
         self.cb_R = QRadioButton()
@@ -211,38 +219,38 @@ class MonoCalibrationWindow(QDialog):
         h_layout.addWidget(self.cb_G)
         h_layout.addWidget(self.cb_B)
         h_layout.addWidget(self.cb_W)
-        grid_layout.addLayout(h_layout, 19, 0)
+        grid_layout.addLayout(h_layout, 21, 0)
 
         self.label_path = QLabel()
         self.label_path.setText("保存路径(excel保存位置):")
-        grid_layout.addWidget(self.label_path, 20, 0)
+        grid_layout.addWidget(self.label_path, 22, 0)
 
         self.line_edit_path = QLineEdit()
         self.line_edit_path.setReadOnly(True)  # 设置为只读
         self.line_edit_path.setPlaceholderText("未选择文件夹")
         self.line_edit_path.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        grid_layout.addWidget(self.line_edit_path, 21, 0)
+        grid_layout.addWidget(self.line_edit_path, 23, 0)
 
         self.btn_browse = QPushButton("浏览...")
         self.btn_browse.clicked.connect(self._open_folder_dialog)
-        grid_layout.addWidget(self.btn_browse, 21, 1)
+        grid_layout.addWidget(self.btn_browse, 23, 1)
 
         self.label_path=QLabel()
         self.label_path.setText("配置路径（eye1）")
-        grid_layout.addWidget(self.label_path, 22, 0)
+        grid_layout.addWidget(self.label_path, 24, 0)
         self.line_edit_eye1_path=QLineEdit()
         self.line_edit_eye1_path.setReadOnly(True)
         self.line_edit_eye1_path.setText(self.select_path)
-        grid_layout.addWidget(self.line_edit_eye1_path,23,0)
+        grid_layout.addWidget(self.line_edit_eye1_path,25,0)
 
 
         self.btn_capture = QPushButton("单色定标")
         self.btn_capture.clicked.connect(self.start_mono_calibration)
-        grid_layout.addWidget(self.btn_capture, 24, 0)
+        grid_layout.addWidget(self.btn_capture, 26, 0)
 
         self.status_label=QLabel("状态：等待开始")
         self.status_label.setWordWrap(True)  # 设置自动换行
-        grid_layout.addWidget(self.status_label,25,0)
+        grid_layout.addWidget(self.status_label,27,0)
 
         spacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
         grid_layout.addItem(spacer)
@@ -299,6 +307,7 @@ class MonoCalibrationWindow(QDialog):
             self.roi_size=self.line_edit_roi_size.text().split()
             self.out_path=self.line_edit_path.text()
             self.expusure_offset=float(self.line_edit_exposure_offset.text())
+            self.gray_offset=float(self.line_edit_gray_offset.text())
             
             self.status_label.setText("<span style='color: green;'>状态: 正在进行单色定标...</span>")  # 更新状态
             self.btn_capture.setEnabled(False)
@@ -322,7 +331,8 @@ class MonoCalibrationWindow(QDialog):
                 'out_path': self.out_path,
                 'image_point': self.image_point,
                 'roi_size': self.roi_size,
-                'expusure_offset':self.expusure_offset
+                'expusure_offset':self.expusure_offset,
+                'gray_offset':self.gray_offset
             }
             self.calibration_thread=CalibrationThread(parameters)
             self.calibration_thread.finished.connect(self.on_calibration_finished)
