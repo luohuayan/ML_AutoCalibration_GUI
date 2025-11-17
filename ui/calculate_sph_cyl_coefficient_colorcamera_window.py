@@ -78,42 +78,42 @@ class CalculateSphCylCoefficientColorCameraWindow(QDialog):
         self.line_edit_nd_selector.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         grid_layout.addWidget(self.line_edit_nd_selector,1,0)
 
-        self.label_xyz_selector=QLabel("XYZ:")
-        grid_layout.addWidget(self.label_xyz_selector,2,0)
+        # self.label_xyz_selector=QLabel("XYZ:")
+        # grid_layout.addWidget(self.label_xyz_selector,2,0)
 
-        self.line_edit_xyz_selector = QComboBox()
-        self.line_edit_xyz_selector.addItems(self.xyz_list)
-        self.line_edit_xyz_selector.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        grid_layout.addWidget(self.line_edit_xyz_selector,3,0)
+        # self.line_edit_xyz_selector = QComboBox()
+        # self.line_edit_xyz_selector.addItems(self.xyz_list)
+        # self.line_edit_xyz_selector.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        # grid_layout.addWidget(self.line_edit_xyz_selector,3,0)
 
         self.label_exposure_time=QLabel("曝光时间(ms):")
-        grid_layout.addWidget(self.label_exposure_time,4,0)
+        grid_layout.addWidget(self.label_exposure_time,2,0)
         self.line_edit_exposure_time=QLineEdit()
         self.line_edit_exposure_time.setText("100")
         self.line_edit_exposure_time.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        grid_layout.addWidget(self.line_edit_exposure_time,5,0)
+        grid_layout.addWidget(self.line_edit_exposure_time,3,0)
 
         self.label_avg_count=QLabel("avg_count:")
-        grid_layout.addWidget(self.label_avg_count,6,0)
+        grid_layout.addWidget(self.label_avg_count,4,0)
         self.line_edit_avg_count=QLineEdit()
         self.line_edit_avg_count.setText("10")
         self.line_edit_avg_count.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        grid_layout.addWidget(self.line_edit_avg_count,7,0)
+        grid_layout.addWidget(self.line_edit_avg_count,5,0)
 
         self.label_sphlist = QLabel("sph列表, (例如: -6 -5 -4 -3 -2 -1 0 1 2 3 4 5 6), 以空格隔开")
-        grid_layout.addWidget(self.label_sphlist,8,0)
+        grid_layout.addWidget(self.label_sphlist,6,0)
         self.line_edit_sphlist = QLineEdit()
         self.line_edit_sphlist.setSizePolicy(
             QSizePolicy.Expanding, QSizePolicy.Fixed)
-        grid_layout.addWidget(self.line_edit_sphlist,9,0)
+        grid_layout.addWidget(self.line_edit_sphlist,7,0)
         
 
         self.label_cyllist = QLabel("cyl列表, (例如: -4 -3.5 -3 -2.5 -2 -1.5 -1 -0.5 0), 以空格隔开")
-        grid_layout.addWidget(self.label_cyllist,10,0)
+        grid_layout.addWidget(self.label_cyllist,8,0)
         self.line_edit_cyllist = QLineEdit()
         self.line_edit_cyllist.setSizePolicy(
             QSizePolicy.Expanding, QSizePolicy.Fixed)
-        grid_layout.addWidget(self.line_edit_cyllist,11,0)
+        grid_layout.addWidget(self.line_edit_cyllist,9,0)
 
         group_box1=QGroupBox("roi设置(calculate M matrix)")
         from_layout1=QFormLayout()
@@ -150,30 +150,30 @@ class CalculateSphCylCoefficientColorCameraWindow(QDialog):
         from_layout1.addRow(horizontal_layout5)
 
         group_box1.setLayout(from_layout1)
-        grid_layout.addWidget(group_box1, 12, 0)
+        grid_layout.addWidget(group_box1, 10, 0)
 
         self.label_path = QLabel()
         self.label_path.setText("保存路径:")
-        grid_layout.addWidget(self.label_path, 13, 0)
+        grid_layout.addWidget(self.label_path, 11, 0)
 
         self.line_edit_path = QLineEdit()
         self.line_edit_path.setReadOnly(True)  # 设置为只读
         self.line_edit_path.setPlaceholderText("未选择文件夹")
         self.line_edit_path.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        grid_layout.addWidget(self.line_edit_path, 14, 0)
+        grid_layout.addWidget(self.line_edit_path, 12, 0)
 
         self.btn_browse = QPushButton("浏览...")
         self.btn_browse.clicked.connect(self._open_folder_dialog)
-        grid_layout.addWidget(self.btn_browse, 14, 1)
+        grid_layout.addWidget(self.btn_browse, 12, 1)
         
 
         self.btn_capture = QPushButton("计算系数")
         self.btn_capture.clicked.connect(self.start_calculate)
-        grid_layout.addWidget(self.btn_capture, 15, 0)
+        grid_layout.addWidget(self.btn_capture, 13, 0)
 
         self.status_label=QLabel("状态：等待开始")
         self.status_label.setWordWrap(True)  # 设置自动换行
-        grid_layout.addWidget(self.status_label,16,0)
+        grid_layout.addWidget(self.status_label,14,0)
 
         spacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
         grid_layout.addItem(spacer)
@@ -183,7 +183,6 @@ class CalculateSphCylCoefficientColorCameraWindow(QDialog):
     def start_calculate(self):
         try:
             self.nd=self.get_current_filter(self.line_edit_nd_selector.currentText())
-            self.xyz=self.get_current_filter(self.line_edit_xyz_selector.currentText())
             self.exposure_time=float(self.line_edit_exposure_time.text())
             self.exposure=mlcm.pyExposureSetting(mlcm.ExposureMode.Fixed,self.exposure_time)
             self.avg_count=int(self.line_edit_avg_count.text())
@@ -204,7 +203,6 @@ class CalculateSphCylCoefficientColorCameraWindow(QDialog):
                 'save_path':self.save_path,
                 'file_name':self.file_name,
                 'nd':self.nd,
-                'xyz':self.xyz,
                 'exposure':self.exposure,
                 'avg_count':self.avg_count,
                 'sph_list':self.sph_list,

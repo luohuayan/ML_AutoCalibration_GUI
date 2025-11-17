@@ -17,7 +17,6 @@ def calculate_sph_cyl_coefficinet(
     save_path: str,
     file_name: str,
     nd: mlcm.MLFilterEnum,
-    xyz: mlcm.MLFilterEnum,
     exposure: mlcm.pyExposureSetting,
     avg_count: int,
     sph_list: List,
@@ -38,9 +37,9 @@ def calculate_sph_cyl_coefficinet(
     if not ret.success:
         raise RuntimeError("ml_move_nd_syn error")
 
-    ret = mono.ml_move_xyz_syn(xyz)
-    if not ret.success:
-        raise RuntimeError("ml_move_xyz_syn error")
+    # ret = mono.ml_move_xyz_syn(xyz)
+    # if not ret.success:
+    #     raise RuntimeError("ml_move_xyz_syn error")
 
     ret = ml_mono.ml_set_exposure(exposure)
     if not ret.success:
