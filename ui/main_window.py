@@ -76,8 +76,8 @@ class MainWindow(QMainWindow):
         settings_action.triggered.connect(self.open_settings)
 
         # Scripts 菜单
-        scripts_menu = menubar.addMenu("&Scripts_GrayScaleCamera")
-        scripts_menu1 = menubar.addMenu("&Scripts_ColorCamera")
+        scripts_menu = menubar.addMenu("&Scripts_Gray")
+        scripts_menu1 = menubar.addMenu("&Scripts_Color")
 
         help_Action=menubar.addAction("Help")
         help_Action.triggered.connect(self.open_version)
