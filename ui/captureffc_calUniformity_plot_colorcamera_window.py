@@ -553,6 +553,7 @@ class CaptureFFCCalUniformityPlotColorCameraWindow(QDialog):
             self.label_axislist.show()
             self.line_edit_axislist.show()
             self.cb_calculate_synthetic.show()
+            self.cb_calculate_synthetic.setChecked(True)
         else:
             self.label_sphlist.hide()
             self.line_edit_sphlist.hide()
@@ -561,6 +562,8 @@ class CaptureFFCCalUniformityPlotColorCameraWindow(QDialog):
             self.label_axislist.hide()
             self.line_edit_axislist.hide()
             self.cb_calculate_synthetic.hide()
+            self.cb_calculate_synthetic.setChecked(False)
+
 
     def load_exposure_config(self):
         try:
