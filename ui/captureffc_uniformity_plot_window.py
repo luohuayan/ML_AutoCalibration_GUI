@@ -456,10 +456,14 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
             self.cb_calculate_synthetic.hide()
 
     def _rgbw_changed(self, btn_id):
-        obj = {1: "R", 2: "G", 3: "B", 4: "W"}
-        self.light_source = obj[btn_id]
-        self.colorimeter.ml_bino_manage.ml_get_module_by_id(
-            self.module_id).ml_set_light_source(self.light_source)
+        try:
+            obj = {1: "R", 2: "G", 3: "B", 4: "W"}
+            self.light_source = obj[btn_id]
+            self.colorimeter.ml_bino_manage.ml_get_module_by_id(
+                self.module_id).ml_set_light_source(self.light_source)
+        except Exception as e:
+            QMessageBox.critical(self, "MLColorimeter", "exception" + str(e),
+                                QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
 
     def _start_capture_calculate(self):
         try:
