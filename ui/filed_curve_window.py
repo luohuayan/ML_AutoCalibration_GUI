@@ -28,6 +28,7 @@ import matplotlib.pyplot as plt
 from openpyxl import Workbook, load_workbook
 from openpyxl.drawing.image import Image
 from scripts.field_curve import field_curve
+import json
 
 class FiledCurveThread(QThread):
     finished=pyqtSignal() # 线程完成信号
@@ -259,12 +260,24 @@ class FiledCurveWindow(QDialog):
         horizontal_layout5.addWidget(self.line_edit_height_input)
         from_layout1.addRow(horizontal_layout5)
 
+        self.label_roi_count=QLabel("roi_count: ")
+        self.line_edit_roi_count = QLineEdit()
+        self.line_edit_roi_count.setReadOnly(True)
+        self.line_edit_roi_count.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        from_layout1.addRow(self.label_roi_count,self.line_edit_roi_count)
+
 
         self.add_button = QPushButton("Add ROI")
         self.add_button.clicked.connect(self.add_roi)
         self.delete_button=QPushButton("Delete ROI")
         self.delete_button.clicked.connect(self.delete_roi)
         from_layout1.addRow(self.add_button,self.delete_button)
+
+        self.load_config_button=QPushButton("Load Config")
+        self.load_config_button.clicked.connect(self.load_config)
+        self.save_config_button=QPushButton("Save Config")
+        self.save_config_button.clicked.connect(self.save_config)
+        from_layout1.addRow(self.load_config_button,self.save_config_button)
 
         self.roi_display=QListWidget()
         self.roi_display.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
@@ -326,9 +339,11 @@ class FiledCurveWindow(QDialog):
             # 创建roi并添加到列表
             roi=mlcm.pyCVRect(x,y,width,height)
             self.roi_list.append(roi)
+            self.line_edit_roi_count.setText(str(len(self.roi_list)))
             # 显示在控件上
             roi_str=f"{x},{y},{width},{height}"
             self.roi_display.addItem(roi_str)
+            
         except Exception as e:
             QMessageBox.critical(self,"MLColorimeter","exception" + str(e), QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
 
@@ -354,12 +369,58 @@ class FiledCurveWindow(QDialog):
                     # 只删除第一个匹配的roi
                     del self.roi_list[index]
                     break # 找到并删除后退出循环
+            self.line_edit_roi_count.setText(str(len(self.roi_list)))
             
             row=self.roi_display.row(current_item)
             self.roi_display.takeItem(row)
         except Exception as e:
             QMessageBox.critical(self,"MLColorimeter","exception" + str(e), QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
-    
+
+    def load_config(self):
+        try:
+            options = QFileDialog.Options()
+            file_name, _ = QFileDialog.getOpenFileName(self, "Load ROI Config", "", "JSON Files (*.json);;All Files (*)", options=options)
+            if file_name:
+                # 读取json文件
+                with open(file_name,'r') as f:
+                    serialized_data=json.load(f)
+                # 清空现有的roi_list
+                self.roi_list.clear()
+                self.roi_display.clear()
+
+                # 将每个字典转换为pyCVRect对象并添加到roi_list
+                for item in serialized_data:
+                    rect=mlcm.pyCVRect(item['x'],item['y'],item['width'],item['height'])
+                    self.roi_list.append(rect)
+                    roi_str=f"{rect.x},{rect.y},{rect.width},{rect.height}"
+                    self.roi_display.addItem(roi_str)
+                self.line_edit_roi_count.setText(str(len(self.roi_list)))
+                
+
+        except Exception as e:
+            QMessageBox.critical(self,"MLColorimeter","exception" + str(e), QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
+
+    def save_config(self):
+        try:
+            options = QFileDialog.Options()
+            file_name, _ = QFileDialog.getSaveFileName(self, "Save ROI Config", "", "JSON Files (*.json);;All Files (*)", options=options)
+            if file_name:
+                # 序列化
+                serialized_dict=[]
+                for value in self.roi_list:
+                    serialized_dict.append(self.serialize_pyCVRect(value))
+                with open(file_name,'w') as f:
+                    json.dump(serialized_dict,f,ensure_ascii=False,indent=4)
+                QMessageBox.information(self,"成功","保存成功！",QMessageBox.Ok)
+        except Exception as e:
+            QMessageBox.critical(self,"MLColorimeter","exception" + str(e), QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
+    def serialize_pyCVRect(self,rect:mlcm.pyCVRect):
+        return{
+            'x':rect.x,
+            'y':rect.y,
+            'width':rect.width,
+            'height':rect.height
+        }
     def start_capture(self):
         try:
             self.pixel_format=self.get_current_pixel_format()
