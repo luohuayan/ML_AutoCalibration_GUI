@@ -301,6 +301,7 @@ class CaptureImageFixedLUMWindow(QDialog):
             self.distortion_flag=self.checkbox_distortion_flag.isChecked()
             self.exposure_flag=self.checkbox_exposure_flag.isChecked()
             self.four_color_flag=self.checkbox_four_color_flag.isChecked()
+            self.use_rx=self.cb_useRX.isChecked()
             self.cali_config=mlcm.pyCalibrationConfig(
                 input_path=self.input_path,
                 dark_flag=self.dark_flag,
@@ -323,7 +324,8 @@ class CaptureImageFixedLUMWindow(QDialog):
                 'nd_list':self.nd_list,
                 'xyz_list':self.xyz_list,
                 'ET_list':self.et_list,
-                'cali_config':self.cali_config
+                'cali_config':self.cali_config,
+                'use_rx':self.use_rx
             }
             self.captureimagefixedLUMafterFFCThread=CaptureImageFixedLUMafterFFCThread(parameters)
             self.captureimagefixedLUMafterFFCThread.finished.connect(self.on_capture_finished)
