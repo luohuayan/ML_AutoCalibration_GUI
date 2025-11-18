@@ -169,7 +169,7 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
         grid_layout.addWidget(self.btn_load_config, 9, 1)
 
         self.label_path = QLabel()
-        self.label_path.setText("数据输出路径:")
+        self.label_path.setText("保存路径:")
         grid_layout.addWidget(self.label_path, 10, 0)
 
         self.line_edit_path = QLineEdit()
@@ -529,7 +529,7 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
                     'binn': self.binn,
                     'exposure_map': self.exposure_map_obj,
                     'capture_times': self.capture_times,
-                    'save_path': self.eye1_path,
+                    'save_path': self.out_path,
                     'use_RX': self.useRX,
                     'sph_list': self.sphlist,
                     'cyl_list': self.cyllist,

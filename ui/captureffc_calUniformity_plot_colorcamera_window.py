@@ -379,7 +379,7 @@ class CaptureFFCCalUniformityPlotColorCameraWindow(QDialog):
                     'binn': self.binn,
                     'exposure_map': self.exposure_map_obj,
                     'capture_times': self.capture_times,
-                    'save_path': self.eye1_path,
+                    'save_path': self.uniformity_path,
                     'use_RX': self.use_RX,
                     'sph_list': self.sph_list,
                     'cyl_list': self.cyl_list,
@@ -400,7 +400,7 @@ class CaptureFFCCalUniformityPlotColorCameraWindow(QDialog):
                 'colorimeter': self.colorimeter,
                 'nd_list': self.nd_list,
                 'xyz_list': self.xyz_list,
-                'save_path': self.eye1_path
+                'save_path': self.uniformity_path
             }
             synthetic_thread=CalSyntheticThread(synthetic_parameters)
             self.threads.append(synthetic_thread)
