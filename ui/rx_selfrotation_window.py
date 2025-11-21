@@ -18,7 +18,7 @@ from PyQt5.QtWidgets import (
     QComboBox,
     QFormLayout
 )
-from PyQt5.QtGui import QIntValidator
+from PyQt5.QtGui import QIntValidator,QDoubleValidator
 from core.app_config import AppConfig
 from PyQt5.QtCore import pyqtSignal, Qt,QThread
 import mlcolorimeter as mlcm
@@ -51,7 +51,7 @@ class RXSelfRotationWindow(QDialog):
 
         self.colorimeter = AppConfig.get_colorimeter()
         self.cylaxis=AppConfig.get_cylaxis()
-
+        self.double_validator=QDoubleValidator()
         self.dialog_title = "选择文件夹"
         self.default_path = ""
         self.file_name = "mono_calibration.xlsx"
@@ -131,6 +131,7 @@ class RXSelfRotationWindow(QDialog):
         self.label_pixel_size=QLabel("pixel_size:")
         grid_layout.addWidget(self.label_pixel_size,7,0)
         self.line_edit_pixel_size=QLineEdit()
+        self.line_edit_pixel_size.setValidator(self.double_validator)
         self.line_edit_pixel_size.setText("0.00345")
         self.line_edit_pixel_size.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         grid_layout.addWidget(self.line_edit_pixel_size,8,0)
@@ -138,6 +139,7 @@ class RXSelfRotationWindow(QDialog):
         self.label_focal_length=QLabel("focal_length:")
         grid_layout.addWidget(self.label_focal_length,9,0)
         self.line_edit_focal_length=QLineEdit()
+        self.line_edit_focal_length.setValidator(self.double_validator)
         self.line_edit_focal_length.setText("40")
         self.line_edit_focal_length.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         grid_layout.addWidget(self.line_edit_focal_length,10,0)
@@ -145,6 +147,8 @@ class RXSelfRotationWindow(QDialog):
         self.label_move_pixel=QLabel("move_pixel:(roi中心点离十字线中心的像素距离)")
         grid_layout.addWidget(self.label_move_pixel,11,0)
         self.line_edit_move_pixel=QLineEdit()
+        intvalidator=QIntValidator()
+        self.line_edit_move_pixel.setValidator(intvalidator)
         self.line_edit_move_pixel.setText("80")
         self.line_edit_move_pixel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         grid_layout.addWidget(self.line_edit_move_pixel,12,0)
@@ -152,6 +156,8 @@ class RXSelfRotationWindow(QDialog):
         self.label_freq0=QLabel("freq0:")
         grid_layout.addWidget(self.label_freq0,13,0)
         self.line_edit_freq0=QLineEdit()
+        doubleValidator=QDoubleValidator()
+        self.line_edit_freq0.setValidator(doubleValidator)
         self.line_edit_freq0.setText("10")
         self.line_edit_freq0.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         grid_layout.addWidget(self.line_edit_freq0,14,0)
@@ -203,7 +209,7 @@ class RXSelfRotationWindow(QDialog):
         if text:
             value=int(text)
             if value <0 or value > 4:
-                self.line_edit_binn.setText("0")
+                self.line_edit_binn.setText("")
 
     def start_mtf_calculate(self):
         try:
