@@ -18,6 +18,7 @@ from PyQt5.QtWidgets import (
     QComboBox,
     QFormLayout
 )
+from PyQt5.QtGui import QIntValidator,QDoubleValidator
 from core.app_config import AppConfig
 from PyQt5.QtCore import pyqtSignal, Qt,QThread
 import mlcolorimeter as mlcm
@@ -56,6 +57,7 @@ class MonoCalibrationColorCameraWindow(QDialog):
         self.setWindowFlags(Qt.Window | Qt.WindowMaximizeButtonHint | Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint)
 
         self.colorimeter = AppConfig.get_colorimeter()
+        self.double_validator=QDoubleValidator()
         self.dialog_title = "选择文件夹"
         self.default_path = ""
         self.select_path=path
@@ -94,8 +96,10 @@ class MonoCalibrationColorCameraWindow(QDialog):
         self.label_binnlist = QLabel(" binning：")
         self.line_edit_binnlist = QLineEdit()
         self.line_edit_binnlist.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        self.line_edit_binnlist.setText("0")
+        int_validator=QIntValidator(0,4,self)
+        self.line_edit_binnlist.setValidator(int_validator)
         self.line_edit_binnlist.setPlaceholderText("0: 1X1, 1: 2X2, 2: 4X4, 3: 8X8, 4: 16X16")
+        self.line_edit_binnlist.textChanged.connect(self.validate_input)
         from_layout0.addRow(self.label_binnlist, self.line_edit_binnlist)
 
         group_box0.setLayout(from_layout0)
@@ -138,6 +142,8 @@ class MonoCalibrationColorCameraWindow(QDialog):
         self.label_exposure_offset.setText("exposure offset：")
         grid_layout.addWidget(self.label_exposure_offset, 9, 0)
         self.line_edit_exposure_offset = QLineEdit()
+        self.line_edit_exposure_offset.setValidator(self.double_validator)
+
         self.line_edit_exposure_offset.setText("0")
         self.line_edit_exposure_offset.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)  
         grid_layout.addWidget(self.line_edit_exposure_offset, 10, 0)
@@ -146,6 +152,7 @@ class MonoCalibrationColorCameraWindow(QDialog):
         self.label_gray_offset.setText("gray offset：")
         grid_layout.addWidget(self.label_gray_offset, 11, 0)
         self.line_edit_gray_offset = QLineEdit()
+        self.line_edit_gray_offset.setValidator(self.double_validator)
         self.line_edit_gray_offset.setText("0")
         self.line_edit_gray_offset.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)  
         grid_layout.addWidget(self.line_edit_gray_offset, 12, 0)
@@ -241,6 +248,13 @@ class MonoCalibrationColorCameraWindow(QDialog):
         grid_layout.addItem(spacer)
 
         self.setLayout(grid_layout)
+
+    def validate_input(self):
+        text=self.line_edit_binnlist.text()
+        if text:
+            value=int(text)
+            if value <0 or value > 4:
+                self.line_edit_binnlist.setText("")
 
     def _open_folder_dialog(self):
         # 打开文件夹选择对话框

@@ -19,6 +19,7 @@ from PyQt5.QtWidgets import (
     QFormLayout,
     QListWidget
 )
+from PyQt5.QtGui import QIntValidator,QDoubleValidator
 from core.app_config import AppConfig
 from PyQt5.QtCore import pyqtSignal, Qt,QThread
 import mlcolorimeter as mlcm
@@ -71,6 +72,8 @@ class FitOnlineWindow(QDialog):
         self.setWindowFlags(Qt.Window | Qt.WindowMaximizeButtonHint | Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint)
 
         self.colorimeter = AppConfig.get_colorimeter()
+        self.int_validator=QIntValidator()
+        self.double_validator=QDoubleValidator()
         self.dialog_title = "选择文件夹"
         self.default_path = ""
         self.roi_list=[]
@@ -89,7 +92,10 @@ class FitOnlineWindow(QDialog):
         self.label_binnlist = QLabel(" binning：")
         self.line_edit_binnlist = QLineEdit()
         self.line_edit_binnlist.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        int_validator=QIntValidator(0,4,self)
+        self.line_edit_binnlist.setValidator(int_validator)
         self.line_edit_binnlist.setPlaceholderText("0: 1X1, 1: 2X2, 2: 4X4, 3: 8X8, 4: 16X16")
+        self.line_edit_binnlist.textChanged.connect(self.validate_input)
         from_layout0.addRow(self.label_binnlist, self.line_edit_binnlist)
 
         self.label_pixel_format = QLabel(" pixel_format：")
@@ -135,21 +141,28 @@ class FitOnlineWindow(QDialog):
 
         self.label_x_input=QLabel("x_input: ")
         self.line_edit_x_input = QLineEdit()
+        self.line_edit_x_input.setValidator(self.int_validator)
         self.line_edit_x_input.setText("0")
         self.line_edit_x_input.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
         self.label_y_input=QLabel("y_input: ")
         self.line_edit_y_input = QLineEdit()
+        self.line_edit_y_input.setValidator(self.int_validator)
+
         self.line_edit_y_input.setText("0")
         self.line_edit_y_input.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
         self.label_width_input=QLabel("width_input: ")
         self.line_edit_width_input = QLineEdit()
+        self.line_edit_width_input.setValidator(self.int_validator)
+
         self.line_edit_width_input.setText("300")
         self.line_edit_width_input.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
         self.label_height_input=QLabel("height_input: ")
         self.line_edit_height_input = QLineEdit()
+        self.line_edit_height_input.setValidator(self.int_validator)
+
         self.line_edit_height_input.setText("300")
         self.line_edit_height_input.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
@@ -216,6 +229,13 @@ class FitOnlineWindow(QDialog):
         grid_layout.addItem(spacer)
 
         self.setLayout(grid_layout)
+
+    def validate_input(self):
+        text=self.line_edit_binnlist.text()
+        if text:
+            value=int(text)
+            if value <0 or value > 4:
+                self.line_edit_binnlist.setText("")
 
     def start_fit_online(self):
         try:
