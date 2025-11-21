@@ -37,6 +37,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle("Colorimeter Controller")
         self.setGeometry(100, 100, 1024, 768)
+        self.setWindowIcon(QIcon("F:/ML_AutoCalibration_GUI/ML_AutoCalibration_GUI/dist/FingerPrintScanMTF.ico"))
         self._init_ui()
         self.colorimeter = AppConfig.get_colorimeter()
         self.select_path=""
