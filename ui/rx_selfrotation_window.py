@@ -18,6 +18,7 @@ from PyQt5.QtWidgets import (
     QComboBox,
     QFormLayout
 )
+from PyQt5.QtGui import QIntValidator
 from core.app_config import AppConfig
 from PyQt5.QtCore import pyqtSignal, Qt,QThread
 import mlcolorimeter as mlcm
@@ -86,8 +87,12 @@ class RXSelfRotationWindow(QDialog):
         self.label_binn = QLabel(" binning：")
         self.line_edit_binn = QLineEdit()
         self.line_edit_binn.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        int_validator=QIntValidator(0,4,self)
+        self.line_edit_binn.setValidator(int_validator)
         self.line_edit_binn.setText("0")
         self.line_edit_binn.setPlaceholderText("0: 1X1, 1: 2X2, 2: 4X4, 3: 8X8, 4: 16X16")
+        self.line_edit_binn.textChanged.connect(self.validate_input)
+        
         from_layout0.addRow(self.label_binn, self.line_edit_binn)
 
         self.label_pixel_format = QLabel(" pixel_format：")
@@ -192,6 +197,13 @@ class RXSelfRotationWindow(QDialog):
         grid_layout.addItem(spacer)
 
         self.setLayout(grid_layout)
+
+    def validate_input(self):
+        text=self.line_edit_binn.text()
+        if text:
+            value=int(text)
+            if value <0 or value > 4:
+                self.line_edit_binn.setText("0")
 
     def start_mtf_calculate(self):
         try:
