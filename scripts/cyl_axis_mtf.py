@@ -6,6 +6,7 @@ from datetime import datetime
 import cylaxismtf.MTF_cylaxis as mtfca
 import cv2
 import numpy as np
+import time
 
 def extract_rois(image,points,width=30,height=30):
     """
@@ -59,8 +60,14 @@ def mtf_calculate(
         pixel_size:float,
         focal_length:float,
         cyl_list:List[float],
-        axis_list:List[int]
+        axis_list:List[int],
+        status_callback=None
 ):
+    def update_status(message):
+        if status_callback:
+            status_callback(message)
+
+    update_status("mtf_calculate start")
     # module_id from the ModuleConfig.json
     module_id = 1
     mtf_data={ax:[] for ax in axis_list}
@@ -134,6 +141,7 @@ def mtf_calculate(
                             else:
                                 results.append(0.0)
                         mtf_data[axis].append(", ".join(map(str, results)))  # 将四个值合并为字符串
+                        update_status(f"{cyl}d_{axis}deg:{results}")
                         # 在柱面镜转到一个角度后，在下一个角度转动之前，先将柱面镜和轴转到0的位置
                         rx = mlcm.pyRXCombination(0, 0, 0)
                         ret=ml_mono.ml_set_rx_syn(rx)
@@ -145,6 +153,7 @@ def mtf_calculate(
             output_excel_path=os.path.join(save_path,output_excel_name)
             # 保存为 Excel 文件
             mtf_df.to_excel(output_excel_path, sheet_name="MTF_Values")
+            update_status("finish")
 
 # if __name__ == "__main__":
 #     # set mono module calibration configuration path
