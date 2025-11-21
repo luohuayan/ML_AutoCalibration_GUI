@@ -30,6 +30,7 @@ from ui.rx_selfrotation_window import RXSelfRotationWindow
 from ui.FFC_calculate_binning_window import FFCCalculateBinningWindow
 from ui.fit_online_window import FitOnlineWindow
 from ui.version_window import VersionWindow
+from ui.daogui_vid_window import DaoGuiVIDWindow
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -58,6 +59,7 @@ class MainWindow(QMainWindow):
         self.ffc_calculatebinning_window=None
         self.fit_online_window_=None
         self.version_window=None
+        self.daogui_window=None
         
 
 
@@ -78,6 +80,8 @@ class MainWindow(QMainWindow):
         # Scripts 菜单
         scripts_menu = menubar.addMenu("&Scripts_Gray")
         scripts_menu1 = menubar.addMenu("&Scripts_Color")
+        scripts_menu2 = menubar.addMenu("&Daogui_VID")
+
 
         help_Action=menubar.addAction("Help")
         help_Action.triggered.connect(self.open_version)
@@ -128,6 +132,9 @@ class MainWindow(QMainWindow):
         script15_action = QAction("circle_polynomial_fit_online", self)
         script15_action.triggered.connect(self.fit_online)
 
+        script16_action = QAction("daogui_vid_mtf", self)
+        script16_action.triggered.connect(self.daogui_vid)
+
         scripts_menu.addAction(script1_action)
         scripts_menu.addAction(script2_action)
         scripts_menu.addAction(script3_action)
@@ -143,6 +150,7 @@ class MainWindow(QMainWindow):
         scripts_menu.addAction(script13_action)
         scripts_menu.addAction(script14_action)
         scripts_menu.addAction(script15_action)
+        scripts_menu2.addAction(script16_action)
 
     def create_main_widget(self):
         # 主控件
@@ -295,3 +303,7 @@ class MainWindow(QMainWindow):
     def fit_online(self):
         self.fit_online_window_=FitOnlineWindow()
         self.fit_online_window_.exec_()
+
+    def daogui_vid(self):
+        self.daogui_window=DaoGuiVIDWindow()
+        self.daogui_window.exec_()
