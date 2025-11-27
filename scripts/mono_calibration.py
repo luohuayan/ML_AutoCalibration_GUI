@@ -153,10 +153,7 @@ def mono_calibration(
             exposure_mode=mlcm.ExposureMode.Auto, exposure_time=100
         )
     results = []
-    for nd in nd_list:
-        # switch nd filter
-        nd_enum = mlcm.MLFilterEnum(int(nd)) # et MLFilterEnum.ND0
-        mono.ml_move_nd_syn(nd_enum)
+    if nd_list==[]:
         for gray in gray_range:
             aeparams = mlcm.pyAEParams(dynamic_range=gray,target_max=gray + 0.05,target_min=gray - 0.05, max_time=19000, rate=1000000)
             ret = mono.ml_update_AE_params(aeparams)
@@ -167,13 +164,13 @@ def mono_calibration(
                 average_gray = process_image(img,image_x,image_y,roi_width,roi_height)
                 average_gray+=gray_offset
                 exposure_time = mono.ml_get_exposure_time() + expusure_offset
-                update_status(f"{mlcm.MLFilterEnum_to_str(nd_enum)}_{str(gray)}_averageGray:{str(average_gray)}_exposureTime:{str(exposure_time)}")
+                update_status(f"{str(gray)}_averageGray:{str(average_gray)}_exposureTime:{str(exposure_time)}")
                 gray_ET= average_gray / exposure_time if exposure_time > 0 else 0
                 luminance_k= luminance_no_xyz / gray_ET if gray_ET > 0 else 0
                 radiance_k = radiance / gray_ET if gray_ET > 0 else 0
                 results.append({
                     "Gray Range": f"{gray * 100}" + "%",
-                    "NDFilter": mlcm.MLFilterEnum_to_str(nd_enum),
+                    "NDFilter": "None",
                     "AVEGray": average_gray,
                     "ExposureTime": exposure_time,
                     "G/ET": gray_ET,
@@ -198,14 +195,14 @@ def mono_calibration(
                     average_gray+=gray_offset
                     # get exposure time
                     exposure_time = mono.ml_get_exposure_time() + expusure_offset
-                    update_status(f"{mlcm.MLFilterEnum_to_str(nd_enum)}_{str(gray)}_{mlcm.MLFilterEnum_to_str(xyz_enum)}_averageGray:{str(average_gray)}_exposureTime:{str(exposure_time)}")
+                    update_status(f"{str(gray)}_{mlcm.MLFilterEnum_to_str(xyz_enum)}_averageGray:{str(average_gray)}_exposureTime:{str(exposure_time)}")
                     gray_ET= average_gray / exposure_time if exposure_time > 0 else 0
                     luminance_k= Luminance / gray_ET if gray_ET > 0 else 0
                     radiance_k = radiance / gray_ET if gray_ET > 0 else 0
                     # add result to the list
                     results.append({
                         "Gray Range": f"{gray * 100}" + "%",
-                        "NDFilter": mlcm.MLFilterEnum_to_str(nd_enum),
+                        "NDFilter": "None",
                         "XYZFilter": mlcm.MLFilterEnum_to_str(xyz_enum),
                         "AVEGray": average_gray,
                         "ExposureTime": exposure_time,
@@ -215,19 +212,91 @@ def mono_calibration(
                         "Radiance": radiance,
                         "K(R)": radiance_k
                     })
+
+    else:
+        for nd in nd_list:
+            # switch nd filter
+            nd_enum = mlcm.MLFilterEnum(int(nd)) # et MLFilterEnum.ND0
+            mono.ml_move_nd_syn(nd_enum)
+            for gray in gray_range:
+                aeparams = mlcm.pyAEParams(dynamic_range=gray,target_max=gray + 0.05,target_min=gray - 0.05, max_time=19000, rate=1000000)
+                ret = mono.ml_update_AE_params(aeparams)
+                if xyz_list == []:
+                    mono.ml_set_exposure(exposure=exposure)
+                    mono.ml_capture_image_syn()
+                    img = mono.ml_get_image()
+                    average_gray = process_image(img,image_x,image_y,roi_width,roi_height)
+                    average_gray+=gray_offset
+                    exposure_time = mono.ml_get_exposure_time() + expusure_offset
+                    update_status(f"{mlcm.MLFilterEnum_to_str(nd_enum)}_{str(gray)}_averageGray:{str(average_gray)}_exposureTime:{str(exposure_time)}")
+                    gray_ET= average_gray / exposure_time if exposure_time > 0 else 0
+                    luminance_k= luminance_no_xyz / gray_ET if gray_ET > 0 else 0
+                    radiance_k = radiance / gray_ET if gray_ET > 0 else 0
+                    results.append({
+                        "Gray Range": f"{gray * 100}" + "%",
+                        "NDFilter": mlcm.MLFilterEnum_to_str(nd_enum),
+                        "AVEGray": average_gray,
+                        "ExposureTime": exposure_time,
+                        "G/ET": gray_ET,
+                        "Luminance": luminance_no_xyz,
+                        "K(L)":luminance_k,
+                        "Radiance": radiance,
+                        "K(R)": radiance_k
+                    })
+                else:
+                    for xyz in xyz_list:
+                        xyz_enum = mlcm.MLFilterEnum(int(xyz))
+                        Luminance = luminance_values[xyz_enum]
+                        # move color filter
+                        mono.ml_move_xyz_syn(xyz_enum)
+                        # set exposure by pyExposureSetting
+                        mono.ml_set_exposure(exposure=exposure)
+                        # capture single image from camera
+                        mono.ml_capture_image_syn()
+                        img = mono.ml_get_image()
+                        # mono calibration
+                        average_gray = process_image(img,image_x,image_y,roi_width,roi_height)
+                        average_gray+=gray_offset
+                        # get exposure time
+                        exposure_time = mono.ml_get_exposure_time() + expusure_offset
+                        update_status(f"{mlcm.MLFilterEnum_to_str(nd_enum)}_{str(gray)}_{mlcm.MLFilterEnum_to_str(xyz_enum)}_averageGray:{str(average_gray)}_exposureTime:{str(exposure_time)}")
+                        gray_ET= average_gray / exposure_time if exposure_time > 0 else 0
+                        luminance_k= Luminance / gray_ET if gray_ET > 0 else 0
+                        radiance_k = radiance / gray_ET if gray_ET > 0 else 0
+                        # add result to the list
+                        results.append({
+                            "Gray Range": f"{gray * 100}" + "%",
+                            "NDFilter": mlcm.MLFilterEnum_to_str(nd_enum),
+                            "XYZFilter": mlcm.MLFilterEnum_to_str(xyz_enum),
+                            "AVEGray": average_gray,
+                            "ExposureTime": exposure_time,
+                            "G/ET": gray_ET,
+                            "Luminance": Luminance,
+                            "K(L)":luminance_k,
+                            "Radiance": radiance,
+                            "K(R)": radiance_k
+                        })
+        
     time.sleep(1)
     update_status("写入配置中...")
     
     # 将results中灰度值在80%的luminance_k和radiance_k写入配置文件，b为0
     for item in results:
         if item["Gray Range"] == "80.0%":
-            # 文件夹命名格式为Aperture_NDFilter_LightSource
-            nd_filter = item["NDFilter"]
-            if xyz_list == []:
-                file_name="" + apturate + "_" + nd_filter + "_" + light_source
+            if nd_list==[]:
+                if xyz_list == []:
+                    file_name="" + apturate + "_" + light_source
+                else:
+                    xyz_filter = item["XYZFilter"]
+                    file_name="" + apturate + "_" + xyz_filter + "_" + light_source
             else:
-                xyz_filter = item["XYZFilter"]
-                file_name="" + apturate + "_" + nd_filter + "_" + xyz_filter + "_" + light_source
+                # 文件夹命名格式为Aperture_NDFilter_LightSource
+                nd_filter = item["NDFilter"]
+                if xyz_list == []:
+                    file_name="" + apturate + "_" + nd_filter + "_" + light_source
+                else:
+                    xyz_filter = item["XYZFilter"]
+                    file_name="" + apturate + "_" + nd_filter + "_" + xyz_filter + "_" + light_source
             luminance_k = item["K(L)"]
             radiance_k = item["K(R)"]
             luminance_config_path = os.path.join(eye1_path, "Luminance")

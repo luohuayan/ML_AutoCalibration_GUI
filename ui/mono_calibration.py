@@ -124,6 +124,10 @@ class MonoCalibrationWindow(QDialog):
         self.label_ndlist = QLabel()
         self.label_ndlist.setText("nd列表, (4: ND0, 5: ND1, 6: ND2, 7:ND3, 8:ND4), 以空格隔开")
         grid_layout.addWidget(self.label_ndlist, 3, 0)
+        self.checkbox_exist_nd=QCheckBox("无nd滤光片")
+        self.checkbox_exist_nd.stateChanged.connect(self.on_nd_checkbox_changed)
+        grid_layout.addWidget(self.checkbox_exist_nd,3,1)
+
         self.line_edit_ndlist = QLineEdit()
         self.line_edit_ndlist.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         grid_layout.addWidget(self.line_edit_ndlist, 4, 0)
@@ -293,6 +297,11 @@ class MonoCalibrationWindow(QDialog):
         self.line_edit_xyzlist.setEnabled(not is_checked)
         self.line_edit_xyzlist.setText("") if is_checked else None
 
+    def on_nd_checkbox_changed(self):
+        is_checked=self.checkbox_exist_nd.isChecked()
+        self.line_edit_ndlist.setEnabled(not is_checked)
+        self.line_edit_ndlist.setText("") if is_checked else None
+
 
     def start_mono_calibration(self):
         try:
@@ -315,7 +324,10 @@ class MonoCalibrationWindow(QDialog):
                 else:
                     return
             self.aperture = self.line_edit_aperture.text()
-            self.nd_list=self.line_edit_ndlist.text().split()
+            if self.checkbox_exist_nd.isChecked():
+                self.nd_list=[]
+            else:
+                self.nd_list=self.line_edit_ndlist.text().split()
             self.light_source=self.rgbw_btngroup.checkedButton().text()
             self.radiance=float(self.line_edit_radiance_lum.text())
             self.gray_list=[float(gray) for gray in self.line_edit_gray_range.text().split()]
