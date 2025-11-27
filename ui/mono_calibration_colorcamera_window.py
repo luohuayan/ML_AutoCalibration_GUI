@@ -102,6 +102,12 @@ class MonoCalibrationColorCameraWindow(QDialog):
         self.line_edit_binnlist.textChanged.connect(self.validate_input)
         from_layout0.addRow(self.label_binnlist, self.line_edit_binnlist)
 
+        self.label_exposure_time = QLabel("曝光时间(自动曝光：ms):")
+        self.line_exposure_time = QLineEdit()
+        self.line_exposure_time.setText("100")
+        self.line_exposure_time.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        from_layout0.addRow(self.label_exposure_time,self.line_exposure_time)
+
         group_box0.setLayout(from_layout0)
         grid_layout.addWidget(group_box0, 0, 0)
 
@@ -292,6 +298,7 @@ class MonoCalibrationColorCameraWindow(QDialog):
             self.out_path=self.line_edit_path.text()
             self.gray_offset=float(self.line_edit_gray_offset.text())
             self.exposure_offset=float(self.line_edit_exposure_offset.text())
+            self.exposure_time=float(self.line_exposure_time.text())
             
             self.status_label.setText("<span style='color: green;'>状态: 正在进行单色定标...</span>")  # 更新状态
             self.btn_capture.setEnabled(False)
@@ -313,7 +320,8 @@ class MonoCalibrationColorCameraWindow(QDialog):
                 'image_point': self.image_point,
                 'roi_size': self.roi_size,
                 'gray_offset':self.gray_offset,
-                'exposure_offset':self.exposure_offset
+                'exposure_offset':self.exposure_offset,
+                'exposure_times':self.exposure_time
             }
             self.calibration_thread=CalibrationColorThread(parameters)
             self.calibration_thread.finished.connect(self.on_calibration_finished)
@@ -330,7 +338,7 @@ class MonoCalibrationColorCameraWindow(QDialog):
     
     def on_calibration_finished(self):
         QMessageBox.information(self,"MLColorimeter","单色定标完成!",QMessageBox.Ok)
-        self.status_label.setText("<span style='color: green;'>状态: 单色定标完成！</span>")  # 更新状态
+        # self.status_label.setText("<span style='color: green;'>状态: 单色定标完成！</span>")  # 更新状态
         self.btn_capture.setEnabled(True)
         self.is_calibrating=False # 标识定标完成
 
