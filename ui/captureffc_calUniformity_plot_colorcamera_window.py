@@ -564,7 +564,6 @@ class CaptureFFCCalUniformityPlotColorCameraWindow(QDialog):
             self.cb_calculate_synthetic.hide()
             self.cb_calculate_synthetic.setChecked(False)
 
-
     def load_exposure_config(self):
         try:
             nd_list=self.line_edit_ndlist.text().strip().split()
