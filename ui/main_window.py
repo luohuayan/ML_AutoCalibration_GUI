@@ -31,6 +31,7 @@ from ui.FFC_calculate_binning_window import FFCCalculateBinningWindow
 from ui.fit_online_window import FitOnlineWindow
 from ui.version_window import VersionWindow
 from ui.daogui_vid_window import DaoGuiVIDWindow
+from ui.image_detection_window import ImageDetectionWindow
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -61,6 +62,7 @@ class MainWindow(QMainWindow):
         self.fit_online_window_=None
         self.version_window=None
         self.daogui_window=None
+        self.imagedetction_window=None
         
 
 
@@ -82,6 +84,7 @@ class MainWindow(QMainWindow):
         scripts_menu = menubar.addMenu("&Scripts_Gray")
         scripts_menu1 = menubar.addMenu("&Scripts_Color")
         scripts_menu2 = menubar.addMenu("&Daogui_VID")
+        scripts_menu3 = menubar.addMenu("&Scripts_Tool")
 
 
         help_Action=menubar.addAction("Help")
@@ -136,6 +139,9 @@ class MainWindow(QMainWindow):
         script16_action = QAction("daogui_vid_mtf", self)
         script16_action.triggered.connect(self.daogui_vid)
 
+        script17_action = QAction("image_detection", self)
+        script17_action.triggered.connect(self.image_detection)
+
         scripts_menu.addAction(script1_action)
         scripts_menu.addAction(script2_action)
         scripts_menu.addAction(script3_action)
@@ -152,6 +158,7 @@ class MainWindow(QMainWindow):
         scripts_menu.addAction(script14_action)
         scripts_menu.addAction(script15_action)
         scripts_menu2.addAction(script16_action)
+        scripts_menu3.addAction(script17_action)
 
     def create_main_widget(self):
         # 主控件
@@ -308,3 +315,7 @@ class MainWindow(QMainWindow):
     def daogui_vid(self):
         self.daogui_window=DaoGuiVIDWindow()
         self.daogui_window.exec_()
+
+    def image_detection(self):
+        self.imagedetction_window=ImageDetectionWindow()
+        self.imagedetction_window.exec_()
