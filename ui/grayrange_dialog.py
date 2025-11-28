@@ -18,19 +18,19 @@ from PyQt5.QtWidgets import (
 class GrayRangeDialog(QDialog):
     def __init__(self, loop_i, parent=None):
         super().__init__(parent)
-        self.setWindowTitle(f"输入循环 {loop_i} 的灰度范围")
+        self.setWindowTitle(f"输入灰度 {loop_i}0% 的灰度显示范围")
 
         self.loop_i = loop_i
         self.min_gray_input = QLineEdit(self)
         self.max_gray_input = QLineEdit(self)
 
         layout = QVBoxLayout()
-        layout.addWidget(QLabel(f"循环 {loop_i} 对应的灰度范围:"))
+        layout.addWidget(QLabel(f"灰度 {loop_i}0% 对应的灰度显示范围:"))
         
-        layout.addWidget(QLabel("最小灰度:"))
+        layout.addWidget(QLabel("最小值:"))
         layout.addWidget(self.min_gray_input)
         
-        layout.addWidget(QLabel("最大灰度:"))
+        layout.addWidget(QLabel("最大值:"))
         layout.addWidget(self.max_gray_input)
 
         button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)

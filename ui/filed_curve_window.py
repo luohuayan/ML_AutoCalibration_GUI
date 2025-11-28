@@ -18,6 +18,7 @@ from PyQt5.QtWidgets import (
     QListWidget,
     QComboBox,
 )
+from PyQt5.QtGui import QIntValidator,QDoubleValidator
 from core.app_config import AppConfig
 from PyQt5.QtCore import pyqtSignal, Qt,QThread
 import mlcolorimeter as mlcm
@@ -28,6 +29,7 @@ import matplotlib.pyplot as plt
 from openpyxl import Workbook, load_workbook
 from openpyxl.drawing.image import Image
 from scripts.field_curve import field_curve
+import json
 
 class FiledCurveThread(QThread):
     finished=pyqtSignal() # 线程完成信号
@@ -52,6 +54,9 @@ class FiledCurveWindow(QDialog):
         self.setGeometry(200, 200, 800, 500)
         self.colorimeter = AppConfig.get_colorimeter()
         self.setWindowFlags(Qt.Window | Qt.WindowMaximizeButtonHint | Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint)
+
+        self.double_validator=QDoubleValidator()
+        self.int_validator=QIntValidator()
         
         self.dialog_title = "选择文件夹"
         self.default_path = ""
@@ -91,7 +96,10 @@ class FiledCurveWindow(QDialog):
         self.label_binnlist = QLabel(" binning：")
         self.line_edit_binnlist = QLineEdit()
         self.line_edit_binnlist.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        int_validator=QIntValidator(0,4,self)
+        self.line_edit_binnlist.setValidator(int_validator)
         self.line_edit_binnlist.setPlaceholderText("0: 1X1, 1: 2X2, 2: 4X4, 3: 8X8, 4: 16X16")
+        self.line_edit_binnlist.textChanged.connect(self.validate_input)
         from_layout0.addRow(self.label_binnlist, self.line_edit_binnlist)
 
         self.label_exposure_mode = QLabel(" exposure_mode：")
@@ -101,6 +109,7 @@ class FiledCurveWindow(QDialog):
 
         self.label_exposure_time = QLabel(" exposure_time(ms)：")
         self.line_edit_exposure_time = QLineEdit()
+        self.line_edit_exposure_time.setValidator(self.double_validator)
         self.line_edit_exposure_time.setText("100")
         self.line_edit_exposure_time.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
@@ -130,21 +139,25 @@ class FiledCurveWindow(QDialog):
 
         self.label_focus_max=QLabel("focus_max: ")
         self.line_edit_focus_max = QLineEdit()
+        self.line_edit_focus_max.setValidator(self.double_validator)
         self.line_edit_focus_max.setText("10")
         self.line_edit_focus_max.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
         self.label_focus_min=QLabel("focus_min: ")
         self.line_edit_focus_min = QLineEdit()
+        self.line_edit_focus_min.setValidator(self.double_validator)
         self.line_edit_focus_min.setText("-10")
         self.line_edit_focus_min.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
         self.label_inf_pos=QLabel("inf_pos: ")
         self.line_edit_inf_pos = QLineEdit()
+        self.line_edit_inf_pos.setValidator(self.double_validator)
         self.line_edit_inf_pos.setText("0")
         self.line_edit_inf_pos.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
         self.label_focal_length=QLabel("focal_length: ")
         self.line_edit_focal_length = QLineEdit()
+        self.line_edit_focal_length.setValidator(self.double_validator)
         self.line_edit_focal_length.setText("4.25")
         self.line_edit_focal_length.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
@@ -161,11 +174,13 @@ class FiledCurveWindow(QDialog):
 
         self.label_pixel_size=QLabel("pixel_size: ")
         self.line_edit_pixel_size = QLineEdit()
+        self.line_edit_pixel_size.setValidator(self.double_validator)
         self.line_edit_pixel_size.setText("0.0014")
         self.line_edit_pixel_size.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
         self.label_focal_space=QLabel("focal_space: ")
         self.line_edit_focal_space = QLineEdit()
+        self.line_edit_focal_space.setValidator(self.double_validator)
         self.line_edit_focal_space.setText("0.5")
         self.line_edit_focal_space.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
@@ -192,6 +207,7 @@ class FiledCurveWindow(QDialog):
 
         self.label_rough_step=QLabel("rough_step: ")
         self.line_edit_rough_step = QLineEdit()
+        self.line_edit_rough_step.setValidator(self.double_validator)
         self.line_edit_rough_step.setText("0.1")
         self.line_edit_rough_step.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
@@ -202,6 +218,7 @@ class FiledCurveWindow(QDialog):
 
         self.label_average_count=QLabel("average_count: ")
         self.line_edit_average_count = QLineEdit()
+        self.line_edit_average_count.setValidator(self.int_validator)
         self.line_edit_average_count.setText("3")
         self.line_edit_average_count.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
@@ -230,21 +247,25 @@ class FiledCurveWindow(QDialog):
 
         self.label_x_input=QLabel("x_input: ")
         self.line_edit_x_input = QLineEdit()
+        self.line_edit_x_input.setValidator(self.int_validator)
         self.line_edit_x_input.setText("0")
         self.line_edit_x_input.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
         self.label_y_input=QLabel("y_input: ")
         self.line_edit_y_input = QLineEdit()
+        self.line_edit_y_input.setValidator(self.int_validator)
         self.line_edit_y_input.setText("0")
         self.line_edit_y_input.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
         self.label_width_input=QLabel("width_input: ")
         self.line_edit_width_input = QLineEdit()
+        self.line_edit_width_input.setValidator(self.int_validator)
         self.line_edit_width_input.setText("100")
         self.line_edit_width_input.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
         self.label_height_input=QLabel("height_input: ")
         self.line_edit_height_input = QLineEdit()
+        self.line_edit_height_input.setValidator(self.int_validator)
         self.line_edit_height_input.setText("100")
         self.line_edit_height_input.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
@@ -259,12 +280,24 @@ class FiledCurveWindow(QDialog):
         horizontal_layout5.addWidget(self.line_edit_height_input)
         from_layout1.addRow(horizontal_layout5)
 
+        self.label_roi_count=QLabel("roi_count: ")
+        self.line_edit_roi_count = QLineEdit()
+        self.line_edit_roi_count.setReadOnly(True)
+        self.line_edit_roi_count.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        from_layout1.addRow(self.label_roi_count,self.line_edit_roi_count)
+
 
         self.add_button = QPushButton("Add ROI")
         self.add_button.clicked.connect(self.add_roi)
         self.delete_button=QPushButton("Delete ROI")
         self.delete_button.clicked.connect(self.delete_roi)
         from_layout1.addRow(self.add_button,self.delete_button)
+
+        self.load_config_button=QPushButton("Load Config")
+        self.load_config_button.clicked.connect(self.load_config)
+        self.save_config_button=QPushButton("Save Config")
+        self.save_config_button.clicked.connect(self.save_config)
+        from_layout1.addRow(self.load_config_button,self.save_config_button)
 
         self.roi_display=QListWidget()
         self.roi_display.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
@@ -300,6 +333,13 @@ class FiledCurveWindow(QDialog):
         grid_layout.addItem(spacer)
 
         self.setLayout(grid_layout)
+    
+    def validate_input(self):
+        text=self.line_edit_binnlist.text()
+        if text:
+            value=int(text)
+            if value <0 or value > 4:
+                self.line_edit_binnlist.setText("")
     def _open_folder_dialog(self):
         # 打开文件夹选择对话框
         folder_path = QFileDialog.getExistingDirectory(
@@ -326,9 +366,11 @@ class FiledCurveWindow(QDialog):
             # 创建roi并添加到列表
             roi=mlcm.pyCVRect(x,y,width,height)
             self.roi_list.append(roi)
+            self.line_edit_roi_count.setText(str(len(self.roi_list)))
             # 显示在控件上
             roi_str=f"{x},{y},{width},{height}"
             self.roi_display.addItem(roi_str)
+            
         except Exception as e:
             QMessageBox.critical(self,"MLColorimeter","exception" + str(e), QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
 
@@ -354,17 +396,60 @@ class FiledCurveWindow(QDialog):
                     # 只删除第一个匹配的roi
                     del self.roi_list[index]
                     break # 找到并删除后退出循环
+            self.line_edit_roi_count.setText(str(len(self.roi_list)))
             
             row=self.roi_display.row(current_item)
             self.roi_display.takeItem(row)
         except Exception as e:
             QMessageBox.critical(self,"MLColorimeter","exception" + str(e), QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
-    
+
+    def load_config(self):
+        try:
+            options = QFileDialog.Options()
+            file_name, _ = QFileDialog.getOpenFileName(self, "Load ROI Config", "", "JSON Files (*.json);;All Files (*)", options=options)
+            if file_name:
+                # 读取json文件
+                with open(file_name,'r') as f:
+                    serialized_data=json.load(f)
+                # 清空现有的roi_list
+                self.roi_list.clear()
+                self.roi_display.clear()
+
+                # 将每个字典转换为pyCVRect对象并添加到roi_list
+                for item in serialized_data:
+                    rect=mlcm.pyCVRect(item['x'],item['y'],item['width'],item['height'])
+                    self.roi_list.append(rect)
+                    roi_str=f"{rect.x},{rect.y},{rect.width},{rect.height}"
+                    self.roi_display.addItem(roi_str)
+                self.line_edit_roi_count.setText(str(len(self.roi_list)))
+                
+
+        except Exception as e:
+            QMessageBox.critical(self,"MLColorimeter","exception" + str(e), QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
+
+    def save_config(self):
+        try:
+            options = QFileDialog.Options()
+            file_name, _ = QFileDialog.getSaveFileName(self, "Save ROI Config", "", "JSON Files (*.json);;All Files (*)", options=options)
+            if file_name:
+                # 序列化
+                serialized_dict=[]
+                for value in self.roi_list:
+                    serialized_dict.append(self.serialize_pyCVRect(value))
+                with open(file_name,'w') as f:
+                    json.dump(serialized_dict,f,ensure_ascii=False,indent=4)
+                QMessageBox.information(self,"成功","保存成功！",QMessageBox.Ok)
+        except Exception as e:
+            QMessageBox.critical(self,"MLColorimeter","exception" + str(e), QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
+    def serialize_pyCVRect(self,rect:mlcm.pyCVRect):
+        return{
+            'x':rect.x,
+            'y':rect.y,
+            'width':rect.width,
+            'height':rect.height
+        }
     def start_capture(self):
         try:
-            self.status_label.setText("<span style='color: green;'>状态: 正在进行拍图...</span>")  # 更新状态
-            self.btn_capture.setEnabled(False)
-            self.is_running=True
             self.pixel_format=self.get_current_pixel_format()
             self.binn_selector=self.get_current_binning_selector()
             self.binn_mode=self.get_current_binning_mode()
@@ -408,6 +493,10 @@ class FiledCurveWindow(QDialog):
                 use_fine_adjust=self.use_fine_adjust,
                 average_count=self.average_count,
             )
+            
+            self.status_label.setText("<span style='color: green;'>状态: 正在进行拍图...</span>")  # 更新状态
+            self.btn_capture.setEnabled(False)
+            self.is_running=True
 
             parameters={
                 'colorimeter': self.colorimeter,

@@ -16,7 +16,7 @@ from PyQt5.QtWidgets import (
     QFormLayout,
 )
 from core.app_config import AppConfig
-from PyQt5.QtCore import pyqtSignal, Qt
+from PyQt5.QtCore import pyqtSignal, Qt, QThread
 import mlcolorimeter as mlcm
 import os
 import cv2
@@ -26,6 +26,22 @@ from openpyxl import Workbook, load_workbook
 from openpyxl.drawing.image import Image
 from scripts.capture_dark_heatmap import capture_dark_heatmap
 
+class DarkHeatMapThread(QThread):
+    finished=pyqtSignal() # 线程完成信号
+    error=pyqtSignal(str) # 错误信号
+    status_update=pyqtSignal(str) # 状态更新信号
+
+    def __init__(self,parameters):
+        super().__init__()
+        self.parameters=parameters
+    
+    def run(self):
+        try:
+            capture_dark_heatmap(status_callback=self.status_update.emit,**self.parameters)
+            self.finished.emit()
+
+        except Exception as e:
+            self.error.emit(str(e))
 
 class DarkHeatMapWindow(QDialog):
     path_changed = pyqtSignal(str)
@@ -39,12 +55,14 @@ class DarkHeatMapWindow(QDialog):
         
         self.dialog_title = "选择文件夹"
         self.default_path = ""
+        self.save_path=""
         self.file_name = "dark_heatmap.xlsx"
         self.exposure_mode=['Auto','Fixed']
         self.binning_selector=['Logic','Sensor']
         self.binning_mode=['AVERAGE','SUM']
         self.pixel_format=['MLMono8','MLMono10','MLMono12','MLMono16','MLRGB24','MLBayer','MLBayerGB8','MLBayerGB12']
         self._init_ui()
+        self.is_running=False
 
     def _init_ui(self):
         grid_layout = QGridLayout()
@@ -104,6 +122,7 @@ class DarkHeatMapWindow(QDialog):
         grid_layout.addWidget(self.label_etlist, 3, 0)
 
         self.line_edit_etlist = QLineEdit()
+        self.line_edit_etlist.setText("1 10")
         self.line_edit_etlist.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         grid_layout.addWidget(self.line_edit_etlist, 4, 0)
 
@@ -114,6 +133,7 @@ class DarkHeatMapWindow(QDialog):
         grid_layout.addWidget(self.label_binnlist, 5, 0)
 
         self.line_edit_binnlist = QLineEdit()
+        self.line_edit_binnlist.setText("0 1")
         self.line_edit_binnlist.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         grid_layout.addWidget(self.line_edit_binnlist, 6, 0)
 
@@ -122,6 +142,7 @@ class DarkHeatMapWindow(QDialog):
         grid_layout.addWidget(self.label_ndlist, 7, 0)
 
         self.line_edit_ndlist = QLineEdit()
+        self.line_edit_ndlist.setText("4")
         self.line_edit_ndlist.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         grid_layout.addWidget(self.line_edit_ndlist, 8, 0)
 
@@ -130,6 +151,7 @@ class DarkHeatMapWindow(QDialog):
         grid_layout.addWidget(self.label_xyzlist, 9, 0)
 
         self.line_edit_xyzlist = QLineEdit()
+        self.line_edit_xyzlist.setText("1")
         self.line_edit_xyzlist.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         grid_layout.addWidget(self.line_edit_xyzlist, 10, 0)
 
@@ -161,6 +183,10 @@ class DarkHeatMapWindow(QDialog):
         self.btn_capture.clicked.connect(self.start_capture)
         grid_layout.addWidget(self.btn_capture, 15, 0)
 
+        self.status_label=QLabel("状态：等待开始")
+        self.status_label.setWordWrap(True)  # 设置自动换行
+        grid_layout.addWidget(self.status_label,16,0)
+
         spacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
         grid_layout.addItem(spacer)
 
@@ -183,34 +209,74 @@ class DarkHeatMapWindow(QDialog):
 
     def start_capture(self):
         try:
+            binn_text=self.line_edit_binn.text().strip()
+            if not binn_text:
+                QMessageBox.warning(self, "输入错误", "请输入必填项：Binning 值不能为空。")
+                return
+            else:
+                self.binn=mlcm.Binning(int(binn_text))
+            if not self.save_path:
+                QMessageBox.warning(self, "提示", "请选择保存路径")
+                return
             self.pixel_format=self.get_current_pixel_format()
             self.binn_selector=self.get_current_binning_selector()
             self.binn_mode=self.get_current_binning_mode()
-            self.binn=mlcm.Binning(int(self.line_edit_binn.text().strip()))
             self.capture_times = int(self.line_edit_times.text())
             self.etlist = [float(et) for et in self.line_edit_etlist.text().split()]
-            self.binnlist = [mlcm.Binning(int(B) for B in self.line_edit_binnlist.text().split())]
+            self.binnlist=[int(binn) for binn in self.line_edit_binnlist.text().strip().split()]
+            # self.binnlist = [mlcm.Binning(B) for B in binn_enum]
             self.ndlist = [int(nd) for nd in self.line_edit_ndlist.text().split()]
             self.xyzlist = [int(xyz) for xyz in self.line_edit_xyzlist.text().split()]
             self.file_name = self.line_edit_filename.text() + ".xlsx"
-            capture_dark_heatmap(
-                colorimeter=self.colorimeter,
-                binn_selector=self.binn_selector,
-                binn_mode=self.binn_mode,
-                binn=self.binn,
-                pixel_format=self.pixel_format,
-                nd_list=self.ndlist,
-                xyz_list=self.xyzlist,
-                binn_list=self.binnlist,
-                et_list=self.etlist,
-                save_path=self.save_path,
-                file_name=self.file_name,
-                capture_times=self.capture_times
-            )
-
-            QMessageBox.information(self,"MLColorimeter","finish", QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
+            self.status_label.setText("<span style='color: green;'>状态: 正在进行拍图或计算...</span>")  # 更新状态
+            self.btn_capture.setEnabled(False)
+            self.is_running=True
+            parameters={
+                'colorimeter':self.colorimeter,
+                'binn_selector':self.binn_selector,
+                'binn_mode':self.binn_mode,
+                'binn':self.binn,
+                'pixel_format':self.pixel_format,
+                'nd_list':self.ndlist,
+                'xyz_list':self.xyzlist,
+                'binn_list':self.binnlist,
+                'et_list':self.etlist,
+                'save_path':self.save_path,
+                'file_name':self.file_name,
+                'capture_times':self.capture_times
+            }
+            self.darkheatmapThread=DarkHeatMapThread(parameters)
+            self.darkheatmapThread.finished.connect(self.on_darkheatmap_finished)
+            self.darkheatmapThread.error.connect(self.on_darkheatmap_error)
+            self.darkheatmapThread.status_update.connect(self.update_status)
+            self.darkheatmapThread.start()
         except Exception as e:
             QMessageBox.critical(self,"MLColorimeter","exception" + e, QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
+            self.btn_capture.setEnabled(True)
+            self.is_running=False
+
+    def update_status(self,message):
+        self.status_label.setText(f"<span style='color: green;'>状态: {message}</span>")
+    
+    def on_darkheatmap_finished(self):
+        QMessageBox.information(self,"MLColorimeter","完成!",QMessageBox.Ok)
+        self.status_label.setText("<span style='color: green;'>状态: 完成！</span>")  # 更新状态
+        self.btn_capture.setEnabled(True)
+        self.is_running=False # 标识定标完成
+
+    def on_darkheatmap_error(self,error_message):
+        QMessageBox.critical(self, "MLColorimeter", "发生错误: " + error_message, QMessageBox.Ok)
+        self.status_label.setText(f"<span style='color: red;'>状态: 发生错误: {error_message}</span>")  # 更新状态为红色
+        self.btn_capture.setEnabled(True)
+        self.is_running=False # 标识定标完成
+
+    def closeEvent(self, event):
+        if self.is_running:
+            # 如果正在进行定标，拦截关闭事件
+            event.ignore()
+            QMessageBox.warning(self,"警告","定标进行中，请勿关闭窗口",QMessageBox.Ok)
+        else:
+            event.accept()
     
     
     def get_current_pixel_format(self):

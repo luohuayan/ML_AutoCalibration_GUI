@@ -6,6 +6,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from openpyxl import Workbook, load_workbook
 from openpyxl.drawing.image import Image
+import time
+from datetime import datetime
 
 __all__ = ["capture_dark_heatmap"]
 
@@ -41,8 +43,16 @@ def capture_dark_heatmap(
     et_list: List[float],
     save_path: str,
     file_name: str,
-    capture_times: int
+    capture_times: int,
+    status_callback=None
 ):
+    def update_status(message):
+        if status_callback:
+            status_callback(message)
+    # update_status("capture_dark_heatmap start...")
+    # time.sleep(10)
+    # update_status("capture_dark_heatmap finish...")
+
     module_id = 1
     mono = colorimeter.ml_bino_manage.ml_get_module_by_id(module_id)
 
@@ -71,9 +81,10 @@ def capture_dark_heatmap(
             ret = mono.ml_move_xyz_syn(xyz_enum)
             if not ret.success:
                 raise RuntimeError("ml_move_xyz_syn error")
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
             temp_str = mlcm.MLFilterEnum_to_str(
-                nd_enum) + "_" + mlcm.MLFilterEnum_to_str(xyz_enum) + "_"
+                nd_enum) + "_" + mlcm.MLFilterEnum_to_str(xyz_enum) + "_" + timestamp +"_"
             file_path = save_path + "\\" + temp_str + file_name
             wb = Workbook()
             wb.save(file_path)
@@ -140,7 +151,8 @@ def capture_dark_heatmap(
                     block_size = 10
                     cropped_img = preprocess_image(get_img, block_size)
                     heatmap = generate_heatmap(cropped_img, block_size)
-                    plt.imshow(heatmap, cmap="jet", interpolation="nearest")
+                    # plt.imshow(heatmap, cmap="jet", interpolation="nearest")
+                    plt.imshow(heatmap, cmap="jet", interpolation="nearest", vmin=0, vmax=10)
                     plt.colorbar()
                     plt.title("raw_" + str(pow(2, binn)) + "X" +
                             str(pow(2, binn)) + "_" + str(et_list[k]) + "ms")
@@ -165,7 +177,8 @@ def capture_dark_heatmap(
                         raw_list[k], dtype=np.int16))
                     cropped_img = preprocess_image(get_img, block_size)
                     heatmap = generate_heatmap(cropped_img, block_size)
-                    plt.imshow(heatmap, cmap="jet", interpolation="nearest")
+                    plt.imshow(heatmap, cmap="jet", interpolation="nearest", vmin=0, vmax=10)
+                    # plt.imshow(heatmap, cmap="jet", interpolation="nearest")
                     plt.colorbar()
                     plt.title("processed_" + str(pow(2, binn)) + "X" +
                             str(pow(2, binn)) + "_" + str(et_list[k]) + "ms")
@@ -201,7 +214,7 @@ def capture_dark_heatmap(
 
                 wb.save(file_path)
 
-            # print("finish")
+            update_status("finish")
 
 
 if __name__ == "__main__":

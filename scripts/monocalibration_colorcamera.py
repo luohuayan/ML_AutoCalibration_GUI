@@ -70,12 +70,15 @@ def mono_calibration(
         gray_range:List[float],
         apturate:str,
         light_source:str,
-        luminance:float,
+        luminance:List[float],
         radiance:float,
         eye1_path:str,
         out_path:str,
         image_point:List[int],
         roi_size:List[int],
+        exposure_offset:float=0,
+        exposure_times:float=100,
+        gray_offset:float=0,
         binn_selector:mlcm.BinningSelector= mlcm.BinningSelector.Logic,
         binn_mode:mlcm.BinningMode = mlcm.BinningMode.AVERAGE,
         binn:mlcm.Binning=mlcm.Binning.ONE_BY_ONE,
@@ -84,11 +87,6 @@ def mono_calibration(
     def update_status(message):
         if status_callback:
             status_callback(message)
-    #test
-    # update_status("mono_calibration start")
-    # time.sleep(5)
-    # update_status("mono_calibration finish")
-
     if len(image_point) >=2:
         image_x=int(image_point[0])
         image_y=int(image_point[1])
@@ -116,10 +114,11 @@ def mono_calibration(
     pixel_format = mlcm.MLPixelFormat.MLBayerRG12
     ret = mono.ml_set_pixel_format(pixel_format)
     if not ret.success:
+        update_status("ml_set_pixel_format error")
         raise RuntimeError("ml_set_pixel_format error")
 
     exposure = mlcm.pyExposureSetting(
-            exposure_mode=mlcm.ExposureMode.Auto, exposure_time=100
+            exposure_mode=mlcm.ExposureMode.Auto, exposure_time=exposure_times
         )
     results = []
     for nd in nd_list:
@@ -127,19 +126,27 @@ def mono_calibration(
         nd_enum = mlcm.MLFilterEnum(int(nd)) # et MLFilterEnum.ND0
         mono.ml_move_nd_syn(nd_enum)
         for gray in gray_range:
-            aeparams = mlcm.pyAEParams(dynamic_range=gray,target_max=gray + 0.05,target_min=gray - 0.05, max_time=19000, rate=1000000)
+            aeparams = mlcm.pyAEParams(dynamic_range=gray,target_max=gray + 0.05,target_min=gray - 0.05, max_time=190000, rate=1000000)
             ret = mono.ml_update_AE_params(aeparams)
             mono.ml_set_exposure(exposure=exposure)
             mono.ml_capture_image_syn()
             get_image = mono.ml_get_image()
+            if len(get_image.shape) == 2: # 灰度值
+                update_status(f"图像通道数：{len(get_image.shape)}")
+                return
+            elif len(get_image.shape)==3 and get_image.shape[2]==3: # 彩色图像
+                update_status(f"图像通道数：{get_image.shape[2]}")
+                X, Y, Z = cv2.split(get_image)
+            else:
+                update_status("Unexpected number of channels.")
+                return
             # 三个单通道图像
-            X, Y, Z = cv2.split(get_image)
-            exposure_time = mono.ml_get_exposure_time()
-            average_gray_X=process_image(X,image_x,image_y,roi_width,roi_height)
+            exposure_time = mono.ml_get_exposure_time() + exposure_offset
+            average_gray_X=process_image(X,image_x,image_y,roi_width,roi_height) + gray_offset
             process_channel(
                 exposure_time=exposure_time,
                 average_gray=average_gray_X,
-                luminance=luminance,
+                luminance=luminance[0],
                 radiance=radiance,
                 gray=gray,
                 nd_enum=nd_enum,
@@ -148,11 +155,11 @@ def mono_calibration(
             )
             update_status(f"{mlcm.MLFilterEnum_to_str(nd_enum)}_X_channel_averageGray:{str(average_gray_X)}_exposureTime:{str(exposure_time)}")
             
-            average_gray_Y=process_image(Y,image_x,image_y,roi_width,roi_height)
+            average_gray_Y=process_image(Y,image_x,image_y,roi_width,roi_height) + gray_offset
             process_channel(
                 exposure_time=exposure_time,
                 average_gray=average_gray_Y,
-                luminance=luminance,
+                luminance=luminance[1],
                 radiance=radiance,
                 gray=gray,
                 nd_enum=nd_enum,
@@ -162,11 +169,11 @@ def mono_calibration(
             update_status(f"{mlcm.MLFilterEnum_to_str(nd_enum)}_Y_channel_averageGray:{str(average_gray_Y)}_exposureTime:{str(exposure_time)}")
 
 
-            average_gray_Z=process_image(Z,image_x,image_y,roi_width,roi_height)
+            average_gray_Z=process_image(Z,image_x,image_y,roi_width,roi_height) + gray_offset
             process_channel(
                 exposure_time=exposure_time,
                 average_gray=average_gray_Z,
-                luminance=luminance,
+                luminance=luminance[2],
                 radiance=radiance,
                 gray=gray,
                 nd_enum=nd_enum,

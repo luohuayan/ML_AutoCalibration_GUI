@@ -1,0 +1,44 @@
+{
+    "ND0": {
+        "X": {
+            "exposure_mode": "Auto",
+            "exposure_time": 100.0
+        },
+        "Y": {
+            "exposure_mode": "Auto",
+            "exposure_time": 230.0
+        },
+        "Z": {
+            "exposure_mode": "Auto",
+            "exposure_time": 900.0
+        }
+    },
+    "ND1": {
+        "X": {
+            "exposure_mode": "Fixed",
+            "exposure_time": 12.1
+        },
+        "Y": {
+            "exposure_mode": "Fixed",
+            "exposure_time": 1111.2
+        },
+        "Z": {
+            "exposure_mode": "Fixed",
+            "exposure_time": 323.1
+        }
+    },
+    "ND2": {
+        "X": {
+            "exposure_mode": "Fixed",
+            "exposure_time": 231.0
+        },
+        "Y": {
+            "exposure_mode": "Auto",
+            "exposure_time": 100.0
+        },
+        "Z": {
+            "exposure_mode": "Auto",
+            "exposure_time": 100.0
+        }
+    }
+}

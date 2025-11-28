@@ -18,23 +18,40 @@ from PyQt5.QtWidgets import (
     QComboBox,
     QFormLayout
 )
+from PyQt5.QtGui import QIntValidator,QDoubleValidator
 from core.app_config import AppConfig
-from PyQt5.QtCore import pyqtSignal, Qt
+from PyQt5.QtCore import pyqtSignal, Qt,QThread
 import mlcolorimeter as mlcm
 import cylaxismtf.MTF_cylaxis as mtfca
 from scripts.cyl_axis_mtf import mtf_calculate
+
+class RXSelfRotationThread(QThread):
+    finished=pyqtSignal() # 线程完成信号
+    error=pyqtSignal(str) # 错误信号
+    status_update=pyqtSignal(str) # 状态更新信号
+
+    def __init__(self, parameters):
+        super().__init__()
+        self.parameters=parameters
+    
+    def run(self):
+        try:
+            mtf_calculate(status_callback=self.status_update.emit, **self.parameters)
+            self.finished.emit() # 发送完成信号
+        except Exception as e:
+            self.error.emit(str(e)) # 发送错误信号
 
 class RXSelfRotationWindow(QDialog):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("mono calibration Colorcamera")
+        self.setWindowTitle("RX selfrotation mtf calculate")
         self.setGeometry(200, 200, 800, 500)
         self.setWindowFlags(Qt.Window | Qt.WindowMaximizeButtonHint | Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint)
 
         self.colorimeter = AppConfig.get_colorimeter()
         self.cylaxis=AppConfig.get_cylaxis()
-
+        self.double_validator=QDoubleValidator()
         self.dialog_title = "选择文件夹"
         self.default_path = ""
         self.file_name = "mono_calibration.xlsx"
@@ -43,6 +60,7 @@ class RXSelfRotationWindow(QDialog):
         self.mtf_type=['CROSS','SLANT','SPOT']
         self.pixel_format=['MLMono8','MLMono10','MLMono12','MLMono16','MLRGB24','MLBayer','MLBayerGB8','MLBayerGB12']
         self._init_ui()
+        self.is_running=False
     
     def _init_ui(self):
         grid_layout=QGridLayout()
@@ -69,8 +87,12 @@ class RXSelfRotationWindow(QDialog):
         self.label_binn = QLabel(" binning：")
         self.line_edit_binn = QLineEdit()
         self.line_edit_binn.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        int_validator=QIntValidator(0,4,self)
+        self.line_edit_binn.setValidator(int_validator)
         self.line_edit_binn.setText("0")
         self.line_edit_binn.setPlaceholderText("0: 1X1, 1: 2X2, 2: 4X4, 3: 8X8, 4: 16X16")
+        self.line_edit_binn.textChanged.connect(self.validate_input)
+        
         from_layout0.addRow(self.label_binn, self.line_edit_binn)
 
         self.label_pixel_format = QLabel(" pixel_format：")
@@ -109,24 +131,34 @@ class RXSelfRotationWindow(QDialog):
         self.label_pixel_size=QLabel("pixel_size:")
         grid_layout.addWidget(self.label_pixel_size,7,0)
         self.line_edit_pixel_size=QLineEdit()
+        self.line_edit_pixel_size.setValidator(self.double_validator)
+        self.line_edit_pixel_size.setText("0.00345")
         self.line_edit_pixel_size.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         grid_layout.addWidget(self.line_edit_pixel_size,8,0)
 
         self.label_focal_length=QLabel("focal_length:")
         grid_layout.addWidget(self.label_focal_length,9,0)
         self.line_edit_focal_length=QLineEdit()
+        self.line_edit_focal_length.setValidator(self.double_validator)
+        self.line_edit_focal_length.setText("40")
         self.line_edit_focal_length.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         grid_layout.addWidget(self.line_edit_focal_length,10,0)
 
         self.label_move_pixel=QLabel("move_pixel:(roi中心点离十字线中心的像素距离)")
         grid_layout.addWidget(self.label_move_pixel,11,0)
         self.line_edit_move_pixel=QLineEdit()
+        intvalidator=QIntValidator()
+        self.line_edit_move_pixel.setValidator(intvalidator)
+        self.line_edit_move_pixel.setText("80")
         self.line_edit_move_pixel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         grid_layout.addWidget(self.line_edit_move_pixel,12,0)
 
         self.label_freq0=QLabel("freq0:")
         grid_layout.addWidget(self.label_freq0,13,0)
         self.line_edit_freq0=QLineEdit()
+        doubleValidator=QDoubleValidator()
+        self.line_edit_freq0.setValidator(doubleValidator)
+        self.line_edit_freq0.setText("10")
         self.line_edit_freq0.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         grid_layout.addWidget(self.line_edit_freq0,14,0)
 
@@ -140,6 +172,7 @@ class RXSelfRotationWindow(QDialog):
         self.label_axislist = QLabel("axis列表, (例如: 0 15 30 45 60 75 90 105 120 135 150 165), 以空格隔开")
         grid_layout.addWidget(self.label_axislist,17,0)
         self.line_edit_axislist = QLineEdit()
+        self.line_edit_axislist.setText("0 90 180 270")
         self.line_edit_axislist.setSizePolicy(
             QSizePolicy.Expanding, QSizePolicy.Fixed)
         grid_layout.addWidget(self.line_edit_axislist,18,0)
@@ -162,10 +195,21 @@ class RXSelfRotationWindow(QDialog):
         self.btn_capture.clicked.connect(self.start_mtf_calculate)
         grid_layout.addWidget(self.btn_capture, 21, 0)
 
+        self.status_label=QLabel("状态：等待开始")
+        self.status_label.setWordWrap(True)  # 设置自动换行
+        grid_layout.addWidget(self.status_label,22,0)
+
         spacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
         grid_layout.addItem(spacer)
 
         self.setLayout(grid_layout)
+
+    def validate_input(self):
+        text=self.line_edit_binn.text()
+        if text:
+            value=int(text)
+            if value <0 or value > 4:
+                self.line_edit_binn.setText("")
 
     def start_mtf_calculate(self):
         try:
@@ -185,27 +229,81 @@ class RXSelfRotationWindow(QDialog):
             self.save_path=self.line_edit_path.text()
             self.cyl_list=[float(cyl) for cyl in self.line_edit_cyllist.text().strip().split()]
             self.axis_list=[int(axis) for axis in self.line_edit_axislist.text().strip().split()]
-            mtf_calculate(
-                colorimeter=self.colorimeter,
-                mtfca=self.cylaxis,
-                binn_selector=self.binn_selector,
-                binn_mode=self.binn_mode,
-                binn=self.binn,
-                mtf_type=self.mtftype,
-                pixel_format=self.pixel_format,
-                freq0=self.freq0,
-                move_pixel=self.move_pixel,
-                save_path=self.save_path,
-                nd_list=self.nd_list,
-                xyz_list=self.xyz_list,
-                pixel_size=self.pixel_size,
-                focal_length=self.focal_length,
-                cyl_list=self.cyl_list,
-                axis_list=self.axis_list
-            )
+
+            self.status_label.setText("<span style='color: green;'>状态: 正在运行...</span>")  # 更新状态
+            self.btn_capture.setEnabled(False)
+            self.is_running=True
+
+            parameters={
+                'colorimeter':self.colorimeter,
+                'mtfca':self.cylaxis,
+                'binn_selector':self.binn_selector,
+                'binn_mode':self.binn_mode,
+                'binn':self.binn,
+                'mtf_type':self.mtf_type,
+                'pixel_format':self.pixel_format,
+                'freq0':self.freq0,
+                'move_pixel':self.move_pixel,
+                'save_path':self.save_path,
+                'nd_list':self.nd_list,
+                'xyz_list':self.xyz_list,
+                'pixel_size':self.pixel_size,
+                'focal_length':self.focal_length,
+                'cyl_list':self.cyl_list,
+                'axis_list':self.axis_list
+            }
+            self.rx_selfrotation_thread=RXSelfRotationThread(parameters)
+            self.rx_selfrotation_thread.finished.connect(self.on_thread_finished)
+            self.rx_selfrotation_thread.error.connect(self.on_thread_error)
+            self.rx_selfrotation_thread.status_update.connect(self.update_status)
+            self.rx_selfrotation_thread.start()
+
+            # mtf_calculate(
+            #     colorimeter=self.colorimeter,
+            #     mtfca=self.cylaxis,
+            #     binn_selector=self.binn_selector,
+            #     binn_mode=self.binn_mode,
+            #     binn=self.binn,
+            #     mtf_type=self.mtftype,
+            #     pixel_format=self.pixel_format,
+            #     freq0=self.freq0,
+            #     move_pixel=self.move_pixel,
+            #     save_path=self.save_path,
+            #     nd_list=self.nd_list,
+            #     xyz_list=self.xyz_list,
+            #     pixel_size=self.pixel_size,
+            #     focal_length=self.focal_length,
+            #     cyl_list=self.cyl_list,
+            #     axis_list=self.axis_list
+            # )
             
         except Exception as e:
             QMessageBox.critical(self,"MLColorimeter","exception" + e, QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
+            self.btn_capture.setEnabled(True)
+            self.is_running=False
+
+    def update_status(self,message):
+        self.status_label.setText(f"<span style='color: green;'>状态: {message}</span>")
+    
+    def on_thread_finished(self):
+        QMessageBox.information(self,"MLColorimeter","完成!",QMessageBox.Ok)
+        self.status_label.setText("<span style='color: green;'>状态: 完成！</span>")  # 更新状态
+        self.btn_capture.setEnabled(True)
+        self.is_running=False # 标识定标完成
+
+    def on_thread_error(self,error_message):
+        QMessageBox.critical(self, "MLColorimeter", "发生错误: " + error_message, QMessageBox.Ok)
+        self.status_label.setText(f"<span style='color: red;'>状态: 发生错误: {error_message}</span>")  # 更新状态为红色
+        self.btn_capture.setEnabled(True)
+        self.is_running=False # 标识定标完成
+
+    def closeEvent(self, event):
+        if self.is_running:
+            # 如果正在进行定标，拦截关闭事件
+            event.ignore()
+            QMessageBox.warning(self,"警告","定标进行中，请勿关闭窗口",QMessageBox.Ok)
+        else:
+            event.accept()
         
     def _open_folder_dialog(self):
         # 打开文件夹选择对话框

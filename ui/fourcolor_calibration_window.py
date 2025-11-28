@@ -17,7 +17,7 @@ from PyQt5.QtWidgets import (
     QCheckBox,
 )
 from core.app_config import AppConfig
-from PyQt5.QtCore import pyqtSignal, Qt
+from PyQt5.QtCore import pyqtSignal, Qt,QThread
 import mlcolorimeter as mlcm
 import os
 import cv2
@@ -28,10 +28,43 @@ from openpyxl.drawing.image import Image
 from scripts.fourcolor_calibration import fourcolor_calibration_capture, fourcolor_calibration_calculate
 from ui.exposureconfig_window import ExposureConfigWindow
 
+class FourColorCalibrationCaptureThread(QThread):
+    finished=pyqtSignal() # 线程完成信号
+    error=pyqtSignal(str) # 错误信号
+    status_update=pyqtSignal(str) # 状态更新信号
+
+    def __init__(self, parameters):
+        super().__init__()
+        self.parameters=parameters
+    
+    def run(self):
+        try:
+            fourcolor_calibration_capture(status_callback=self.status_update.emit, **self.parameters)
+            self.finished.emit() # 发送完成信号
+        except Exception as e:
+            self.error.emit(str(e)) # 发送错误信号
+
+class FourColorCalibrationCalculateThread(QThread):
+    finished=pyqtSignal() # 线程完成信号
+    error=pyqtSignal(str) # 错误信号
+    status_update=pyqtSignal(str) # 状态更新信号
+
+    def __init__(self, parameters):
+        super().__init__()
+        self.parameters=parameters
+    
+    def run(self):
+        try:
+            fourcolor_calibration_calculate(status_callback=self.status_update.emit, **self.parameters)
+            self.finished.emit() # 发送完成信号
+        except Exception as e:
+            self.error.emit(str(e)) # 发送错误信号
+
+
 class FourColorCalabrationWindow(QDialog):
     def __init__(self, parent = None):
         super().__init__(parent)
-        self.setWindowTitle("four calibration")
+        self.setWindowTitle("fourcolor calibration")
         self.setGeometry(200,200,800,500)
         self.colorimeter=AppConfig.get_colorimeter()
         self.setWindowFlags(Qt.Window | Qt.WindowMaximizeButtonHint | Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint)
@@ -44,6 +77,8 @@ class FourColorCalabrationWindow(QDialog):
         self.pixel_format=['MLMono8','MLMono10','MLMono12','MLMono16','MLRGB24','MLBayer','MLBayerGB8','MLBayerGB12']
         self.exposure_map_obj = {}
         self._init_ui()
+        self.is_running=False
+
     def _init_ui(self):
         grid_layout = QGridLayout()
 
@@ -186,6 +221,10 @@ class FourColorCalabrationWindow(QDialog):
         self.btn_start_calibration.clicked.connect(self._start_calibration)
         grid_layout.addWidget(self.btn_start_calibration,14,0)
 
+        self.status_label=QLabel("状态：等待开始")
+        self.status_label.setWordWrap(True)  # 设置自动换行
+        grid_layout.addWidget(self.status_label,15,0)
+
         spacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
         grid_layout.addItem(spacer)
 
@@ -211,37 +250,105 @@ class FourColorCalabrationWindow(QDialog):
             self.nmatrix_path=self.line_edit_NMatrix_path.text().strip()
             self.is_do_ffc=self.checkbox_is_do_ffc.isChecked()
             self.light_source_list=["R", "G", "B", "W"]
-            for nd in self.nd_list:
-                for light_source in self.light_source_list:
-                    temp = QMessageBox.information(self,"提示",f"请先切换到{light_source}光",QMessageBox.Ok)
-                    if temp==QMessageBox.Ok:
-                        exposure_map=self.exposure_map_obj[nd]
-                        fourcolor_calibration_capture(
-                            colorimeter=self.colorimeter,
-                            binn_selector=self.binn_selector,
-                            binn_mode=self.binn_mode,
-                            binn=self.binn,
-                            pixel_format=self.pixel_format,
-                            save_path=self.save_path,
-                            light_source=light_source,
-                            nd=nd,
-                            avg_count=self.avg_count,
-                            exposure_map=exposure_map,
-                            roi=self.roi,
-                            is_do_ffc=self.is_do_ffc
-                        )
-                    else:
-                        return
-                fourcolor_calibration_calculate(
-                    colorimeter=self.colorimeter,
-                    save_path=self.save_path,
-                    nd=nd,
-                    NMatrix_path=self.nmatrix_path
-                )
             
-            QMessageBox.information(self,"提示","流程结束",QMessageBox.Ok)
+            self.status_label.setText("<span style='color: green;'>状态: 正在计算...</span>")  # 更新状态
+            self.btn_start_calibration.setEnabled(False)
+            self.is_running=True
+            
+            # 从第一个ND开始捕获光源
+            self.current_nd_index=0
+            self.start_capture_for_light_dource(self.current_nd_index)
         except Exception as e:
             QMessageBox.critical(self,"MLColorimeter","exception" + e, QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
+            self.btn_start_calibration.setEnabled(True)
+            self.is_running=False
+
+    
+    def start_capture_for_light_dource(self,nd_index):
+        if nd_index>=len(self.nd_list):
+            # 所有nd的捕获完成，结束流程
+            self.status_label.setText("<span style='color: green;'>状态: 所有捕获完成</span>")
+            self.btn_start_calibration.setEnabled(True)
+            self.is_running = False
+            return
+        nd=self.nd_list[nd_index]
+        light_source_index=0
+
+        # 开始捕获当前ND的所有光源
+        self.capture_next_light_source(nd,light_source_index)
+    
+    def capture_next_light_source(self,nd,light_source_index):
+        if light_source_index>=len(self.light_source_list):
+            # 当前ND的所有光源已捕获，开始计算
+            self.start_calculation(nd)
+            return
+        light_source=self.light_source_list[light_source_index]
+        temp = QMessageBox.information(self,"提示",f"请先切换到{light_source}光",QMessageBox.Ok)
+        if temp==QMessageBox.Ok:
+            exposure_map=self.exposure_map_obj[nd]
+            capture_parameters={
+                'colorimeter':self.colorimeter,
+                'binn_selector':self.binn_selector,
+                'binn_mode':self.binn_mode,
+                'binn':self.binn,
+                'pixel_format':self.pixel_format,
+                'save_path':self.save_path,
+                'light_source':light_source,
+                'nd':nd,
+                'avg_count':self.avg_count,
+                'exposure_map':exposure_map,
+                'roi':self.roi,
+                'is_do_ffc':self.is_do_ffc
+            }
+            self.capture_thread = FourColorCalibrationCaptureThread(parameters=capture_parameters)
+
+            # 连接信号
+            self.capture_thread.finished.connect(lambda: self.on_capture_finished(nd, light_source_index))
+            self.capture_thread.error.connect(self.on_calibration_error)
+            self.capture_thread.status_update.connect(self.update_status)
+
+            # 启动线程
+            self.capture_thread.start()
+    
+    def on_capture_finished(self,nd,light_source_index):
+        self.status_label.setText(f"<span style='color: green;'>状态: 光源{self.light_source_list[light_source_index]}捕获完成</span>")
+
+        # 捕获下一个光源
+        self.capture_next_light_source(nd,light_source_index+1)
+    
+    def start_calculation(self,nd):
+        self.status_label.setText("<span style='color: green;'>状态: 开始计算...</span>")
+        calculate_parameters={
+            'colorimeter':self.colorimeter,
+            'save_path':self.save_path,
+            'nd':nd,
+            'NMatrix_path':self.nmatrix_path
+        }
+        self.calculateThread=FourColorCalibrationCalculateThread(calculate_parameters)
+        self.calculateThread.finished.connect(self.on_calculation_finished)
+        self.calculateThread.error.connect(self.on_calibration_error)
+        self.calculateThread.status_update.connect(self.update_status)
+        self.calculateThread.start()
+    
+    def on_calculation_finished(self):
+        self.status_label.setText("<span style='color: green;'>状态: 计算完成</span>")
+        self.current_nd_index+=1
+        self.start_capture_for_light_dource(self.current_nd_index) # 开始下一个ND的捕获
+
+    def on_calibration_error(self,error_message):
+        QMessageBox.critical(self, "MLColorimeter", "发生错误: " + error_message, QMessageBox.Ok)
+        self.status_label.setText(f"<span style='color: red;'>状态: 发生错误: {error_message}</span>")  # 更新状态为红色
+        self.btn_start_calibration.setEnabled(True)
+        self.is_running=False # 标识完成
+    def update_status(self,message):
+        self.status_label.setText(f"<span style='color: green;'>状态: {message}</span>")
+    def closeEvent(self, event):
+        if self.is_running:
+            # 如果正在进行定标，拦截关闭事件
+            event.ignore()
+            QMessageBox.warning(self,"警告","程序运行中，请勿关闭窗口",QMessageBox.Ok)
+        else:
+            event.accept()
 
     def _open_folder_dialog(self):
         # 打开文件夹选择对话框

@@ -17,13 +17,16 @@ def calculate_sph_cyl_coefficinet(
     save_path: str,
     file_name: str,
     nd: mlcm.MLFilterEnum,
-    xyz: mlcm.MLFilterEnum,
     exposure: mlcm.pyExposureSetting,
     avg_count: int,
     sph_list: List,
     cyl_list: List,
     roi: mlcm.pyCVRect,
+        status_callback=None
 ):
+    def update_status(message):
+        if status_callback:
+            status_callback(message)
     mono = colorimeter.ml_bino_manage.ml_get_module_by_id(1)
     pixel_format = mlcm.MLPixelFormat.MLBayerRG12
     ret = mono.ml_set_pixel_format(pixel_format)
@@ -34,9 +37,9 @@ def calculate_sph_cyl_coefficinet(
     if not ret.success:
         raise RuntimeError("ml_move_nd_syn error")
 
-    ret = mono.ml_move_xyz_syn(xyz)
-    if not ret.success:
-        raise RuntimeError("ml_move_xyz_syn error")
+    # ret = mono.ml_move_xyz_syn(xyz)
+    # if not ret.success:
+    #     raise RuntimeError("ml_move_xyz_syn error")
 
     ret = ml_mono.ml_set_exposure(exposure)
     if not ret.success:
@@ -82,9 +85,7 @@ def calculate_sph_cyl_coefficinet(
                 last_sph = gray
         for i in range(len(sph_coefficient)):
             sph_coefficient[i] = format(sph_coefficient[i] / last_sph, ".3f")
-
-        print("sph coefficient: ")
-        print(sph_coefficient)
+        update_status(f"sph coefficient: {sph_coefficient}")
         line = ["sph_coefficient", *sph_coefficient]
         ws.append(line)
         line = []
@@ -115,8 +116,7 @@ def calculate_sph_cyl_coefficinet(
                 last_cyl = gray
         for i in range(len(cyl_coefficient)):
             cyl_coefficient[i] = format(cyl_coefficient[i] / last_cyl, ".3f")
-
-        print("cyl coefficient: ")
+        update_status(f"cyl coefficient: {cyl_coefficient}")
         print(cyl_coefficient)
         line = ["cyl_coefficient", *cyl_coefficient]
         ws.append(line)
@@ -125,7 +125,7 @@ def calculate_sph_cyl_coefficinet(
         line = []
 
     wb.save(save_xlsx)
-    print("calculate sph cyl coefficient finish")
+    update_status("calculate sph cyl coefficient finish")
 
 
 if __name__ == "__main__":

@@ -29,12 +29,16 @@ from ui.mono_calibration_colorcamera_window import MonoCalibrationColorCameraWin
 from ui.rx_selfrotation_window import RXSelfRotationWindow
 from ui.FFC_calculate_binning_window import FFCCalculateBinningWindow
 from ui.fit_online_window import FitOnlineWindow
+from ui.version_window import VersionWindow
+from ui.daogui_vid_window import DaoGuiVIDWindow
+from ui.image_detection_window import ImageDetectionWindow
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Colorimeter Controller")
         self.setGeometry(100, 100, 1024, 768)
+        self.setWindowIcon(QIcon("F:/ML_AutoCalibration_GUI/ML_AutoCalibration_GUI/dist/FingerPrintScanMTF.ico"))
         self._init_ui()
         self.colorimeter = AppConfig.get_colorimeter()
         self.select_path=""
@@ -56,6 +60,9 @@ class MainWindow(QMainWindow):
         self.rx_selfrotation_window=None
         self.ffc_calculatebinning_window=None
         self.fit_online_window_=None
+        self.version_window=None
+        self.daogui_window=None
+        self.imagedetction_window=None
         
 
 
@@ -74,7 +81,14 @@ class MainWindow(QMainWindow):
         settings_action.triggered.connect(self.open_settings)
 
         # Scripts 菜单
-        scripts_menu = menubar.addMenu("&Scripts")
+        scripts_menu = menubar.addMenu("&Scripts_Gray")
+        scripts_menu1 = menubar.addMenu("&Scripts_Color")
+        scripts_menu2 = menubar.addMenu("&Daogui_VID")
+        scripts_menu3 = menubar.addMenu("&Scripts_Tool")
+
+
+        help_Action=menubar.addAction("Help")
+        help_Action.triggered.connect(self.open_version)
 
         # 子菜单项
         script1_action = QAction("capture_dark_heatmap", self)
@@ -122,6 +136,12 @@ class MainWindow(QMainWindow):
         script15_action = QAction("circle_polynomial_fit_online", self)
         script15_action.triggered.connect(self.fit_online)
 
+        script16_action = QAction("daogui_vid_mtf", self)
+        script16_action.triggered.connect(self.daogui_vid)
+
+        script17_action = QAction("image_detection", self)
+        script17_action.triggered.connect(self.image_detection)
+
         scripts_menu.addAction(script1_action)
         scripts_menu.addAction(script2_action)
         scripts_menu.addAction(script3_action)
@@ -130,13 +150,15 @@ class MainWindow(QMainWindow):
         scripts_menu.addAction(script6_action)
         scripts_menu.addAction(script7_action)
         scripts_menu.addAction(script8_action)
-        scripts_menu.addAction(script9_action)
-        scripts_menu.addAction(script10_action)
-        scripts_menu.addAction(script11_action)
-        scripts_menu.addAction(script12_action)
+        scripts_menu1.addAction(script9_action)
+        scripts_menu1.addAction(script10_action)
+        scripts_menu1.addAction(script11_action)
+        scripts_menu1.addAction(script12_action)
         scripts_menu.addAction(script13_action)
         scripts_menu.addAction(script14_action)
         scripts_menu.addAction(script15_action)
+        scripts_menu2.addAction(script16_action)
+        scripts_menu3.addAction(script17_action)
 
     def create_main_widget(self):
         # 主控件
@@ -149,6 +171,7 @@ class MainWindow(QMainWindow):
 
         # 设置按钮样式
         self.connect_btn.setStyleSheet("QPushButton { padding: 8px 16px; }")
+        self.connect_btn.setEnabled(False)
         self.disconnect_btn.setStyleSheet("QPushButton { padding: 8px 16px; }")
 
         # 按钮布局
@@ -170,23 +193,27 @@ class MainWindow(QMainWindow):
         self.disconnect_btn.clicked.connect(self.disconnect_colorimeter)
 
     def connect_colorimeter(self):
-        ret = self.colorimeter.ml_connect()
-        if not ret.success:
-            QMessageBox.critical(
-                self,
-                "MLColorimeter",
-                "ml_connect error",
-                QMessageBox.Yes | QMessageBox.No,
-                QMessageBox.Yes,
-            )
-            return
-        QMessageBox.information(
-                self,
-                "MLColorimeter",
-                "连接成功",
-                QMessageBox.Yes | QMessageBox.No,
-                QMessageBox.Yes,
-            )
+        try:
+            ret = self.colorimeter.ml_connect()
+            if not ret.success:
+                QMessageBox.critical(
+                    self,
+                    "MLColorimeter",
+                    "ml_connect error",
+                    QMessageBox.Yes | QMessageBox.No,
+                    QMessageBox.Yes,
+                )
+                return
+            QMessageBox.information(
+                    self,
+                    "MLColorimeter",
+                    "连接成功",
+                    QMessageBox.Yes | QMessageBox.No,
+                    QMessageBox.Yes,
+                )
+        except Exception as e:
+            QMessageBox.critical(self, "MLColorimeter", "exception" + e,
+                                QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
 
     def disconnect_colorimeter(self):
         ret = self.colorimeter.ml_disconnect()
@@ -210,8 +237,16 @@ class MainWindow(QMainWindow):
     def open_settings(self):
         self.settings_window = SettingsWindow(self)
         self.settings_window.path_changed.connect(self.handle_path_changed)
+        self.settings_window.enables_connect_button.connect(self.enable_connect_button) # 连接信号
         self.settings_window.exec_()
+
+    def open_version(self):
+        self.version_window=VersionWindow(self)
+        self.version_window.exec_()
     
+    def enable_connect_button(self):
+        """启用连接按钮"""
+        self.connect_btn.setEnabled(True)  # 启用 connect 按钮
     
     def handle_path_changed(self,path):
         self.select_path=path
@@ -222,7 +257,7 @@ class MainWindow(QMainWindow):
         self.dark_heatmap_window.exec_()
 
     def open_captureffc_caluniformity(self):
-        self.captureffc_caluniformity_window = CaptureFFC_CalUniformity_Plot_Window()
+        self.captureffc_caluniformity_window = CaptureFFC_CalUniformity_Plot_Window(self.select_path)
         self.captureffc_caluniformity_window.exec_()
 
     def open_monocalibration(self):
@@ -276,3 +311,11 @@ class MainWindow(QMainWindow):
     def fit_online(self):
         self.fit_online_window_=FitOnlineWindow()
         self.fit_online_window_.exec_()
+
+    def daogui_vid(self):
+        self.daogui_window=DaoGuiVIDWindow()
+        self.daogui_window.exec_()
+
+    def image_detection(self):
+        self.imagedetction_window=ImageDetectionWindow()
+        self.imagedetction_window.exec_()

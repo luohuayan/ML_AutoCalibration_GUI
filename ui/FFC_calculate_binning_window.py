@@ -136,34 +136,27 @@ class FFCCalculateBinningWindow(QDialog):
         self.line_edit_half_size.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         grid_layout.addWidget(self.line_edit_half_size, 7, 0)
 
-        self.label_min_loop=QLabel("循环最小值：")
-        grid_layout.addWidget(self.label_min_loop,8,0)
-        self.line_edit_min_loop=QLineEdit()
-        self.line_edit_min_loop.setText("5")
-        self.line_edit_min_loop.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        grid_layout.addWidget(self.line_edit_min_loop, 9, 0)
-
-        self.label_max_loop=QLabel("循环最大值：")
-        grid_layout.addWidget(self.label_max_loop,10,0)
-        self.line_edit_max_loop=QLineEdit()
-        self.line_edit_max_loop.setText("11")
-        self.line_edit_max_loop.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        grid_layout.addWidget(self.line_edit_max_loop, 11, 0)
+        self.label_gray_range=QLabel("灰度范围：(输入两个值表示灰度最小值和最大值，例如5 11，表示灰度范围为50%到110%)")
+        grid_layout.addWidget(self.label_gray_range,8,0)
+        self.line_edit_gray_range=QLineEdit()
+        self.line_edit_gray_range.setText("5 11")
+        self.line_edit_gray_range.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        grid_layout.addWidget(self.line_edit_gray_range, 9, 0)
 
         self.label_step_loop=QLabel("步长：")
-        grid_layout.addWidget(self.label_step_loop,12,0)
+        grid_layout.addWidget(self.label_step_loop,10,0)
         self.line_edit_step_loop=QLineEdit()
         self.line_edit_step_loop.setText("2")
         self.line_edit_step_loop.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        grid_layout.addWidget(self.line_edit_step_loop, 13, 0)
+        grid_layout.addWidget(self.line_edit_step_loop, 11, 0)
 
         self.loop_display=QListWidget()
         self.loop_display.setFixedHeight(100)
         self.loop_display.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        grid_layout.addWidget(self.loop_display,14,0)
+        grid_layout.addWidget(self.loop_display,12,0)
         self.btn_submit = QPushButton("提交")
         self.btn_submit.clicked.connect(self.submit)
-        grid_layout.addWidget(self.btn_submit, 14, 1)
+        grid_layout.addWidget(self.btn_submit, 12, 1)
 
         group_box1=QGroupBox("roi设置")
         from_layout1=QFormLayout()
@@ -211,15 +204,15 @@ class FFCCalculateBinningWindow(QDialog):
         from_layout1.addRow(self.roi_display)
 
         group_box1.setLayout(from_layout1)
-        grid_layout.addWidget(group_box1, 15, 0)
+        grid_layout.addWidget(group_box1, 13, 0)
 
         self.btn_capture = QPushButton("开始计算")
         self.btn_capture.clicked.connect(self.start_ffc_calculate)
-        grid_layout.addWidget(self.btn_capture, 16, 0)
+        grid_layout.addWidget(self.btn_capture, 14, 0)
 
         self.status_label=QLabel("状态：等待开始")
         self.status_label.setWordWrap(True)  # 设置自动换行
-        grid_layout.addWidget(self.status_label,17,0)
+        grid_layout.addWidget(self.status_label,15,0)
 
 
         spacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
@@ -288,19 +281,12 @@ class FFCCalculateBinningWindow(QDialog):
 
     def start_ffc_calculate(self):
         try:
-            self.status_label.setText("<span style='color: green;'>状态: 正在计算...</span>")  # 更新状态
-            self.btn_capture.setEnabled(False)
-            self.is_running=True
             self.file_path=self.line_edit_path.text()
             self.xyz_list=self.line_edit_xyzlist.text().strip().split()
             self.half_size=int(self.line_edit_half_size.text())
-            # FFC_calculate_1(
-            #     xyz_list=self.xyz_list,
-            #     filepath=self.file_path,
-            #     vrange=self.vrange,
-            #     half_size=self.half_size,
-            #     roi_list=self.roi_list
-            # )
+            self.status_label.setText("<span style='color: green;'>状态: 正在计算...</span>")  # 更新状态
+            self.btn_capture.setEnabled(False)
+            self.is_running=True
             parameters={
                     'xyz_list':self.xyz_list,
                     'filepath':self.file_path,
@@ -359,10 +345,15 @@ class FFCCalculateBinningWindow(QDialog):
     def submit(self):
         try:
             self.loop_display.clear()
-            min_loop=int(self.line_edit_min_loop.text())
-            max_loop=int(self.line_edit_max_loop.text())
+            gray_range_text=self.line_edit_gray_range.text().strip().split()
+            if not gray_range_text:
+                QMessageBox.warning(self,"MLColorimeter","请输入灰度范围",QMessageBox.Ok)
+                return
+            else:
+                gray_range=[int(gray) for gray in gray_range_text]
+            min_loop=gray_range[0]
+            max_loop=gray_range[1]
             step=int(self.line_edit_step_loop.text())
-
             # 清空之前的灰度范围
             self.vrange.clear()
 
@@ -371,7 +362,7 @@ class FFCCalculateBinningWindow(QDialog):
                 if dialog.exec_() == QDialog.Accepted:
                     min_gray, max_gray = dialog.get_values()
                     self.vrange[loop_i] = (min_gray, max_gray)
-                    loop_str=f"{loop_i}-{min_gray}-{max_gray}"
+                    loop_str=f"{loop_i}0%：{min_gray}-{max_gray}"
                     self.loop_display.addItem(loop_str)
         except Exception as e:
             QMessageBox.critical(self,"MLColorimeter","exception" + str(e), QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)

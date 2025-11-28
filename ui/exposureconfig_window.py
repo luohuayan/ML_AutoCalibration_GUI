@@ -46,6 +46,7 @@ class ExposureConfigWindow(QDialog):
         self.exposure_modes=['Auto','Fixed']
         self.settings={}  # (nd,xyz):(mode_combobox,time_entry)
         self.exposure_map={}
+        self.is_config_saved=False
         self._init_ui()
 
     def _init_ui(self):
@@ -73,9 +74,9 @@ class ExposureConfigWindow(QDialog):
                 self.settings[(nd_str,xyz_str)]=(mode_combobox,time_entry)
             group_box.setLayout(from_layout)
             layout.addWidget(group_box)
-        # load_button = QPushButton("Load Config")
-        # load_button.clicked.connect(self.load_config)
-        # layout.addWidget(load_button)
+        load_button = QPushButton("Load Config")
+        load_button.clicked.connect(self.load_config)
+        layout.addWidget(load_button)
 
         save_button = QPushButton("Save Config")
         save_button.clicked.connect(self.save_config)
@@ -107,38 +108,52 @@ class ExposureConfigWindow(QDialog):
                                 mode_combobox.setCurrentText(setting['exposure_mode'])
                                 time_entry.setText(str(setting['exposure_time']))
                             else:
+                                mode_combobox,time_entry=self.settings[(nd_str,xyz_str)]
                                 mode_combobox.setCurrentIndex(0)
                                 time_entry.setText("100")
             except Exception as e:
                 QMessageBox.critical(self,"MLColorimeter","Load config error: " + str(e), QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
 
     def save_config(self):
-        # options = QFileDialog.Options()
-        # file_name, _ = QFileDialog.getSaveFileName(self, "Save Exposure Config", "", "JSON Files (*.json);;All Files (*)", options=options)
-        # if file_name:
-        try:
-            for nd in self.nd_list:
-                nd_enum = mlcm.MLFilterEnum(int(nd))
-                nd_str=mlcm.MLFilterEnum_to_str(nd_enum)
-                self.exposure_map[nd_str]={}
-                for xyz in self.xyz_list:
-                    xyz_enum = mlcm.MLFilterEnum(int(xyz))
-                    xyz_str=mlcm.MLFilterEnum_to_str(xyz_enum)
-                    mode_combobox,time_entry=self.settings[(nd_str,xyz_str)]
-                    mode=mode_combobox.currentText()
-                    time=float(time_entry.text())
-                    self.exposure_map[nd_str][xyz_str]={
-                        'exposure_mode':mode,
-                        'exposure_time':time
-                    }
-            # with open(file_name, 'w') as f:
-            #     json.dump(self.exposure_map, f, ensure_ascii=False, indent=4)
-            
-            # 发射信号传递配置
-            self.config_saved.emit(self.exposure_map)
-            reply = QMessageBox.information(self,"成功","保存成功！",QMessageBox.Ok)
+        options = QFileDialog.Options()
+        file_name, _ = QFileDialog.getSaveFileName(self, "Save Exposure Config", "", "JSON Files (*.json);;All Files (*)", options=options)
+        if file_name:
+            try:
+                for nd in self.nd_list:
+                    nd_enum = mlcm.MLFilterEnum(int(nd))
+                    nd_str=mlcm.MLFilterEnum_to_str(nd_enum)
+                    self.exposure_map[nd_str]={}
+                    for xyz in self.xyz_list:
+                        xyz_enum = mlcm.MLFilterEnum(int(xyz))
+                        xyz_str=mlcm.MLFilterEnum_to_str(xyz_enum)
+                        mode_combobox,time_entry=self.settings[(nd_str,xyz_str)]
+                        mode=mode_combobox.currentText()
+                        time=float(time_entry.text())
+                        self.exposure_map[nd_str][xyz_str]={
+                            'exposure_mode':mode,
+                            'exposure_time':time
+                        }
+                with open(file_name, 'w') as f:
+                    json.dump(self.exposure_map, f, ensure_ascii=False, indent=4)
+                
+                # 发射信号传递配置
+                self.config_saved.emit(self.exposure_map)
 
-            if reply==QMessageBox.Ok:
-                self.close()
-        except Exception as e:
-            QMessageBox.critical(self,"MLColorimeter","Save config error: " + str(e), QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
+                self.is_config_saved=True
+                reply = QMessageBox.information(self,"成功","保存成功！",QMessageBox.Ok)
+
+                if reply==QMessageBox.Ok:
+                    self.close()
+            except Exception as e:
+                QMessageBox.critical(self,"MLColorimeter","Save config error: " + str(e), QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
+    
+    def closeEvent(self, event):
+        if not self.is_config_saved:
+            # 如果配置未保存，弹出提示并阻止关闭窗口
+            reply=QMessageBox.question(self,"MLColorimeter","配置未保存，确定要关闭窗口吗？",QMessageBox.Yes|QMessageBox.No,QMessageBox.No)
+            if reply==QMessageBox.Yes:
+                event.accept()
+            else:
+                event.ignore()
+        else:
+            event.accept()

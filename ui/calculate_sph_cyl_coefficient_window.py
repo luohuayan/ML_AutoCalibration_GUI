@@ -15,6 +15,7 @@ from PyQt5.QtWidgets import (
     QButtonGroup,
     QCheckBox,
     QDialog,
+    QFormLayout
 )
 from core.app_config import AppConfig
 from PyQt5.QtCore import pyqtSignal, Qt,QThread
@@ -100,27 +101,64 @@ class CalculateSphCylCoefficientWindow(QDialog):
         self.line_edit_count.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         grid_layout.addWidget(self.line_edit_count, 9, 0)
 
+        group_box1=QGroupBox("roi设置")
+        from_layout1=QFormLayout()
+
+        self.label_x_input=QLabel("x_input: ")
+        self.line_edit_x_input = QLineEdit()
+        self.line_edit_x_input.setText("0")
+        self.line_edit_x_input.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+
+        self.label_y_input=QLabel("y_input: ")
+        self.line_edit_y_input = QLineEdit()
+        self.line_edit_y_input.setText("0")
+        self.line_edit_y_input.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+
+        self.label_width_input=QLabel("width_input: ")
+        self.line_edit_width_input = QLineEdit()
+        self.line_edit_width_input.setText("300")
+        self.line_edit_width_input.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+
+        self.label_height_input=QLabel("height_input: ")
+        self.line_edit_height_input = QLineEdit()
+        self.line_edit_height_input.setText("300")
+        self.line_edit_height_input.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+
+        horizontal_layout5=QHBoxLayout()
+        horizontal_layout5.addWidget(self.label_x_input)
+        horizontal_layout5.addWidget(self.line_edit_x_input)
+        horizontal_layout5.addWidget(self.label_y_input)
+        horizontal_layout5.addWidget(self.line_edit_y_input)
+        horizontal_layout5.addWidget(self.label_width_input)
+        horizontal_layout5.addWidget(self.line_edit_width_input)
+        horizontal_layout5.addWidget(self.label_height_input)
+        horizontal_layout5.addWidget(self.line_edit_height_input)
+        from_layout1.addRow(horizontal_layout5)
+
+        group_box1.setLayout(from_layout1)
+        grid_layout.addWidget(group_box1, 10, 0)
+
         self.label_path = QLabel()
         self.label_path.setText("保存路径:")
-        grid_layout.addWidget(self.label_path, 10, 0)
+        grid_layout.addWidget(self.label_path, 11, 0)
 
         self.line_edit_path = QLineEdit()
         self.line_edit_path.setReadOnly(True)  # 设置为只读
         self.line_edit_path.setPlaceholderText("未选择文件夹")
         self.line_edit_path.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        grid_layout.addWidget(self.line_edit_path, 11, 0)
+        grid_layout.addWidget(self.line_edit_path, 12, 0)
 
         self.btn_browse = QPushButton("浏览...")
         self.btn_browse.clicked.connect(self._open_folder_dialog)
-        grid_layout.addWidget(self.btn_browse, 11, 1)
+        grid_layout.addWidget(self.btn_browse, 12, 1)
 
         self.btn_capture = QPushButton("计算系数")
         self.btn_capture.clicked.connect(self.start_calculate)
-        grid_layout.addWidget(self.btn_capture, 12, 0)
+        grid_layout.addWidget(self.btn_capture, 13, 0)
 
         self.status_label=QLabel("状态：等待开始")
         self.status_label.setWordWrap(True)  # 设置自动换行
-        grid_layout.addWidget(self.status_label,13,0)
+        grid_layout.addWidget(self.status_label,14,0)
 
         spacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
         grid_layout.addItem(spacer)
@@ -170,14 +208,19 @@ class CalculateSphCylCoefficientWindow(QDialog):
 
     def start_calculate(self):
         try:
-            self.status_label.setText("<span style='color: green;'>状态: 正在进行计算...</span>")  # 更新状态
-            self.btn_capture.setEnabled(False)
-            self.is_running=True
             self.nd_list=self.line_edit_ndlist.text().strip().split()
             self.xyz_list=self.line_edit_xyzlist.text().strip().split()
             self.sph_list=[float(sph) for sph in self.line_edit_sphlist.text().strip().split()]
             self.cyl_list=[float(cyl) for cyl in self.line_edit_cyllist.text().strip().split()]
             self.count=int(self.line_edit_count.text().strip())
+            x=int(self.line_edit_x_input.text())
+            y=int(self.line_edit_y_input.text())
+            width=int(self.line_edit_width_input.text())
+            height=int(self.line_edit_height_input.text())
+            self.roi=mlcm.pyCVRect(x,y,width,height)
+            self.status_label.setText("<span style='color: green;'>状态: 正在进行计算...</span>")  # 更新状态
+            self.btn_capture.setEnabled(False)
+            self.is_running=True
             parameters={
                 'colorimeter':self.colorimeter,
                 'sph_list':self.sph_list,
@@ -185,6 +228,7 @@ class CalculateSphCylCoefficientWindow(QDialog):
                 'save_path':self.save_path,
                 'nd_list':self.nd_list,
                 'xyz_list':self.xyz_list,
+                'roi':self.roi,
                 'count':self.count,
                 'exposure_map_obj':self.exposure_map_obj
             }

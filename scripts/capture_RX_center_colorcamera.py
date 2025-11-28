@@ -5,6 +5,7 @@ import csv
 import os
 import numpy as np
 from datetime import datetime
+import time
 
 
 def datetime_str():
@@ -12,7 +13,7 @@ def datetime_str():
 
 
 def capture_RX_center(
-    colorimter: mlcm.ML_Colorimeter,
+    colorimeter: mlcm.ML_Colorimeter,
     save_path: str,
     nd_list: List[mlcm.MLFilterEnum],
     xyz_list: List[mlcm.MLFilterEnum],
@@ -20,8 +21,12 @@ def capture_RX_center(
     axis_list: List,
     roi: mlcm.pyCVRect,
     exposure_map_obj: Dict[mlcm.MLFilterEnum, Dict[mlcm.MLFilterEnum, mlcm.pyExposureSetting]],
+    status_callback=None
 ):
-    mono = colorimter.ml_bino_manage.ml_get_module_by_id(1)
+    def update_status(message):
+        if status_callback:
+            status_callback(message)
+    mono = colorimeter.ml_bino_manage.ml_get_module_by_id(1)
     pixel_format = mlcm.MLPixelFormat.MLBayerRG12
     ret = mono.ml_set_pixel_format(pixel_format)
     if not ret.success:
@@ -71,11 +76,10 @@ def capture_RX_center(
                     roi_img = Y[roi.y:roi.y +
                                 roi.height, roi.x:roi.x+roi.width]
                     cv2.imwrite(img_path, roi_img)
-                    print("capture image for: " +
-                          mlcm.pyRXCombination_to_str(rx))
-            print("capture image for: " + mlcm.MLFilterEnum_to_str(xyz))
-        print("capture image for: " + mlcm.MLFilterEnum_to_str(nd))
-    print("capture RX center finish")
+                    update_status(f"capture image for: {mlcm.pyRXCombination_to_str(rx)}")
+            update_status(f"capture image for: {mlcm.MLFilterEnum_to_str(xyz)}")
+        update_status(f"capture image for: {mlcm.MLFilterEnum_to_str(nd)}")
+    update_status("capture RX center finish")
 
 
 if __name__ == "__main__":
@@ -159,4 +163,5 @@ if __name__ == "__main__":
         )
 
     except Exception as e:
-        print(e)
+        # print(e)
+        pass
