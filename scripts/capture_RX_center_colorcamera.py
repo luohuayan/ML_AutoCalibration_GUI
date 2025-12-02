@@ -82,86 +82,86 @@ def capture_RX_center(
     update_status("capture RX center finish")
 
 
-if __name__ == "__main__":
-    eye1_path = r"I:\duling ffc\EYE1"
-    path_list = [
-        eye1_path,
-    ]
-    save_path = r"D:\aolanduo2_RX_center"
-    if not os.path.exists(save_path):
-        os.makedirs(save_path)
-    try:
-        # create a ML_Colorimeter system instance
-        ml_colorimeter = mlcm.ML_Colorimeter()
-        # add mono module into ml_colorimeter system, according to path_list create one or more mono module
-        ret = ml_colorimeter.ml_add_module(path_list=path_list)
-        if not ret.success:
-            raise RuntimeError("ml_add_module error")
-        # connect all module in the ml_colorimeter system
-        ret = ml_colorimeter.ml_connect()
-        if not ret.success:
-            raise RuntimeError("ml_connect error")
+# if __name__ == "__main__":
+#     eye1_path = r"I:\duling ffc\EYE1"
+#     path_list = [
+#         eye1_path,
+#     ]
+#     save_path = r"D:\aolanduo2_RX_center"
+#     if not os.path.exists(save_path):
+#         os.makedirs(save_path)
+#     try:
+#         # create a ML_Colorimeter system instance
+#         ml_colorimeter = mlcm.ML_Colorimeter()
+#         # add mono module into ml_colorimeter system, according to path_list create one or more mono module
+#         ret = ml_colorimeter.ml_add_module(path_list=path_list)
+#         if not ret.success:
+#             raise RuntimeError("ml_add_module error")
+#         # connect all module in the ml_colorimeter system
+#         ret = ml_colorimeter.ml_connect()
+#         if not ret.success:
+#             raise RuntimeError("ml_connect error")
 
-        module_id = 1
-        ml_mono = ml_colorimeter.ml_bino_manage.ml_get_module_by_id(module_id)
+#         module_id = 1
+#         ml_mono = ml_colorimeter.ml_bino_manage.ml_get_module_by_id(module_id)
 
-        # nd filter to switch during capture
-        nd_list = [mlcm.MLFilterEnum.ND0]
-        # xyz filter list to switch during capture
-        xyz_list = [mlcm.MLFilterEnum.Y]
+#         # nd filter to switch during capture
+#         nd_list = [mlcm.MLFilterEnum.ND0]
+#         # xyz filter list to switch during capture
+#         xyz_list = [mlcm.MLFilterEnum.Y]
 
-        cyl_list = [-4, -3.5, -3, -2.5, -2, -1.5, -1, -0.5, 0]
-        axis_list = [0, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165]
+#         cyl_list = [-4, -3.5, -3, -2.5, -2, -1.5, -1, -0.5, 0]
+#         axis_list = [0, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165]
 
-        roi = mlcm.pyCVRect(0, 0, 300, 300)
+#         roi = mlcm.pyCVRect(0, 0, 300, 300)
 
-        exposure_map_obj = {
-            mlcm.MLFilterEnum.ND0: {
-                mlcm.MLFilterEnum.X: mlcm.pyExposureSetting(
-                    exposure_mode=mlcm.ExposureMode.Fixed, exposure_time=20
-                ),
-                mlcm.MLFilterEnum.Y: mlcm.pyExposureSetting(
-                    exposure_mode=mlcm.ExposureMode.Fixed, exposure_time=20
-                ),
-                mlcm.MLFilterEnum.Z: mlcm.pyExposureSetting(
-                    exposure_mode=mlcm.ExposureMode.Fixed, exposure_time=25
-                ),
-            },
-            mlcm.MLFilterEnum.ND1: {
-                mlcm.MLFilterEnum.X: mlcm.pyExposureSetting(
-                    exposure_mode=mlcm.ExposureMode.Fixed, exposure_time=180
-                ),
-                mlcm.MLFilterEnum.Y: mlcm.pyExposureSetting(
-                    exposure_mode=mlcm.ExposureMode.Fixed, exposure_time=100
-                ),
-                mlcm.MLFilterEnum.Z: mlcm.pyExposureSetting(
-                    exposure_mode=mlcm.ExposureMode.Fixed, exposure_time=150
-                ),
-            },
-            mlcm.MLFilterEnum.ND2: {
-                mlcm.MLFilterEnum.X: mlcm.pyExposureSetting(
-                    exposure_mode=mlcm.ExposureMode.Fixed, exposure_time=4556
-                ),
-                mlcm.MLFilterEnum.Y: mlcm.pyExposureSetting(
-                    exposure_mode=mlcm.ExposureMode.Fixed, exposure_time=4054
-                ),
-                mlcm.MLFilterEnum.Z: mlcm.pyExposureSetting(
-                    exposure_mode=mlcm.ExposureMode.Fixed, exposure_time=4999
-                ),
-            },
-        }
+#         exposure_map_obj = {
+#             mlcm.MLFilterEnum.ND0: {
+#                 mlcm.MLFilterEnum.X: mlcm.pyExposureSetting(
+#                     exposure_mode=mlcm.ExposureMode.Fixed, exposure_time=20
+#                 ),
+#                 mlcm.MLFilterEnum.Y: mlcm.pyExposureSetting(
+#                     exposure_mode=mlcm.ExposureMode.Fixed, exposure_time=20
+#                 ),
+#                 mlcm.MLFilterEnum.Z: mlcm.pyExposureSetting(
+#                     exposure_mode=mlcm.ExposureMode.Fixed, exposure_time=25
+#                 ),
+#             },
+#             mlcm.MLFilterEnum.ND1: {
+#                 mlcm.MLFilterEnum.X: mlcm.pyExposureSetting(
+#                     exposure_mode=mlcm.ExposureMode.Fixed, exposure_time=180
+#                 ),
+#                 mlcm.MLFilterEnum.Y: mlcm.pyExposureSetting(
+#                     exposure_mode=mlcm.ExposureMode.Fixed, exposure_time=100
+#                 ),
+#                 mlcm.MLFilterEnum.Z: mlcm.pyExposureSetting(
+#                     exposure_mode=mlcm.ExposureMode.Fixed, exposure_time=150
+#                 ),
+#             },
+#             mlcm.MLFilterEnum.ND2: {
+#                 mlcm.MLFilterEnum.X: mlcm.pyExposureSetting(
+#                     exposure_mode=mlcm.ExposureMode.Fixed, exposure_time=4556
+#                 ),
+#                 mlcm.MLFilterEnum.Y: mlcm.pyExposureSetting(
+#                     exposure_mode=mlcm.ExposureMode.Fixed, exposure_time=4054
+#                 ),
+#                 mlcm.MLFilterEnum.Z: mlcm.pyExposureSetting(
+#                     exposure_mode=mlcm.ExposureMode.Fixed, exposure_time=4999
+#                 ),
+#             },
+#         }
 
-        capture_RX_center(
-            ml_colorimeter,
-            save_path,
-            nd_list,
-            xyz_list,
-            cyl_list,
-            axis_list,
-            roi,
-            exposure_map_obj
-        )
+#         capture_RX_center(
+#             ml_colorimeter,
+#             save_path,
+#             nd_list,
+#             xyz_list,
+#             cyl_list,
+#             axis_list,
+#             roi,
+#             exposure_map_obj
+#         )
 
-    except Exception as e:
-        # print(e)
-        pass
+#     except Exception as e:
+#         # print(e)
+#         pass

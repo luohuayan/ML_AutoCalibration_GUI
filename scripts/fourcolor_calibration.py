@@ -85,7 +85,7 @@ def fourcolor_calibration_capture(
     if not ret.success:
         raise RuntimeError("ml_set_rx_syn error")
     # capture M images and calculate M matrix
-    ret = ml_colorimeter.ml_capture_and_calMMatrix2(
+    ret = colorimeter.ml_capture_and_calMMatrix2(
         module_id=module_id,
         save_path=save_path,
         light_source=light_source,
@@ -122,116 +122,116 @@ def fourcolor_calibration_calculate(
     if not ret.success:
         raise RuntimeError("ml_set_rx_syn error")
 # save M matrix images and exposure time
-    ret = ml_colorimeter.ml_save_MMatrix_and_exposure(
+    ret = colorimeter.ml_save_MMatrix_and_exposure(
         module_id=module_id, save_path=save_path, aperture=aperture, nd=nd, rx=rx
     )
     if not ret.success:
         raise RuntimeError("ml_save_MMatrix_and_exposure error")
 
     # get M matrix by module id
-    mmatrix = ml_colorimeter.ml_get_MMatrix(module_id)
+    mmatrix = colorimeter.ml_get_MMatrix(module_id) # type: ignore
 
     # calculate N matrix using the input NMatrix_xyL.json
-    ret = ml_colorimeter.ml_cal_NMatrix(NMatrix_path)
+    ret = colorimeter.ml_cal_NMatrix(NMatrix_path)
     if not ret.success:
         raise RuntimeError("ml_cal_NMatrix error")
-    nmatrix = ml_colorimeter.ml_get_NMatrix()
+    nmatrix = colorimeter.ml_get_NMatrix() # type: ignore
 
     # calculate R matrix using the M matrix and N matrix, and save R matrix to config
-    ret = ml_colorimeter.ml_cal_RMatrix(module_id=module_id, nd=nd)
+    ret = colorimeter.ml_cal_RMatrix(module_id=module_id, nd=nd)
     if not ret.success:
         raise RuntimeError("ml_cal_RMatrix error")
-    rmatrix = ml_colorimeter.ml_get_RMatrix(module_id)
+    rmatrix = colorimeter.ml_get_RMatrix(module_id) # type: ignore
 
-if __name__ == "__main__":
-    # set mono module calibration configuration path
-    eye1_path = r"D:\config\EYE1"
-    path_list = [
-        eye1_path,
-    ]
-    try:
-        # create a ML_Colorimeter system instance
-        ml_colorimeter = mlcm.ML_Colorimeter()
-        # add mono module into ml_colorimeter system, according to path_list create one or more mono module
-        ret = ml_colorimeter.ml_add_module(path_list=path_list)
-        if not ret.success:
-            raise RuntimeError("ml_add_module error")
-        # connect all module in the ml_colorimeter system
-        ret = ml_colorimeter.ml_connect()
-        if not ret.success:
-            raise RuntimeError("ml_connect error")
+# if __name__ == "__main__":
+#     # set mono module calibration configuration path
+#     eye1_path = r"D:\config\EYE1"
+#     path_list = [
+#         eye1_path,
+#     ]
+#     try:
+#         # create a ML_Colorimeter system instance
+#         ml_colorimeter = mlcm.ML_Colorimeter()
+#         # add mono module into ml_colorimeter system, according to path_list create one or more mono module
+#         ret = ml_colorimeter.ml_add_module(path_list=path_list)
+#         if not ret.success:
+#             raise RuntimeError("ml_add_module error")
+#         # connect all module in the ml_colorimeter system
+#         ret = ml_colorimeter.ml_connect()
+#         if not ret.success:
+#             raise RuntimeError("ml_connect error")
 
-        module_id = 1
-        ml_mono = ml_colorimeter.ml_bino_manage.ml_get_module_by_id(module_id)
+#         module_id = 1
+#         ml_mono = ml_colorimeter.ml_bino_manage.ml_get_module_by_id(module_id)
 
-        # N matrix path, NMatrix_xyL.json contains the specbos data of your light source
-        NMatrix_path = r"D:\config\NMatrix_xyL.json"
-        # path to save M images and exposure time
-        save_path = r"D:\intermediate_data"
+#         # N matrix path, NMatrix_xyL.json contains the specbos data of your light source
+#         NMatrix_path = r"D:\config\NMatrix_xyL.json"
+#         # path to save M images and exposure time
+#         save_path = r"D:\intermediate_data"
 
-        # nd filter list to switch during capture
-        nd_list = [mlcm.MLFilterEnum.ND0]
-        # exposure map of color filter during capture
-        exposure_map = {
-            mlcm.MLFilterEnum.X: mlcm.pyExposureSetting(
-                exposure_mode=mlcm.ExposureMode.Auto, exposure_time=1000
-            ),
-            mlcm.MLFilterEnum.Y: mlcm.pyExposureSetting(
-                exposure_mode=mlcm.ExposureMode.Auto, exposure_time=1000
-            ),
-            mlcm.MLFilterEnum.Z: mlcm.pyExposureSetting(
-                exposure_mode=mlcm.ExposureMode.Auto, exposure_time=1000
-            ),
-        }
-        rx = mlcm.pyRXCombination(0, 0, 0)
-        ret = ml_mono.ml_set_rx_syn(rx=rx)
-        if not ret.success:
-            raise RuntimeError("ml_set_rx_syn error")
+#         # nd filter list to switch during capture
+#         nd_list = [mlcm.MLFilterEnum.ND0]
+#         # exposure map of color filter during capture
+#         exposure_map = {
+#             mlcm.MLFilterEnum.X: mlcm.pyExposureSetting(
+#                 exposure_mode=mlcm.ExposureMode.Auto, exposure_time=1000
+#             ),
+#             mlcm.MLFilterEnum.Y: mlcm.pyExposureSetting(
+#                 exposure_mode=mlcm.ExposureMode.Auto, exposure_time=1000
+#             ),
+#             mlcm.MLFilterEnum.Z: mlcm.pyExposureSetting(
+#                 exposure_mode=mlcm.ExposureMode.Auto, exposure_time=1000
+#             ),
+#         }
+#         rx = mlcm.pyRXCombination(0, 0, 0)
+#         ret = ml_mono.ml_set_rx_syn(rx=rx)
+#         if not ret.success:
+#             raise RuntimeError("ml_set_rx_syn error")
 
-        # count to calculate average image for one color filter
-        avg_count = 5
-        # ROI setting to calculate M matrix
-        roi = mlcm.pyCVRect(x=2000, y=2000, width=1000, height=1000)
-        # whether to do flat field correction before calculation
-        is_do_ffc = True
-        # light source list for fourcolor calibration
-        light_source_list = ["R", "G", "B", "W"]
+#         # count to calculate average image for one color filter
+#         avg_count = 5
+#         # ROI setting to calculate M matrix
+#         roi = mlcm.pyCVRect(x=2000, y=2000, width=1000, height=1000)
+#         # whether to do flat field correction before calculation
+#         is_do_ffc = True
+#         # light source list for fourcolor calibration
+#         light_source_list = ["R", "G", "B", "W"]
 
-        # set pixel format to MLMono12 during capture
-        ret = ml_mono.ml_set_pixel_format(pixel_format=mlcm.MLPixelFormat.MLMono12)
-        if not ret.success:
-            raise RuntimeError("ml_set_pixel_format error")
+#         # set pixel format to MLMono12 during capture
+#         ret = ml_mono.ml_set_pixel_format(pixel_format=mlcm.MLPixelFormat.MLMono12)
+#         if not ret.success:
+#             raise RuntimeError("ml_set_pixel_format error")
 
-        # capture M matrix image for nd list
-        for nd in nd_list:
-            # need to manually switch the light source of IS, or add your code to control the IS
-            for light_source in light_source_list:
-                # execute fourcolor calibration capture
-                fourcolor_calibration_capture(
-                    module_id=module_id,
-                    save_path=save_path,
-                    light_source=light_source,
-                    nd=nd,
-                    rx=rx,
-                    avg_count=avg_count,
-                    exposure_map=exposure_map,
-                    roi=roi,
-                    is_do_ffc=is_do_ffc,
-                )
-            print(
-                "capture fourcolor calibration images for "
-                + mlcm.MLFilterEnum_to_str(nd)
-            )
+#         # capture M matrix image for nd list
+#         for nd in nd_list:
+#             # need to manually switch the light source of IS, or add your code to control the IS
+#             for light_source in light_source_list:
+#                 # execute fourcolor calibration capture
+#                 fourcolor_calibration_capture(
+#                     module_id=module_id,
+#                     save_path=save_path,
+#                     light_source=light_source,
+#                     nd=nd,
+#                     rx=rx,
+#                     avg_count=avg_count,
+#                     exposure_map=exposure_map,
+#                     roi=roi,
+#                     is_do_ffc=is_do_ffc,
+#                 )
+#             print(
+#                 "capture fourcolor calibration images for "
+#                 + mlcm.MLFilterEnum_to_str(nd)
+#             )
 
-            # calculate M, N, R matrix after capturing M matrix
-            fourcolor_calibration_calculate(
-                module_id=module_id,
-                save_path=save_path,
-                nd=nd,
-                rx=rx,
-                NMatrix_path=NMatrix_path,
-            )
-            print("calculate R matrix for " + mlcm.MLFilterEnum_to_str(nd))
+#             # calculate M, N, R matrix after capturing M matrix
+#             fourcolor_calibration_calculate(
+#                 module_id=module_id,
+#                 save_path=save_path,
+#                 nd=nd,
+#                 rx=rx,
+#                 NMatrix_path=NMatrix_path,
+#             )
+#             print("calculate R matrix for " + mlcm.MLFilterEnum_to_str(nd))
 
-    except Exception as e:
-        print(e)
+#     except Exception as e:
+#         print(e)

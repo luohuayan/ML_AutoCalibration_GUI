@@ -121,27 +121,27 @@ def calculate_sph_cyl_coefficinet(
     update_status("calculate soh cyl coefficient finish")
 
 
-if __name__ == "__main__":
-    eye1_path = r"D:\MLColorimeter\config\EYE1"
-    path_list = [
-        eye1_path,
-    ]
-    try:
-        # create a ML_Colorimeter system instance
-        ml_colorimeter = mlcm.ML_Colorimeter()
-        # add mono module into ml_colorimeter system, according to path_list create one or more mono module
-        ret = ml_colorimeter.ml_add_module(path_list=path_list)
-        if not ret.success:
-            raise RuntimeError("ml_add_module error")
-        # connect all module in the ml_colorimeter system
-        ret = ml_colorimeter.ml_connect()
-        if not ret.success:
-            raise RuntimeError("ml_connect error")
+# if __name__ == "__main__":
+#     eye1_path = r"D:\MLColorimeter\config\EYE1"
+#     path_list = [
+#         eye1_path,
+#     ]
+#     try:
+#         # create a ML_Colorimeter system instance
+#         ml_colorimeter = mlcm.ML_Colorimeter()
+#         # add mono module into ml_colorimeter system, according to path_list create one or more mono module
+#         ret = ml_colorimeter.ml_add_module(path_list=path_list)
+#         if not ret.success:
+#             raise RuntimeError("ml_add_module error")
+#         # connect all module in the ml_colorimeter system
+#         ret = ml_colorimeter.ml_connect()
+#         if not ret.success:
+#             raise RuntimeError("ml_connect error")
 
-        module_id = 1
-        ml_mono = ml_colorimeter.ml_bino_manage.ml_get_module_by_id(module_id)
+#         module_id = 1
+#         ml_mono = ml_colorimeter.ml_bino_manage.ml_get_module_by_id(module_id)
 
-        calculate_sph_cyl_coefficinet()
-    except Exception as e:
-        # print(e)
-        pass
+#         calculate_sph_cyl_coefficinet()
+#     except Exception as e:
+#         # print(e)
+#         pass

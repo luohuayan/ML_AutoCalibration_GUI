@@ -1,10 +1,7 @@
 from PyQt5.QtWidgets import (
-    QWidget,
     QHBoxLayout,
-    QVBoxLayout,
     QLabel,
     QLineEdit,
-    QRadioButton,
     QPushButton,
     QFileDialog,
     QSizePolicy,
@@ -22,8 +19,6 @@ from PyQt5.QtGui import QIntValidator,QDoubleValidator
 from core.app_config import AppConfig
 from PyQt5.QtCore import pyqtSignal, Qt,QThread
 import mlcolorimeter as mlcm
-import os
-import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 from openpyxl import Workbook, load_workbook
@@ -205,7 +200,7 @@ class FiledCurveWindow(QDialog):
         horizontal_layout3.addWidget(self.line_edit_use_lpmm_unit)
         from_layout.addRow(horizontal_layout3)
 
-        self.label_rough_step=QLabel("rough_step: ")
+        self.label_rough_step=QLabel("coarse_step: ")
         self.line_edit_rough_step = QLineEdit()
         self.line_edit_rough_step.setValidator(self.double_validator)
         self.line_edit_rough_step.setText("0.1")
@@ -215,6 +210,12 @@ class FiledCurveWindow(QDialog):
         self.line_edit_use_fine_adjust = QCheckBox()
         self.line_edit_use_fine_adjust.setChecked(False)
         self.line_edit_use_fine_adjust.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+
+        self.label_fine_step=QLabel("fine_step: ")
+        self.line_edit_fine_step = QLineEdit()
+        self.line_edit_fine_step.setValidator(self.double_validator)
+        self.line_edit_fine_step.setText("0.1")
+        self.line_edit_fine_step.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
         self.label_average_count=QLabel("average_count: ")
         self.line_edit_average_count = QLineEdit()
@@ -227,9 +228,41 @@ class FiledCurveWindow(QDialog):
         horizontal_layout4.addWidget(self.line_edit_rough_step)
         horizontal_layout4.addWidget(self.label_use_fine_adjust)
         horizontal_layout4.addWidget(self.line_edit_use_fine_adjust)
+        horizontal_layout4.addWidget(self.label_fine_step)
+        horizontal_layout4.addWidget(self.line_edit_fine_step)
         horizontal_layout4.addWidget(self.label_average_count)
         horizontal_layout4.addWidget(self.line_edit_average_count)
         from_layout.addRow(horizontal_layout4)
+
+        self.label_save_result_image=QLabel("save_result_image: ")
+        self.line_edit_save_result_image = QCheckBox()
+        self.line_edit_save_result_image.setChecked(False)
+        self.line_edit_save_result_image.stateChanged.connect(self._use_state_changed)
+        self.line_edit_save_result_image.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        from_layout.addRow(self.label_save_result_image,self.line_edit_save_result_image)
+
+        self.label_save_roi=QLabel("save_roi(input: x y width height): ")
+        self.line_edit_save_roi = QLineEdit()
+        self.line_edit_save_roi.setText("1024 1033 200 200")
+        self.line_edit_save_roi.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        from_layout.addRow(self.label_save_roi,self.line_edit_save_roi)
+
+        self.label_image_save_path = QLabel("image_save_path:")
+
+        self.line_edit_image_save_path = QLineEdit()
+        self.line_edit_image_save_path.setReadOnly(True)  # 设置为只读
+        self.line_edit_image_save_path.setPlaceholderText("未选择文件夹")
+        self.line_edit_image_save_path.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+
+        self.btn_select = QPushButton("浏览...")
+        self.btn_select.clicked.connect(self._open__image_folder_dialog)
+
+        horizontal_layout5=QHBoxLayout()
+        horizontal_layout5.addWidget(self.label_image_save_path)
+        horizontal_layout5.addWidget(self.line_edit_image_save_path)
+        horizontal_layout5.addWidget(self.btn_select)
+        from_layout.addRow(horizontal_layout5)
+
 
         group_box.setLayout(from_layout)
         grid_layout.addWidget(group_box, 1, 0)
@@ -333,7 +366,26 @@ class FiledCurveWindow(QDialog):
         grid_layout.addItem(spacer)
 
         self.setLayout(grid_layout)
+        self.label_save_roi.setEnabled(False)
+        self.line_edit_save_roi.setEnabled(False)
+        self.label_image_save_path.setEnabled(False)
+        self.line_edit_image_save_path.setEnabled(False)
+        self.btn_select.setEnabled(False)
     
+    def _use_state_changed(self):
+        if self.line_edit_save_result_image.isChecked():
+            self.label_save_roi.setEnabled(True)
+            self.line_edit_save_roi.setEnabled(True)
+            self.label_image_save_path.setEnabled(True)
+            self.line_edit_image_save_path.setEnabled(True)
+            self.btn_select.setEnabled(True)
+        else:
+            self.label_save_roi.setEnabled(False)
+            self.line_edit_save_roi.setEnabled(False)
+            self.label_image_save_path.setEnabled(False)
+            self.line_edit_image_save_path.setEnabled(False)
+            self.btn_select.setEnabled(False)
+
     def validate_input(self):
         text=self.line_edit_binnlist.text()
         if text:
@@ -354,6 +406,21 @@ class FiledCurveWindow(QDialog):
             self.line_edit_path.setText(folder_path)
         else:
             QMessageBox.critical(self,"MLColorimeter","选择路径错误",QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
+
+    def _open__image_folder_dialog(self):
+        # 打开文件夹选择对话框
+        folder_path = QFileDialog.getExistingDirectory(
+            self,
+            self.dialog_title,
+            self.default_path if self.default_path else "",  # 初始路径
+            options=QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks,
+        )
+
+        if folder_path:
+            self.line_edit_image_save_path.setText(folder_path)
+        else:
+            QMessageBox.critical(self,"MLColorimeter","选择路径错误",QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
+
 
     def add_roi(self):
 
@@ -464,9 +531,23 @@ class FiledCurveWindow(QDialog):
             self.focal_space=float(self.line_edit_focal_space.text().strip())
             self.use_chess_mode=self.line_edit_use_chess_mode.isChecked()
             self.use_lpmm_unit=self.line_edit_use_lpmm_unit.isChecked()
-            self.rough_step=float(self.line_edit_rough_step.text().strip())
+            self.coarse_step=float(self.line_edit_rough_step.text().strip())
+            self.fine_step=float(self.line_edit_fine_step.text())
+
             self.use_fine_adjust=self.line_edit_use_fine_adjust.isChecked()
             self.average_count=int(self.line_edit_average_count.text().strip())
+            self.save_result_img=self.line_edit_save_result_image.isChecked()
+            if self.save_result_img:
+                save_roi_text=self.line_edit_save_roi.text().strip().split()
+                if len(save_roi_text)!=4:
+                    QMessageBox.warning(self,"MLColorimeter","请正确填写roi参数，格式：x y width height",QMessageBox.Ok)
+                    return
+                save_roi_text=[int(value) for value in save_roi_text]
+                self.save_roi=mlcm.pyCVRect(save_roi_text[0],save_roi_text[1],save_roi_text[2],save_roi_text[3])
+                self.image_save_path=self.line_edit_image_save_path.text().strip()
+                if not self.image_save_path:
+                    QMessageBox.warning(self,"MLColorimeter","请选择图片保存路径",QMessageBox.Ok)
+                    return
             self.freq_list=[float(freq) for freq in self.line_edit_freq_list.text().strip().split()]
             if not self.freq_list:
                 QMessageBox.critical(self,"MLColorimeter","请填写频率列表",QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
@@ -479,20 +560,39 @@ class FiledCurveWindow(QDialog):
                 QMessageBox.critical(self,"MLColorimeter","请选择保存路径",QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
                 return
             
-            self.focus_config = mlcm.pyThroughFocusConfig(
+            self.focus_config=mlcm.pyFocusScanConfig_(
                 focus_max=self.focus_max,
                 focus_min=self.focus_min,
                 inf_position=self.inf_pos,
                 focal_length=self.focal_length,
                 pixel_size=self.pixel_size,
                 focal_space=self.focal_space,
-                rois=self.roi_list,
+                coarse_step=self.coarse_step,
+                use_fine_adjust=self.use_fine_adjust,
+                fine_step=self.fine_step,
+                roi_list=self.roi_list,
                 use_chess_mode=self.use_chess_mode,
                 use_lpmm_unit=self.use_lpmm_unit,
-                rough_step=self.rough_step,
-                use_fine_adjust=self.use_fine_adjust,
+                save_result_img=self.save_result_img,
+                save_roi=self.save_roi,
+                image_save_path=self.image_save_path,
                 average_count=self.average_count,
             )
+
+            # self.focus_config = mlcm.pyThroughFocusConfig(
+            #     focus_max=self.focus_max,
+            #     focus_min=self.focus_min,
+            #     inf_position=self.inf_pos,
+            #     focal_length=self.focal_length,
+            #     pixel_size=self.pixel_size,
+            #     focal_space=self.focal_space,
+            #     rois=self.roi_list,
+            #     use_chess_mode=self.use_chess_mode,
+            #     use_lpmm_unit=self.use_lpmm_unit,
+            #     rough_step=self.rough_step,
+            #     use_fine_adjust=self.use_fine_adjust,
+            #     average_count=self.average_count,
+            # )
             
             self.status_label.setText("<span style='color: green;'>状态: 正在进行拍图...</span>")  # 更新状态
             self.btn_capture.setEnabled(False)
