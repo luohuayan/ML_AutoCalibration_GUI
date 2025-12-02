@@ -578,6 +578,10 @@ class FiledCurveWindow(QDialog):
                 image_save_path=self.image_save_path,
                 average_count=self.average_count,
             )
+            
+            self.status_label.setText("<span style='color: green;'>状态: 正在进行拍图...</span>")  # 更新状态
+            self.btn_capture.setEnabled(False)
+            self.is_running=True
 
             # self.focus_config = mlcm.pyThroughFocusConfig(
             #     focus_max=self.focus_max,
