@@ -163,3 +163,7 @@ pybind_test/
 [Ll]og/
 [Ll]ogs/
 *.log
+scripts/__pycache__/capture_dark_heatmap.cpython-38.pyc
+scripts/__pycache__/capture_dark_heatmap.cpython-38.pyc
+scripts/__pycache__/captureffc_calUniformity_plot.cpython-38.pyc
+core/__pycache__/app_config.cpython-38.pyc

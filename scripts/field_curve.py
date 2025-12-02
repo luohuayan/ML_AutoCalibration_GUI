@@ -18,7 +18,7 @@ def field_curve(
         pixel_format:mlcm.MLPixelFormat,
         exposure_time:float,
         out_path:str,
-        focus_config:mlcm.pyThroughFocusConfig=None,
+        focus_config:mlcm.pyFocusScanConfig_=None,
         freq_list:List[float]=[6.75,13.5],
         status_callback=None
 ):
@@ -27,6 +27,9 @@ def field_curve(
             status_callback(message)
     module_id = 1
     ml_mono = colorimeter.ml_bino_manage.ml_get_module_by_id(module_id)
+    ret=mlcm.pyMLFocusScan.ml_set_monomanage_focus(ml_mono)
+    if not ret.success:
+        raise RuntimeError("ml_set_monomanage_focus error")
     
     exposure = mlcm.pyExposureSetting(exposure_mode, exposure_time)
     
@@ -68,14 +71,42 @@ def field_curve(
         if not os.path.exists(new_image_path):
             os.makedirs(new_image_path)
         motion_name = "CameraMotion"
+        focus_config.freq=freq
 
-        ret = ml_mono.ml_vid_scan(motion_name=motion_name, focus_config=focus_config)
-        if not ret.success:
-            raise RuntimeError("ml_vid_scan error")
+        status=mlcm.pyMLFocusScan.ml_start_focusscan()
 
-        ret = ml_mono.ml_save_vid_scan_result(out_path, True, "")
+        if not status:
+            raise RuntimeError("ml_start_focusscan error")
+
+        ret = mlcm.pyMLFocusScan.ml_focusscan_async(motion_name=motion_name,config=focus_config)
         if not ret.success:
-            raise RuntimeError("ml_save_vid_scan_result error")
+            raise RuntimeError("ml_focusscan_async error")
+        
+        ret =mlcm.pyMLFocusScan.ml_wait_focusscan_finish()
+
+        if ret.success:
+            res = mlcm.pyMLFocusScan.ml_get_focusscan_result()
+            mlcm.pyMLFocusScan.ml_calculate_combin_map("H",{0,1})
+            mlcm.pyMLFocusScan.ml_calculate_combin_map("V",{2,3})
+            mlcm.pyMLFocusScan.ml_calculate_combin_map("AVG",{0,1,2,3})
+            mlcm.pyMLFocusScan.ml_get_combin_result()
+            ret = mlcm.pyMLFocusScan.ml_save_focusscan_result(focus_config.image_save_path,"")
+            if not ret.success:
+                raise RuntimeError("ml_save_focusscan_result error")
+            if(focus_config.save_result_img):
+                mlcm.pyMLFocusScan.ml_wait_for_tasks_finish()
+        else:
+            raise RuntimeError("ml_wait_focusscan_finish error")
+        
+        
+        
+        # ret = ml_mono.ml_vid_scan(motion_name=motion_name, focus_config=focus_config)
+        # if not ret.success:
+        #     raise RuntimeError("ml_vid_scan error")
+
+        # ret = ml_mono.ml_save_vid_scan_result(out_path, True, "")
+        # if not ret.success:
+        #     raise RuntimeError("ml_save_vid_scan_result error")
         os.rename(file_path, new_path)
         update_status(f"vid scan finish for freq {str(freq)}")
 
