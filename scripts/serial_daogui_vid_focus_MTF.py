@@ -27,7 +27,7 @@ def move_test(
     module_id = 1
     ml_mono = colorimeter.ml_bino_manage.ml_get_module_by_id(module_id)
     # 电机名称
-    key_name = "CameraMotion"
+    key_name = "CameraMotion" # type: ignore
     ret = ml_mono.ml_set_binning_selector(binn_selector)
     if not ret.success:
         raise RuntimeError("ml_set_binning_selector error")
@@ -74,60 +74,6 @@ def get_roi_by_vid(vid, config):
         roi=mlcm.pyCVRect(**roi_params)
         roi_focus_list.append(roi)
     return roi_focus_list
-
-
-def set_focus_config(
-    focus_max,
-    focus_min,
-    rough_step,
-    focal_length,
-    pixel_size=0.0032,
-    fine_step=0.01,
-    use_fine_adjust=False,
-):
-    return mlcm.pyThroughFocusConfig(
-        focus_max=focus_max,
-        focus_min=focus_min,
-        inf_position=infinity_position,
-        focal_length=focalLength,
-        pixel_size=pixel_size,
-        use_fine_adjust=use_fine_adjust,
-        rough_step=rough_step,
-        fine_step=fine_step,
-        use_lpmm_unit=True,
-        use_chess_mode=True,
-        freq=freq,
-        average_count=3
-    )
-
-def get_image_finefocus(focusvid):
-    # 移动电机到指定位置
-    ml_mono.ml_set_pos_abs_syn(motion_name=key_name,pos=focusvid)
-    time.sleep(0.1)
-    # 拍图
-    ml_mono.ml_capture_image_syn()
-    img = ml_mono.ml_get_image()
-    cv2.imwrite("D:\\Output\\throughfocus\\through_focus\\" + str(focusvid) + ".tif", img)
-
-# 根据不同的vid获取不同的过焦范围以及步长
-def get_focus_config(vid):
-    """
-    根据不同的vid获取不同的过焦范围以及步长。
-
-    :param vid: 视距值。
-    :return: 过焦配置对象。
-    """
-    # coef=round(pow(focalLength,2)/1000,2)
-    coef=0.80
-    # 保留两位小数
-    fine_focus = round((infinity_position +1000 / vid * coef),2)
-    # get_image_finefocus(fine_focus)
-    return set_focus_config(
-        focus_max=fine_focus + 1,
-        focus_min=fine_focus - 1,
-        rough_step=rough_step,
-        focal_length=focalLength
-    )
 
 def rename_csv_files(directory, new_extension):
     for filename in os.listdir(directory):
@@ -187,28 +133,28 @@ def delete_files_by_vid(directory, vid):
             except Exception as e:
                 logging.error(f"Error deleting file {file_path}: {e}")
 
-def mtf_measure(
-    modelu_id: int,
-    exposure: mlcm.pyExposureSetting,
-    binning: mlcm.Binning,
-    binning_mode: mlcm.BinningMode,
-    pixel_format: mlcm.MLPixelFormat,
-    VID,
-):
-    path = out_path + "\\through_focus"
-    os.makedirs(path, exist_ok=True)
-    ml_mono.ml_set_exposure(exposure=exposure)
-    config=load_roi_config(roi_config_path)
-    roi_focus_list = get_roi_by_vid(VID, config)
-    through_config = get_focus_config(VID)
-    through_config.rois = roi_focus_list
-    # 走焦
-    ml_mono.ml_vid_scan(motion_name=key_name, focus_config=through_config)
-    # 保存走焦结果
-    ml_mono.ml_save_vid_scan_result(out_path)
-    # 重命名
-    rename = "_" + f"{VID}" + "mm.xlsx"
-    rename_csv_files(path, rename)
+# def mtf_measure(
+#     modelu_id: int,
+#     exposure: mlcm.pyExposureSetting,
+#     binning: mlcm.Binning,
+#     binning_mode: mlcm.BinningMode,
+#     pixel_format: mlcm.MLPixelFormat,
+#     VID,
+# ):
+#     path = out_path + "\\through_focus"
+#     os.makedirs(path, exist_ok=True)
+#     ml_mono.ml_set_exposure(exposure=exposure)
+#     config=load_roi_config(roi_config_path)
+#     roi_focus_list = get_roi_by_vid(VID, config)
+#     through_config = get_focus_config(VID)
+#     through_config.rois = roi_focus_list
+#     # 走焦
+#     ml_mono.ml_vid_scan(motion_name=key_name, focus_config=through_config)
+#     # 保存走焦结果
+#     ml_mono.ml_save_vid_scan_result(out_path)
+#     # 重命名
+#     rename = "_" + f"{VID}" + "mm.xlsx"
+#     rename_csv_files(path, rename)
 
 def start_test_daogui(
         status_callback=None
@@ -320,7 +266,7 @@ def start_generate_roi_config(
         for config_key,config_value in combined_data.items():
             # 创建一个新的列表来存储该配置的区域
             result[config_key.split('-')[-1]] = []
-            for roi_key,roi_value in config_value.items():
+            for roi_key,roi_value in config_value.items(): # type: ignore
                 entry={
                     "x":roi_value["x"],
                     "y":roi_value["y"],
@@ -398,102 +344,98 @@ def start_calibration_vid(
         rename="_"+f"{vid}"+"mm.xlsx"
         rename_csv_files(path,rename)
 
-
-
-
-
-if __name__ == "__main__":
-    eye1_path = r"D:\MLOptic\MLColorimeter\config\EYE1"
-    light_source = "W"
-    out_path = r"D:\Output\throughfocus" + "\\" + light_source
-    os.makedirs(out_path, exist_ok=True)
-    # roi配置路径
-    roi_config_path=r"E:\daogui_auto_calibration\roividconfig.json"
-    log_dir = r"D:\Output\throughfocus\logs"
-    os.makedirs(log_dir, exist_ok=True)
-    logging.basicConfig(
-        level=logging.DEBUG,
-        format="%(asctime)s - %(levelname)s - %(message)s",
-        handlers=[
-            logging.FileHandler(os.path.join(log_dir, "serial.log")),
-            logging.StreamHandler(),
-        ],
-    )
-    station_address = 0x05  # station address
-    baudrate = 115200
-    rough_step = 0.02
-    infinity_position = 6.05
-    freq=15
-    total_pulse = 2137000
-    focalLength = 13.32
+# if __name__ == "__main__":
+#     eye1_path = r"D:\MLOptic\MLColorimeter\config\EYE1"
+#     light_source = "W"
+#     out_path = r"D:\Output\throughfocus" + "\\" + light_source
+#     os.makedirs(out_path, exist_ok=True)
+#     # roi配置路径
+#     roi_config_path=r"E:\daogui_auto_calibration\roividconfig.json"
+#     log_dir = r"D:\Output\throughfocus\logs"
+#     os.makedirs(log_dir, exist_ok=True)
+#     logging.basicConfig(
+#         level=logging.DEBUG,
+#         format="%(asctime)s - %(levelname)s - %(message)s",
+#         handlers=[
+#             logging.FileHandler(os.path.join(log_dir, "serial.log")),
+#             logging.StreamHandler(),
+#         ],
+#     )
+#     station_address = 0x05  # station address
+#     baudrate = 115200
+#     rough_step = 0.02
+#     infinity_position = 6.05
+#     freq=15
+#     total_pulse = 2137000
+#     focalLength = 13.32
     
-    ser = serial_daogui.serial_daogui("COM7",total_pulse)
+#     ser = serial_daogui.serial_daogui("COM7",total_pulse)
     
 
-    with mlcm.ML_Colorimeter() as ml_colorimeter:
-        path_list = [
-            eye1_path,
-        ]
-        # 1、连接对应模块
-        # add mono module into ml_colorimeter system, according to path_list create one or more mono module
-        ret = ml_colorimeter.ml_add_module(path_list=path_list)
-        if not ret.success:
-            raise RuntimeError("ml_add_module error")
-        # connect all module in the ml_colorimeter system
-        ret = ml_colorimeter.ml_connect()
-        if not ret.success:
-            raise RuntimeError("ml_connect error")
+#     with mlcm.ML_Colorimeter() as ml_colorimeter:
+#         path_list = [
+#             eye1_path,
+#         ]
+#         # 1、连接对应模块
+#         # add mono module into ml_colorimeter system, according to path_list create one or more mono module
+#         ret = ml_colorimeter.ml_add_module(path_list=path_list)
+#         if not ret.success:
+#             raise RuntimeError("ml_add_module error")
+#         # connect all module in the ml_colorimeter system
+#         ret = ml_colorimeter.ml_connect()
+#         if not ret.success:
+#             raise RuntimeError("ml_connect error")
 
-        # exposure mode setting, Auto or Fixed
-        exposure_mode = mlcm.ExposureMode.Auto
-        # exposure time for fixed exposure, initial time for auto exposure
-        exposure_time = 100
-        # camera binning
-        binning = mlcm.Binning.ONE_BY_ONE
-        # camera binning mode
-        binning_mode = mlcm.BinningMode.AVERAGE
-        # camera pixel format
-        pixel_format = mlcm.MLPixelFormat.MLMono12
+#         # exposure mode setting, Auto or Fixed
+#         exposure_mode = mlcm.ExposureMode.Auto
+#         # exposure time for fixed exposure, initial time for auto exposure
+#         exposure_time = 100
+#         # camera binning
+#         binning = mlcm.Binning.ONE_BY_ONE
+#         # camera binning mode
+#         binning_mode = mlcm.BinningMode.AVERAGE
+#         # camera pixel format
+#         pixel_format = mlcm.MLPixelFormat.MLMono12
 
-        exposure = mlcm.pyExposureSetting(
-            exposure_mode=exposure_mode, exposure_time=exposure_time
-        )
+#         exposure = mlcm.pyExposureSetting(
+#             exposure_mode=exposure_mode, exposure_time=exposure_time
+#         )
 
-        id_list = ml_colorimeter.id_list
+#         id_list = ml_colorimeter.id_list
 
-        # 电机名称
-        key_name = "CameraMotion"
+#         # 电机名称
+#         key_name = "CameraMotion"
 
-        module_id = 1
-        ml_mono = ml_colorimeter.ml_bino_manage.ml_get_module_by_id(module_id)
-        ml_mono.ml_set_binning(binning)
-        ml_mono.ml_set_binning_mode(binning_mode)
-        ret = ml_mono.ml_set_pixel_format(pixel_format)
-        if not ret.success:
-            raise RuntimeError("ml_set_pixel_format error")
+#         module_id = 1
+#         ml_mono = ml_colorimeter.ml_bino_manage.ml_get_module_by_id(module_id)
+#         ml_mono.ml_set_binning(binning)
+#         ml_mono.ml_set_binning_mode(binning_mode)
+#         ret = ml_mono.ml_set_pixel_format(pixel_format)
+#         if not ret.success:
+#             raise RuntimeError("ml_set_pixel_format error")
 
-        # 设置过焦参数
+#         # 设置过焦参数
 
-        # 这里是镜头到棋盘格的距离,单位mm
-        distance = 140
+#         # 这里是镜头到棋盘格的距离,单位mm
+#         distance = 140
 
-        # 2、VID参数列表 vid list
-        # 1米的导轨，2000plus=1mm,下面的列表对应cm单位的距离为[10,20,30,40,50,60,70,80,90,100]
-        # vid_list = [200000, 400000, 600000, 800000, 1000000, 1200000, 1400000, 1600000, 1800000, 2000000]  # 1米导轨的距离定义
-        # 100000对应100mm即0.1m， 2米的导轨，1000plus=1mm
-    # vid_list = [300]
-        # vid_list = [250, 333,500, 800, 1000,1200, 1250,1400, 1500,1600, 1800,2000]
-        # vid_list = [166,200] 
-        vid_list = [250, 300, 333,400, 500,600,700,800,900, 1000,1300, 1600,2000]
-        for vid in vid_list:
-            ser.move_VID(vid)
-            mtf_measure(
-                modelu_id=module_id,
-                exposure=exposure,
-                binning=binning,
-                binning_mode=binning_mode,
-                pixel_format=pixel_format,
-                VID=vid,
-            )
-            time.sleep(0.2)
-        ser.clear_alarm()
+#         # 2、VID参数列表 vid list
+#         # 1米的导轨，2000plus=1mm,下面的列表对应cm单位的距离为[10,20,30,40,50,60,70,80,90,100]
+#         # vid_list = [200000, 400000, 600000, 800000, 1000000, 1200000, 1400000, 1600000, 1800000, 2000000]  # 1米导轨的距离定义
+#         # 100000对应100mm即0.1m， 2米的导轨，1000plus=1mm
+#     # vid_list = [300]
+#         # vid_list = [250, 333,500, 800, 1000,1200, 1250,1400, 1500,1600, 1800,2000]
+#         # vid_list = [166,200] 
+#         vid_list = [250, 300, 333,400, 500,600,700,800,900, 1000,1300, 1600,2000]
+#         for vid in vid_list:
+#             ser.move_VID(vid)
+#             mtf_measure(
+#                 modelu_id=module_id,
+#                 exposure=exposure,
+#                 binning=binning,
+#                 binning_mode=binning_mode,
+#                 pixel_format=pixel_format,
+#                 VID=vid,
+#             )
+#             time.sleep(0.2)
+#         ser.clear_alarm()
