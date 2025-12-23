@@ -323,6 +323,8 @@ def mono_calibration_do_ffc(
         ret=getattr(mono,f'ml_set_{config_name}')(config_value)
         if not ret.success:
             raise RuntimeError(f"ml_set_{config_name} error")
+    
+    mono.ml_set_aperture(apturate)
     exposure = mlcm.pyExposureSetting(
             exposure_mode=mlcm.ExposureMode.Auto, exposure_time=100
         )
