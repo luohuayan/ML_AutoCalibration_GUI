@@ -17,6 +17,7 @@ from PyQt5.QtWidgets import (
     QDialog,
     QComboBox,
     QFormLayout,
+    QScrollArea
 )
 from PyQt5.QtGui import QIntValidator,QDoubleValidator
 from core.app_config import AppConfig
@@ -28,7 +29,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from openpyxl import Workbook, load_workbook
 from openpyxl.drawing.image import Image
-from scripts.mono_calibration import mono_calibration
+from scripts.mono_calibration import mono_calibration,mono_calibration_do_ffc
 from ui.settings_window import SettingsWindow
 
 class CalibrationThread(QThread):
@@ -43,6 +44,22 @@ class CalibrationThread(QThread):
     def run(self):
         try:
             mono_calibration(status_callback=self.status_update.emit, **self.parameters)
+            self.finished.emit() # 发送完成信号
+        except Exception as e:
+            self.error.emit(str(e)) # 发送错误信号
+
+class CalibrationDoFFCThread(QThread):
+    finished=pyqtSignal() # 线程完成信号
+    error=pyqtSignal(str) # 错误信号
+    status_update=pyqtSignal(str) # 状态更新信号
+
+    def __init__(self, parameters):
+        super().__init__()
+        self.parameters=parameters
+    
+    def run(self):
+        try:
+            mono_calibration_do_ffc(status_callback=self.status_update.emit, **self.parameters)
             self.finished.emit() # 发送完成信号
         except Exception as e:
             self.error.emit(str(e)) # 发送错误信号
@@ -71,7 +88,13 @@ class MonoCalibrationWindow(QDialog):
         self.is_calibrating=False
 
     def _init_ui(self):
-        grid_layout = QGridLayout()
+        # 创建一个 QScrollArea
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)  # 使滚动区域大小可变
+
+        # 创建一个 QWidget 来放置所有控件
+        scroll_area_content = QWidget()
+        grid_layout = QGridLayout(scroll_area_content)
 
         group_box0=QGroupBox("相机设置")
         from_layout0=QFormLayout()
@@ -197,10 +220,18 @@ class MonoCalibrationWindow(QDialog):
         self.label_roi_size = QLabel()
         self.label_roi_size.setText("ROI宽高：例如200 200，以空格隔开")
         grid_layout.addWidget(self.label_roi_size, 19, 0)
+        self.checkbox_do_ffc=QCheckBox("FFC校正")
+        self.checkbox_do_ffc.stateChanged.connect(self.do_ffc_checkbox_changed)
+        grid_layout.addWidget(self.checkbox_do_ffc,19,1)
+
         self.line_edit_roi_size = QLineEdit()
         self.line_edit_roi_size.setText("200 200")
         self.line_edit_roi_size.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         grid_layout.addWidget(self.line_edit_roi_size, 20, 0)
+        self.checkbox_is_rx=QCheckBox("RX")
+        self.checkbox_is_rx.stateChanged.connect(self.do_rx_checkbox_changed)
+        grid_layout.addWidget(self.checkbox_is_rx,20,1)
+
 
         h_layout = QHBoxLayout()
         self.cb_R = QRadioButton()
@@ -234,41 +265,86 @@ class MonoCalibrationWindow(QDialog):
         h_layout.addWidget(self.cb_W)
         grid_layout.addLayout(h_layout, 21, 0)
 
+        self.label_sphlist = QLabel()
+        self.label_sphlist.setText(
+            "平场图像采集 sph列表, (例如: -6 -5 -4 -3 -2 -1 0 1 2 3 4 5 6), 以空格隔开")
+        grid_layout.addWidget(self.label_sphlist, 22, 0)
+
+        self.line_edit_sphlist = QLineEdit()
+        self.line_edit_sphlist.setSizePolicy(
+            QSizePolicy.Expanding, QSizePolicy.Fixed)
+        grid_layout.addWidget(self.line_edit_sphlist, 23, 0)
+
+        self.label_cyllist = QLabel()
+        self.label_cyllist.setText(
+            "平场图像采集 cyl列表, (例如: -4 -3.5 -3 -2.5 -2 -1.5 -1 -0.5 0), 以空格隔开")
+        grid_layout.addWidget(self.label_cyllist, 24, 0)
+
+        self.line_edit_cyllist = QLineEdit()
+        self.line_edit_cyllist.setSizePolicy(
+            QSizePolicy.Expanding, QSizePolicy.Fixed)
+        grid_layout.addWidget(self.line_edit_cyllist, 25, 0)
+
+        self.label_axislist = QLabel()
+        self.label_axislist.setText(
+            "平场图像采集 axis列表, (例如: 0 15 30 45 60 75 90 105 120 135 150 165), 以空格隔开")
+        grid_layout.addWidget(self.label_axislist, 26, 0)
+
+        self.line_edit_axislist = QLineEdit()
+        self.line_edit_axislist.setSizePolicy(
+            QSizePolicy.Expanding, QSizePolicy.Fixed)
+        grid_layout.addWidget(self.line_edit_axislist, 27, 0)
+
         self.label_path = QLabel()
         self.label_path.setText("保存路径(excel保存位置):")
-        grid_layout.addWidget(self.label_path, 22, 0)
+        grid_layout.addWidget(self.label_path, 28, 0)
 
         self.line_edit_path = QLineEdit()
         self.line_edit_path.setReadOnly(True)  # 设置为只读
         self.line_edit_path.setPlaceholderText("未选择文件夹")
         self.line_edit_path.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        grid_layout.addWidget(self.line_edit_path, 23, 0)
+        grid_layout.addWidget(self.line_edit_path, 29, 0)
 
         self.btn_browse = QPushButton("浏览...")
         self.btn_browse.clicked.connect(self._open_folder_dialog)
-        grid_layout.addWidget(self.btn_browse, 23, 1)
+        grid_layout.addWidget(self.btn_browse, 29, 1)
 
         self.label_path=QLabel()
         self.label_path.setText("配置路径（eye1）")
-        grid_layout.addWidget(self.label_path, 24, 0)
+        grid_layout.addWidget(self.label_path, 30, 0)
         self.line_edit_eye1_path=QLineEdit()
         self.line_edit_eye1_path.setReadOnly(True)
         self.line_edit_eye1_path.setText(self.select_path)
-        grid_layout.addWidget(self.line_edit_eye1_path,25,0)
+        grid_layout.addWidget(self.line_edit_eye1_path,31,0)
 
 
         self.btn_capture = QPushButton("单色定标")
         self.btn_capture.clicked.connect(self.start_mono_calibration)
-        grid_layout.addWidget(self.btn_capture, 26, 0)
+        grid_layout.addWidget(self.btn_capture, 32, 0)
 
         self.status_label=QLabel("状态：等待开始")
         self.status_label.setWordWrap(True)  # 设置自动换行
-        grid_layout.addWidget(self.status_label,27,0)
+        grid_layout.addWidget(self.status_label,33,0)
 
         spacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
         grid_layout.addItem(spacer)
 
-        self.setLayout(grid_layout)
+        # 将布局添加到 scroll_area_content 并将其设置为 scroll_area 的子部件
+        scroll_area.setWidget(scroll_area_content)
+
+        # 最后设置主窗口的布局
+        main_layout = QVBoxLayout(self)
+        main_layout.addWidget(scroll_area)
+        self.setLayout(main_layout)
+
+        self.checkbox_is_rx.setEnabled(False)
+        self.label_sphlist.setVisible(False)
+        self.line_edit_sphlist.setVisible(False)
+        self.label_cyllist.setVisible(False)
+        self.line_edit_cyllist.setVisible(False)
+        self.label_axislist.setVisible(False)
+        self.line_edit_axislist.setVisible(False)
+
 
     def validate_input(self):
         text=self.line_edit_binnlist.text()
@@ -302,6 +378,31 @@ class MonoCalibrationWindow(QDialog):
         self.line_edit_ndlist.setEnabled(not is_checked)
         self.line_edit_ndlist.setText("") if is_checked else None
 
+    def do_ffc_checkbox_changed(self):
+        is_checked=self.checkbox_do_ffc.isChecked()
+        if is_checked:
+            QMessageBox.information(self,"MLColorimeter","请确保模组已定标并保存FFC图在配置中，若没有，请不要勾选",QMessageBox.Ok)
+            self.checkbox_is_rx.setEnabled(True)
+        else:
+            self.checkbox_is_rx.setEnabled(False)
+
+    def do_rx_checkbox_changed(self):
+        is_checked=self.checkbox_is_rx.isChecked()
+        if is_checked:
+            self.label_sphlist.setVisible(True)
+            self.line_edit_sphlist.setVisible(True)
+            self.label_cyllist.setVisible(True)
+            self.line_edit_cyllist.setVisible(True)
+            self.label_axislist.setVisible(True)
+            self.line_edit_axislist.setVisible(True)
+        else:
+            self.label_sphlist.setVisible(False)
+            self.line_edit_sphlist.setVisible(False)
+            self.label_cyllist.setVisible(False)
+            self.line_edit_cyllist.setVisible(False)
+            self.label_axislist.setVisible(False)
+            self.line_edit_axislist.setVisible(False)
+
 
     def start_mono_calibration(self):
         try:
@@ -318,7 +419,8 @@ class MonoCalibrationWindow(QDialog):
                 lum_list=self.line_edit_xyzlist_lum.text().split()
                 self.luminance_no_xyz=float(lum_list[0]) if len(lum_list)>0 else 0.0
             else:
-                self.xyz_list=self.line_edit_xyzlist.text().split()
+                xyz_text=[int(xyz) for xyz in self.line_edit_xyzlist.text().split()]
+                self.xyz_list=[mlcm.MLFilterEnum(xyz) for xyz in xyz_text]
                 if self.generate_luminance_dict():
                     self.lum_dict=self.generate_luminance_dict()
                 else:
@@ -336,43 +438,118 @@ class MonoCalibrationWindow(QDialog):
             self.out_path=self.line_edit_path.text()
             self.expusure_offset=float(self.line_edit_exposure_offset.text())
             self.gray_offset=float(self.line_edit_gray_offset.text())
+            roi_width=int(self.roi_size[0])
+            roi_height=int(self.roi_size[1])
+            mono = self.colorimeter.ml_bino_manage.ml_get_module_by_id(1)
+            mono.ml_capture_image_syn()
+            image=mono.ml_get_image()
+            if image is None:
+                QMessageBox.critical(self,"MLColorimeter","获取图像失败，请检查相机连接或设置",QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
+                return
+            # image=cv2.imread(r'F:\ML_Pratice\C++\Pratice\MLTest\ffc.tif')
+            height,width,_=image.shape
             
-            self.status_label.setText("<span style='color: green;'>状态: 正在进行单色定标...</span>")  # 更新状态
-            self.btn_capture.setEnabled(False)
-            self.is_calibrating=True
-            # 将参数打包到字典中
-            parameters = {
-                'colorimeter': self.colorimeter,
-                'binn_selector': self.binn_selector,
-                'binn_mode': self.binn_mode,
-                'binn': self.binn,
-                'pixel_format': self.pixel_format,
-                'nd_list': self.nd_list,
-                'xyz_list': self.xyz_list,
-                'gray_range': self.gray_list,
-                'apturate': self.aperture,
-                'light_source': self.light_source,
-                'luminance_values': self.lum_dict,
-                'luminance_no_xyz': self.luminance_no_xyz,
-                'radiance': self.radiance,
-                'eye1_path': self.eye1_path,
-                'out_path': self.out_path,
-                'image_point': self.image_point,
-                'roi_size': self.roi_size,
-                'expusure_offset':self.expusure_offset,
-                'gray_offset':self.gray_offset
-            }
-            self.calibration_thread=CalibrationThread(parameters)
-            self.calibration_thread.finished.connect(self.on_calibration_finished)
-            self.calibration_thread.error.connect(self.on_calibration_error)
-            self.calibration_thread.status_update.connect(self.update_status)
-            self.calibration_thread.start() # 启动线程
+            center_x=width//2
+            center_y=height//2
+            self.line_edit_image_size.setText(f"{center_x} {center_y}")
+            self.image_point=self.line_edit_image_size.text().split()
+
+            # 计算roi的左上角坐标和右下角坐标
+            top_left_x=center_x - roi_width//2
+            top_left_y=center_y - roi_height//2
+            bottom_right_x=center_x + roi_width//2
+            bottom_right_y=center_y + roi_height//2
+
+            # 确保坐标在图像范围内
+            top_left_x=max(0, top_left_x)
+            top_left_y=max(0, top_left_y)
+            bottom_right_x=min(width, bottom_right_x)
+            bottom_right_y=min(height, bottom_right_y)
+
+            # 绘制roi矩形
+            cv2.rectangle(image, (top_left_x, top_left_y), (bottom_right_x, bottom_right_y), (0, 255, 0), 2)
+            # 缩放图像以适应窗口
+            max_display_size = 1000  # 最大显示边长
+            if height > max_display_size or width > max_display_size:
+                scaling_factor = max_display_size / max(height, width)
+                new_size = (int(width * scaling_factor), int(height * scaling_factor))
+                image = cv2.resize(image, new_size)
+
+            # 在缩放后的图像上绘制 ROI
+            cv2.rectangle(image, 
+                        (int(top_left_x * scaling_factor), int(top_left_y * scaling_factor)), 
+                        (int(bottom_right_x * scaling_factor), int(bottom_right_y * scaling_factor)), 
+                        (0, 255, 0), 2)
+
+            # 显示图像
+            cv2.imshow('Image with Centered ROI', image)
+
+            # 等待用户按任意键关闭图像窗口
+            cv2.waitKey(0)
+            cv2.destroyAllWindows()
+
+            # 弹出确认框
+            reply = QMessageBox.question(self, '确认', 'ROI 是否正确？', QMessageBox.Yes | QMessageBox.No)
+            if reply == QMessageBox.Yes:
+                self.status_label.setText("<span style='color: green;'>状态: 正在进行单色定标...</span>")  # 更新状态
+                self.btn_capture.setEnabled(False)
+                self.is_calibrating=True
+                # 将参数打包到字典中
+                parameters = {
+                    'colorimeter': self.colorimeter,
+                    'binn_selector': self.binn_selector,
+                    'binn_mode': self.binn_mode,
+                    'binn': self.binn,
+                    'pixel_format': self.pixel_format,
+                    'nd_list': self.nd_list,
+                    'xyz_list': self.xyz_list,
+                    'gray_range': self.gray_list,
+                    'apturate': self.aperture,
+                    'light_source': self.light_source,
+                    'luminance_values': self.lum_dict,
+                    'luminance_no_xyz': self.luminance_no_xyz,
+                    'radiance': self.radiance,
+                    'eye1_path': self.eye1_path,
+                    'out_path': self.out_path,
+                    'image_point': self.image_point,
+                    'roi_size': self.roi_size,
+                    'expusure_offset':self.expusure_offset,
+                    'gray_offset':self.gray_offset
+                }
+                if self.checkbox_do_ffc.isChecked():
+                    self.is_rx=self.checkbox_is_rx.isChecked()
+                    if self.is_rx:
+                        self.sph_list=[float(sph) for sph in self.line_edit_sphlist.text().split()]
+                        self.cyl_list=[float(cyl) for cyl in self.line_edit_cyllist.text().split()]
+                        self.axis_list=[int(axis) for axis in self.line_edit_axislist.text().split()]
+                    else:
+                        self.sph_list=[0.0]
+                        self.cyl_list=[0.0]
+                        self.axis_list=[0]
+                    parameters['is_rx']=self.is_rx
+                    parameters['sph_list']=self.sph_list
+                    parameters['cyl_list']=self.cyl_list
+                    parameters['axis_list']=self.axis_list
+                    self.calibration_doffc_thread=CalibrationDoFFCThread(parameters)
+                    self.calibration_doffc_thread.finished.connect(self.on_calibration_finished)
+                    self.calibration_doffc_thread.error.connect(self.on_calibration_error)
+                    self.calibration_doffc_thread.status_update.connect(self.update_status)
+                    self.calibration_doffc_thread.start() # 启动线程
+                else:
+                    
+                    self.calibration_thread=CalibrationThread(parameters)
+                    self.calibration_thread.finished.connect(self.on_calibration_finished)
+                    self.calibration_thread.error.connect(self.on_calibration_error)
+                    self.calibration_thread.status_update.connect(self.update_status)
+                    self.calibration_thread.start() # 启动线程
+            else:
+                QMessageBox.information(self,"MLColorimeter","请调整参数后重新定标",QMessageBox.Ok)
+                return
 
         except Exception as e:
             QMessageBox.critical(self,"MLColorimeter","exception" + e, QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
             self.btn_capture.setEnabled(True)
             self.is_calibrating=False # 标识定标完成
-
 
     def update_status(self,message):
         self.status_label.setText(f"<span style='color: green;'>状态: {message}</span>")
