@@ -169,7 +169,7 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
         grid_layout.addWidget(self.btn_load_config, 9, 1)
 
         self.label_path = QLabel()
-        self.label_path.setText("保存路径:")
+        self.label_path.setText("保存路径(计算均匀性时要选择):")
         grid_layout.addWidget(self.label_path, 10, 0)
 
         self.line_edit_path = QLineEdit()
@@ -286,7 +286,7 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
         grid_layout.addLayout(h_layout, 20, 0)
 
         self.label_pixelcount = QLabel()
-        self.label_pixelcount.setText("Plot计算, 水平方向和竖直方向像素个数: ")
+        self.label_pixelcount.setText("Plot计算, 水平方向和竖直方向像素个数(计算均匀性时更改): ")
         grid_layout.addWidget(self.label_pixelcount, 21, 0)
 
         self.line_edit_pixelcount = QLineEdit()
@@ -296,10 +296,11 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
         grid_layout.addWidget(self.line_edit_pixelcount, 22, 0)
 
         self.label_vrange = QLabel()
-        self.label_vrange.setText("Plot图坐标轴范围: 例如: 1500 3900")
+        self.label_vrange.setText("Plot图坐标轴范围: 例如: 1500 3900(计算均匀性时更改)")
         grid_layout.addWidget(self.label_vrange, 23, 0)
 
         self.line_edit_vrange = QLineEdit()
+        self.line_edit_vrange.setText("1500 3900")
         self.line_edit_vrange.setSizePolicy(
             QSizePolicy.Expanding, QSizePolicy.Fixed)
         grid_layout.addWidget(self.line_edit_vrange, 24, 0)
@@ -529,7 +530,7 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
                     'binn': self.binn,
                     'exposure_map': self.exposure_map_obj,
                     'capture_times': self.capture_times,
-                    'save_path': self.out_path,
+                    'save_path': self.eye1_path,
                     'use_RX': self.useRX,
                     'sph_list': self.sphlist,
                     'cyl_list': self.cyllist,
@@ -550,7 +551,7 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
                 'colorimeter': self.colorimeter,
                 'nd_list': self.ndlist,
                 'xyz_list': self.xyzlist,
-                'save_path': self.out_path
+                'save_path': self.eye1_path
             }
             synthetic_thread=CalSyntheticThread(synthetic_parameters)
             self.threads.append(synthetic_thread)
