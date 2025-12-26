@@ -169,7 +169,7 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
         grid_layout.addWidget(self.btn_load_config, 9, 1)
 
         self.label_path = QLabel()
-        self.label_path.setText("保存路径(计算均匀性时要选择):")
+        self.label_path.setText("保存路径:")
         grid_layout.addWidget(self.label_path, 10, 0)
 
         self.line_edit_path = QLineEdit()
@@ -471,6 +471,9 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
 
     def _start_capture_calculate(self):
         try:
+            if self.out_path is None or self.out_path == "":
+                QMessageBox.warning(self,"MLColorimeter","请先选择保存路径",QMessageBox.Ok)
+                return
             self.capture_times = int(self.line_edit_times.text())
 
             self.binn = mlcm.Binning(int(self.line_edit_binn.text()))
@@ -530,7 +533,7 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
                     'binn': self.binn,
                     'exposure_map': self.exposure_map_obj,
                     'capture_times': self.capture_times,
-                    'save_path': self.eye1_path,
+                    'save_path': self.out_path,
                     'use_RX': self.useRX,
                     'sph_list': self.sphlist,
                     'cyl_list': self.cyllist,
@@ -551,7 +554,7 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
                 'colorimeter': self.colorimeter,
                 'nd_list': self.ndlist,
                 'xyz_list': self.xyzlist,
-                'save_path': self.eye1_path
+                'save_path': self.out_path
             }
             synthetic_thread=CalSyntheticThread(synthetic_parameters)
             self.threads.append(synthetic_thread)

@@ -314,7 +314,7 @@ def mono_calibration_do_ffc(
     # set light source
     mono.ml_set_light_source(light_source)
     configurations={
-        "binn_selector":binn_selector,
+        "binning_selector":binn_selector,
         "binning_mode":binn_mode,
         "binning":binn,
         "pixel_format":pixel_format
@@ -474,7 +474,7 @@ def mono_calibration_do_ffc(
                                         aperture=mono.ml_get_aperture(),
                                         nd_filter_list=[nd_enum],
                                         color_filter_list=xyz_list,
-                                        rx=mlcm.pyRXCombination(0,0,0),
+                                        rx=rx,
                                         light_source_list=[mono.ml_get_light_source()],
                                         dark_flag=True,
                                         ffc_flag=True,

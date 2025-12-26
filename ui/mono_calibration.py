@@ -446,8 +446,11 @@ class MonoCalibrationWindow(QDialog):
             if image is None:
                 QMessageBox.critical(self,"MLColorimeter","获取图像失败，请检查相机连接或设置",QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
                 return
-            # image=cv2.imread(r'F:\ML_Pratice\C++\Pratice\MLTest\ffc.tif')
-            height,width,_=image.shape
+            # image=cv2.imread(r'F:\ffc.tif')
+            if(image.shape>2):
+                height,width,_=image.shape
+            else:
+                height,width=image.shape
             
             center_x=width//2
             center_y=height//2
