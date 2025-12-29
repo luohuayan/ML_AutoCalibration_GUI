@@ -45,7 +45,7 @@ def measurement(
 ):
     mono = colorimeter.ml_bino_manage.ml_get_module_by_id(module_id)
     # capture data
-    capture_data_dict = Dict()
+    capture_data_dict = dict()
     for xyz in xyz_list:
         ret = mono.ml_move_xyz_syn(xyz)
         if not ret.success:
@@ -127,7 +127,7 @@ def measurement(
         plt.xlabel("Col(pixel)")
         plt.ylabel("Row(pixel)")
         plt.colorbar(label="(FFC)")
-        plt.title("FFC_" + mlcm.Binning_to_str(binn) +
+        plt.title("FFC_" + mlcm.Binning_to_str(binn)+"_" + RX_str +
                   "_" + mlcm.MLFilterEnum_to_str(xyz))
         plt.subplot(1, 2, 2)
         plt.plot(
@@ -148,7 +148,7 @@ def measurement(
         # 保存图形
         plt.savefig(
             uniformity_path + "\\FFC_ " +
-            mlcm.Binning_to_str(binn) + "_" + mlcm.MLFilterEnum_to_str(xyz) + ".png",
+            mlcm.Binning_to_str(binn) +"_" + RX_str + "_" + mlcm.MLFilterEnum_to_str(xyz) + ".png",
             bbox_inches="tight",
         )
         plt.close(fig)
@@ -232,9 +232,9 @@ def capture_ffc_images(
     capture_times: int,
     save_path: str,
     use_RX: bool = False,
-    sph_list: List = [],
-    cyl_list: List = [],
-    axis_list: List = [],
+    sph_list: List[float] = [0.0],
+    cyl_list: List[float] = [0.0],
+    axis_list: List[int] = [0],
     status_callback=None
 ):
     def update_status(message):

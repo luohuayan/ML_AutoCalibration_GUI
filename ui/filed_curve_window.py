@@ -1,33 +1,8 @@
-from PyQt5.QtWidgets import (
-    QWidget,
-    QHBoxLayout,
-    QVBoxLayout,
-    QLabel,
-    QLineEdit,
-    QRadioButton,
-    QPushButton,
-    QFileDialog,
-    QSizePolicy,
-    QMessageBox,
-    QGroupBox,
-    QGridLayout,
-    QSpacerItem,
-    QDialog,
-    QFormLayout,
-    QCheckBox,
-    QListWidget,
-    QComboBox,
-)
+from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QIntValidator,QDoubleValidator
 from core.app_config import AppConfig
 from PyQt5.QtCore import pyqtSignal, Qt,QThread
 import mlcolorimeter as mlcm
-import os
-import cv2
-import numpy as np
-import matplotlib.pyplot as plt
-from openpyxl import Workbook, load_workbook
-from openpyxl.drawing.image import Image
 from scripts.field_curve import field_curve
 import json
 
@@ -356,12 +331,12 @@ class FiledCurveWindow(QDialog):
             QMessageBox.critical(self,"MLColorimeter","选择路径错误",QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
 
     def add_roi(self):
-
         try:
-            x=int(self.line_edit_x_input.text().strip())
-            y=int(self.line_edit_y_input.text().strip())
-            width=int(self.line_edit_width_input.text().strip())
-            height=int(self.line_edit_height_input.text().strip())
+            # 使用列表推导式简化
+            x,y,width,height=map(
+                lambda w: int(getattr(self,f"line_edit_{w}_input").text().strip()),
+                ['x','y','width','height']
+            )
 
             # 创建roi并添加到列表
             roi=mlcm.pyCVRect(x,y,width,height)
@@ -376,15 +351,13 @@ class FiledCurveWindow(QDialog):
 
     def delete_roi(self):
         try:
-
             current_item=self.roi_display.currentItem()
             if current_item is None:
                 QMessageBox.warning(self,"警告","请先选择要删除的ROI",QMessageBox.Ok)
                 return
             
-            roi_str=current_item.text()
             # 解析ROi
-            roi_coords=list(map(int,roi_str.split(',')))
+            roi_coords=list(map(int,current_item.text().split(',')))
             roi_list=[int(roi) for roi in roi_coords]
             roi_x=roi_list[0]
             roi_y=roi_list[1]

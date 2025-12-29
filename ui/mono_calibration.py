@@ -406,6 +406,10 @@ class MonoCalibrationWindow(QDialog):
 
     def start_mono_calibration(self):
         try:
+            self.out_path=self.line_edit_path.text()
+            if self.out_path is None or self.out_path == "":
+                QMessageBox.warning(self,"MLColorimeter","请先选择保存路径",QMessageBox.Ok)
+                return
             self.pixel_format=self.get_current_pixel_format()
             self.binn_selector=self.get_current_binning_selector()
             self.binn_mode=self.get_current_binning_mode()
@@ -435,19 +439,21 @@ class MonoCalibrationWindow(QDialog):
             self.gray_list=[float(gray) for gray in self.line_edit_gray_range.text().split()]
             self.image_point=self.line_edit_image_size.text().split()
             self.roi_size=self.line_edit_roi_size.text().split()
-            self.out_path=self.line_edit_path.text()
             self.expusure_offset=float(self.line_edit_exposure_offset.text())
             self.gray_offset=float(self.line_edit_gray_offset.text())
             roi_width=int(self.roi_size[0])
             roi_height=int(self.roi_size[1])
             mono = self.colorimeter.ml_bino_manage.ml_get_module_by_id(1)
-            mono.ml_capture_image_syn()
-            image=mono.ml_get_image()
+            res = mono.ml_capture_image_syn()
+            if (res.success):
+                image=mono.ml_get_image()
+            else:
+                image=None
             if image is None:
                 QMessageBox.critical(self,"MLColorimeter","获取图像失败，请检查相机连接或设置",QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
                 return
             # image=cv2.imread(r'F:\ffc.tif')
-            if(image.shape>2):
+            if len(image.shape)==3:
                 height,width,_=image.shape
             else:
                 height,width=image.shape

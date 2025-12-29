@@ -87,33 +87,3 @@ def field_curve(
                 dst_path = os.path.join(new_image_path, filename)
                 shutil.copy2(src_path, dst_path)
                 update_status(f"已拷贝: {filename}")
-
-
-# if __name__ == "__main__":
-#     # set mono module calibration configuration path
-#     eye1_path = r"D:\config\weilaixing\EYE1"
-#     path_list = [
-#         eye1_path,
-#     ]
-#     try:
-#         # create a ML_Colorimeter system instance
-#         ml_colorimeter = mlcm.ML_Colorimeter()
-#         # add mono module into ml_colorimeter system, according to path_list create one or more mono module
-#         ret = ml_colorimeter.ml_add_module(path_list=path_list)
-#         if not ret.success:
-#             raise RuntimeError("ml_add_module error")
-#         # connect all module in the ml_colorimeter system
-#         ret = ml_colorimeter.ml_connect()
-#         if not ret.success:
-#             raise RuntimeError("ml_connect error")
-
-#         module_id = 1
-#         ml_mono = ml_colorimeter.ml_bino_manage.ml_get_module_by_id(module_id)
-
-#         roi_list = [
-#             mlcm.pyCVRect(5500, 4800, 600, 600),
-#         ]
-#         out_path = r"D:\output"
-#         field_curve()
-#     except Exception as e:
-#         print(e)
