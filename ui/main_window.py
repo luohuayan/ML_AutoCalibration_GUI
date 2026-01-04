@@ -26,7 +26,6 @@ from ui.calculate_sph_cyl_coefficient_colorcamera_window import CalculateSphCylC
 from ui.capture_RX_center_colorcamera_window import CaptureRXCenterColorCameraWindow
 from ui.captureffc_calUniformity_plot_colorcamera_window import CaptureFFCCalUniformityPlotColorCameraWindow
 from ui.mono_calibration_colorcamera_window import MonoCalibrationColorCameraWindow
-from ui.rx_selfrotation_window import RXSelfRotationWindow
 from ui.FFC_calculate_binning_window import FFCCalculateBinningWindow
 from ui.fit_online_window import FitOnlineWindow
 from ui.version_window import VersionWindow
@@ -57,7 +56,6 @@ class MainWindow(QMainWindow):
         self.capture_rx_center_colorcamera=None
         self.capture_FFC_CalUniformityPlot_ColorCamera=None
         self.mono_calibration_Colorcamera=None
-        self.rx_selfrotation_window=None
         self.ffc_calculatebinning_window=None
         self.fit_online_window_=None
         self.version_window=None
@@ -127,20 +125,17 @@ class MainWindow(QMainWindow):
         script12_action = QAction("mono_calibration_colorcamera", self)
         script12_action.triggered.connect(self.mono_calibration_colorcamera)
 
-        script13_action = QAction("calculate_selfroattion_mtf", self)
-        script13_action.triggered.connect(self.rx_selfrotation)
+        script13_action = QAction("calculate_ffcUniformity_plot", self)
+        script13_action.triggered.connect(self.ffc_calculate_binning)
 
-        script14_action = QAction("calculate_ffcUniformity_plot", self)
-        script14_action.triggered.connect(self.ffc_calculate_binning)
+        script14_action = QAction("circle_polynomial_fit_online", self)
+        script14_action.triggered.connect(self.fit_online)
 
-        script15_action = QAction("circle_polynomial_fit_online", self)
-        script15_action.triggered.connect(self.fit_online)
+        script15_action = QAction("daogui_vid_mtf", self)
+        script15_action.triggered.connect(self.daogui_vid)
 
-        script16_action = QAction("daogui_vid_mtf", self)
-        script16_action.triggered.connect(self.daogui_vid)
-
-        script17_action = QAction("image_detection", self)
-        script17_action.triggered.connect(self.image_detection)
+        script16_action = QAction("image_detection", self)
+        script16_action.triggered.connect(self.image_detection)
 
         scripts_menu.addAction(script1_action)
         scripts_menu.addAction(script2_action)
@@ -156,9 +151,8 @@ class MainWindow(QMainWindow):
         scripts_menu1.addAction(script12_action)
         scripts_menu.addAction(script13_action)
         scripts_menu.addAction(script14_action)
-        scripts_menu.addAction(script15_action)
-        scripts_menu2.addAction(script16_action)
-        scripts_menu3.addAction(script17_action)
+        scripts_menu2.addAction(script15_action)
+        scripts_menu3.addAction(script16_action)
 
     def create_main_widget(self):
         # 主控件
@@ -299,10 +293,6 @@ class MainWindow(QMainWindow):
     def mono_calibration_colorcamera(self):
         self.mono_calibration_Colorcamera=MonoCalibrationColorCameraWindow(self.select_path)
         self.mono_calibration_Colorcamera.exec_()
-
-    def rx_selfrotation(self):
-        self.rx_selfrotation_window=RXSelfRotationWindow()
-        self.rx_selfrotation_window.exec_()
 
     def ffc_calculate_binning(self):
         self.ffc_calculatebinning_window=FFCCalculateBinningWindow()
