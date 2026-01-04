@@ -393,6 +393,7 @@ def mono_calibration_do_ffc(
                                 results.append({
                                     "Gray Range": f"{gray * 100}" + "%",
                                     "NDFilter": "None",
+                                    "RX":RX_str,
                                     "AVEGray": average_gray,
                                     "ExposureTime": exposure_time,
                                     "G/ET": gray_ET,
@@ -444,6 +445,7 @@ def mono_calibration_do_ffc(
                                         "Gray Range": f"{gray * 100}" + "%",
                                         "NDFilter": "None",
                                         "XYZFilter": mlcm.MLFilterEnum_to_str(xyz),
+                                        "RX":RX_str,
                                         "AVEGray": average_gray,
                                         "ExposureTime": exposure_time,
                                         "G/ET": gray_ET,
@@ -516,6 +518,7 @@ def mono_calibration_do_ffc(
                                     results.append({
                                         "Gray Range": f"{gray * 100}" + "%",
                                         "NDFilter": mlcm.MLFilterEnum_to_str(nd_enum),
+                                        "RX":RX_str,
                                         "AVEGray": average_gray,
                                         "ExposureTime": exposure_time,
                                         "G/ET": gray_ET,
@@ -568,6 +571,7 @@ def mono_calibration_do_ffc(
                                             "Gray Range": f"{gray * 100}" + "%",
                                             "NDFilter": mlcm.MLFilterEnum_to_str(nd_enum),
                                             "XYZFilter": mlcm.MLFilterEnum_to_str(xyz),
+                                            "RX":RX_str,
                                             "AVEGray": average_gray,
                                             "ExposureTime": exposure_time,
                                             "G/ET": gray_ET,
@@ -577,6 +581,62 @@ def mono_calibration_do_ffc(
                                             "K(R)": radiance_k
                                         })
                 
+        time.sleep(1)
+        update_status("写入配置中...")
+        
+        # 将results中灰度值在80%的luminance_k和radiance_k写入配置文件，b为0
+        for item in results:
+            if item["Gray Range"] == "80.0%":
+                if nd_list==[]:
+                    if xyz_list == []:
+                        file_name="" + apturate + "_" + light_source
+                    else:
+                        xyz_filter = item["XYZFilter"]
+                        file_name="" + apturate + "_" + xyz_filter + "_" + light_source
+                else:
+                    # 文件夹命名格式为Aperture_NDFilter_LightSource
+                    nd_filter = item["NDFilter"]
+                    if xyz_list == []:
+                        file_name="" + apturate + "_" + nd_filter + "_" + light_source
+                    else:
+                        xyz_filter = item["XYZFilter"]
+                        file_name="" + apturate + "_" + nd_filter + "_" + xyz_filter + "_" + light_source
+                luminance_k = item["K(L)"]
+                radiance_k = item["K(R)"]
+                rx_name=item["RX"]
+                luminance_config_path = os.path.join(eye1_path, "Luminance")
+                create_directory(luminance_config_path)
+                radiance_config_path = os.path.join(eye1_path, "Radiance")
+                create_directory(radiance_config_path)
+
+                luminance_file_path = os.path.join(luminance_config_path, file_name)
+                os.makedirs(luminance_file_path, exist_ok=True)
+
+                luminance_RX_path = os.path.join(luminance_file_path, rx_name)
+                os.makedirs(luminance_RX_path, exist_ok=True)
+                # 完整的文件路径
+                luminance_json_file_path= os.path.join(luminance_RX_path, "Luminance.json")
+                # 创建要写入的字典
+                data={
+                    "Luminance": [[float(luminance_k),0]]
+                }
+                save_json(data, luminance_json_file_path)
+
+                radiance_file_path = os.path.join(radiance_config_path, file_name)
+                os.makedirs(radiance_file_path, exist_ok=True)
+
+                radiance_RX_path = os.path.join(radiance_file_path, rx_name)
+                os.makedirs(radiance_RX_path, exist_ok=True)
+                # 完整的文件路径
+                radiance_json_file_path= os.path.join(radiance_RX_path, "Radiance.json")
+                # 创建要写入的字典
+                data1={
+                    "Radiance": [[float(radiance_k),0]]
+                }
+                save_json(data1, radiance_json_file_path)
+        time.sleep(1)
+        update_status("写入完成，保存数据表")
+        save_results_to_excel(results,out_path)
     else:
         if nd_list==[]:
             for gray in gray_range:
@@ -834,52 +894,53 @@ def mono_calibration_do_ffc(
                                 "Radiance": radiance,
                                 "K(R)": radiance_k
                             })
-    time.sleep(1)
-    update_status("写入配置中...")
-    
-    # 将results中灰度值在80%的luminance_k和radiance_k写入配置文件，b为0
-    for item in results:
-        if item["Gray Range"] == "80.0%":
-            if nd_list==[]:
-                if xyz_list == []:
-                    file_name="" + apturate + "_" + light_source
+        
+        time.sleep(1)
+        update_status("写入配置中...")
+        
+        # 将results中灰度值在80%的luminance_k和radiance_k写入配置文件，b为0
+        for item in results:
+            if item["Gray Range"] == "80.0%":
+                if nd_list==[]:
+                    if xyz_list == []:
+                        file_name="" + apturate + "_" + light_source
+                    else:
+                        xyz_filter = item["XYZFilter"]
+                        file_name="" + apturate + "_" + xyz_filter + "_" + light_source
                 else:
-                    xyz_filter = item["XYZFilter"]
-                    file_name="" + apturate + "_" + xyz_filter + "_" + light_source
-            else:
-                # 文件夹命名格式为Aperture_NDFilter_LightSource
-                nd_filter = item["NDFilter"]
-                if xyz_list == []:
-                    file_name="" + apturate + "_" + nd_filter + "_" + light_source
-                else:
-                    xyz_filter = item["XYZFilter"]
-                    file_name="" + apturate + "_" + nd_filter + "_" + xyz_filter + "_" + light_source
-            luminance_k = item["K(L)"]
-            radiance_k = item["K(R)"]
-            luminance_config_path = os.path.join(eye1_path, "Luminance")
-            create_directory(luminance_config_path)
-            radiance_config_path = os.path.join(eye1_path, "Radiance")
-            create_directory(radiance_config_path)
+                    # 文件夹命名格式为Aperture_NDFilter_LightSource
+                    nd_filter = item["NDFilter"]
+                    if xyz_list == []:
+                        file_name="" + apturate + "_" + nd_filter + "_" + light_source
+                    else:
+                        xyz_filter = item["XYZFilter"]
+                        file_name="" + apturate + "_" + nd_filter + "_" + xyz_filter + "_" + light_source
+                luminance_k = item["K(L)"]
+                radiance_k = item["K(R)"]
+                luminance_config_path = os.path.join(eye1_path, "Luminance")
+                create_directory(luminance_config_path)
+                radiance_config_path = os.path.join(eye1_path, "Radiance")
+                create_directory(radiance_config_path)
 
-            luminance_file_path = os.path.join(luminance_config_path, file_name)
-            os.makedirs(luminance_file_path, exist_ok=True)
-            # 完整的文件路径
-            luminance_json_file_path= os.path.join(luminance_file_path, "Luminance.json")
-            # 创建要写入的字典
-            data={
-                "Luminance": [[float(luminance_k),0]]
-            }
-            save_json(data, luminance_json_file_path)
+                luminance_file_path = os.path.join(luminance_config_path, file_name)
+                os.makedirs(luminance_file_path, exist_ok=True)
+                # 完整的文件路径
+                luminance_json_file_path= os.path.join(luminance_file_path, "Luminance.json")
+                # 创建要写入的字典
+                data={
+                    "Luminance": [[float(luminance_k),0]]
+                }
+                save_json(data, luminance_json_file_path)
 
-            radiance_file_path = os.path.join(radiance_config_path, file_name)
-            os.makedirs(radiance_file_path, exist_ok=True)
-            # 完整的文件路径
-            radiance_json_file_path= os.path.join(radiance_file_path, "Radiance.json")
-            # 创建要写入的字典
-            data1={
-                "Radiance": [[float(radiance_k),0]]
-            }
-            save_json(data1, radiance_json_file_path)
-    time.sleep(1)
-    update_status("写入完成，保存数据表")
-    save_results_to_excel(results,out_path)
+                radiance_file_path = os.path.join(radiance_config_path, file_name)
+                os.makedirs(radiance_file_path, exist_ok=True)
+                # 完整的文件路径
+                radiance_json_file_path= os.path.join(radiance_file_path, "Radiance.json")
+                # 创建要写入的字典
+                data1={
+                    "Radiance": [[float(radiance_k),0]]
+                }
+                save_json(data1, radiance_json_file_path)
+        time.sleep(1)
+        update_status("写入完成，保存数据表")
+        save_results_to_excel(results,out_path)
