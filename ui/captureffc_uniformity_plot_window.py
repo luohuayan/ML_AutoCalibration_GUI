@@ -452,10 +452,6 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
 
     def _start_capture_calculate(self):
         try:
-            self.out_path=self.line_edit_path.text()
-            if self.out_path is None or self.out_path == "":
-                QMessageBox.warning(self,"MLColorimeter","请先选择保存路径",QMessageBox.Ok)
-                return
             self.capture_times = int(self.line_edit_times.text())
 
             self.binn = mlcm.Binning(int(self.line_edit_binn.text()))
@@ -515,7 +511,7 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
                     'binn': self.binn,
                     'exposure_map': self.exposure_map_obj,
                     'capture_times': self.capture_times,
-                    'save_path': self.out_path,
+                    'save_path': self.eye1_path,
                     'use_RX': self.useRX,
                     'sph_list': self.sphlist,
                     'cyl_list': self.cyllist,
@@ -536,7 +532,7 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
                 'colorimeter': self.colorimeter,
                 'nd_list': self.ndlist,
                 'xyz_list': self.xyzlist,
-                'save_path': self.out_path
+                'save_path': self.eye1_path
             }
             synthetic_thread=CalSyntheticThread(synthetic_parameters)
             self.threads.append(synthetic_thread)
@@ -558,6 +554,11 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
                 QMessageBox.warning(self,"MLColorimeter","RX未配置",QMessageBox.Ok)
                 self.btn_capture.setEnabled(True)
                 self.is_running=False
+                return
+            
+            self.out_path=self.line_edit_path.text()
+            if self.out_path is None or self.out_path == "":
+                QMessageBox.warning(self,"MLColorimeter","请先选择保存路径",QMessageBox.Ok)
                 return
             uniformity_parameters={
                 'colorimeter': self.colorimeter,
