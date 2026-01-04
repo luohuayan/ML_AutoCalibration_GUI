@@ -156,7 +156,7 @@ class MonoCalibrationWindow(QDialog):
         grid_layout.addWidget(self.line_edit_ndlist, 4, 0)
 
         self.label_xyzlist = QLabel()
-        self.label_xyzlist.setText("xyz列表, (1: X, 2: Y, 3: Z, 10: Clear), 以空格隔开")
+        self.label_xyzlist.setText("xyz列表, (1: X, 2: Y, 3: Z, 10: Clear, 12：YA), 以空格隔开")
         grid_layout.addWidget(self.label_xyzlist, 5, 0)
         self.checkbox_exist_xyz=QCheckBox("无xyz滤光片")
         self.checkbox_exist_xyz.stateChanged.connect(self.on_xyz_checkbox_changed)
@@ -448,8 +448,6 @@ class MonoCalibrationWindow(QDialog):
             if (res.success):
                 image=mono.ml_get_image()
             else:
-                image=None
-            if image is None:
                 QMessageBox.critical(self,"MLColorimeter","获取图像失败，请检查相机连接或设置",QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
                 return
             # image=cv2.imread(r'F:\ffc.tif')
@@ -600,6 +598,8 @@ class MonoCalibrationWindow(QDialog):
                     lum_dict[mlcm.MLFilterEnum.Z]=float(xyzlist_lum[i])
                 elif xyz=='10':
                     lum_dict[mlcm.MLFilterEnum.Clear]=float(xyzlist_lum[i])
+                elif xyz=="12":
+                    lum_dict[mlcm.MLFilterEnum.YA]=float(xyzlist_lum[i])
         except Exception as e:
             QMessageBox.critical(self,"MLColorimeter","生成亮度字典异常" + e, QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
         return lum_dict
