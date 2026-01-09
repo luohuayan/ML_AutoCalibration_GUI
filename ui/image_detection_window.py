@@ -38,7 +38,7 @@ class ImageDetectionThread(QThread):
 class ImageDetectionWindow(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("capture field curve")
+        self.setWindowTitle("image detection")
         self.setGeometry(200, 200, 800, 500)
         self.setWindowFlags(Qt.Window | Qt.WindowMaximizeButtonHint | Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint)
 
