@@ -318,9 +318,13 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
         
     def _useRX_config(self):
         if self.cb_calculate_uniformity.isChecked():
-            self.btn_rx_config.show()
-            self.btn_roi_config.show()
-            QMessageBox.information(self,"MLColorimeter","请依次点击ROI列表配置按钮和RX列表配置设置ROI和RX",QMessageBox.Ok)
+            if self.cb_useRX.isChecked():
+                self.btn_rx_config.show()
+                self.btn_roi_config.show()
+                QMessageBox.information(self,"MLColorimeter","请依次点击ROI列表配置按钮和RX列表配置设置ROI和RX",QMessageBox.Ok)
+            else:
+                self.btn_roi_config.show()
+                QMessageBox.information(self,"MLColorimeter","请点击ROI列表配置按钮设置ROI",QMessageBox.Ok)
         else:
             self.btn_rx_config.hide()
             self.btn_roi_config.hide()
@@ -429,6 +433,8 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
             self.line_edit_axislist.show()
             self.cb_calculate_synthetic.show()
             self.cb_calculate_synthetic.setChecked(True)
+            if self.cb_calculate_uniformity.isChecked():
+                self.btn_rx_config.show()
         else:
             self.label_sphlist.hide()
             self.line_edit_sphlist.hide()
@@ -438,6 +444,8 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
             self.line_edit_axislist.hide()
             self.cb_calculate_synthetic.hide()
             self.cb_calculate_synthetic.setChecked(False)
+            if self.cb_calculate_uniformity.isChecked():
+                self.btn_rx_config.hide()
 
 
     def _rgbw_changed(self, btn_id):
@@ -484,10 +492,6 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
                 mlcm.MLFilterEnum.Clear: mlcm.pyExposureSetting(
                     exposure_mode=mlcm.ExposureMode.Auto, exposure_time=100)
             }
-            
-            self.status_label.setText("<span style='color: green;'>状态: 正在进行拍图或计算...</span>")  # 更新状态
-            self.btn_capture.setEnabled(False)
-            self.is_running=True
             self.start_capture_ffc()
 
         except Exception as e:
@@ -504,6 +508,9 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
                 self.btn_capture.setEnabled(True)
                 self.is_running=False
                 return
+            self.status_label.setText("<span style='color: green;'>状态: 正在进行拍图或计算...</span>")  # 更新状态
+            self.btn_capture.setEnabled(False)
+            self.is_running=True
             ffc_parameters={
                     'colorimeter': self.colorimeter,
                     'nd_list': self.ndlist,
@@ -528,6 +535,9 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
     
     def start_calculate_synthetic(self):
         if self.useRX and self.cb_calculate_synthetic.isChecked():
+            self.status_label.setText("<span style='color: green;'>状态: 正在进行拍图或计算...</span>")  # 更新状态
+            self.btn_capture.setEnabled(False)
+            self.is_running=True
             synthetic_parameters={
                 'colorimeter': self.colorimeter,
                 'nd_list': self.ndlist,
@@ -550,16 +560,19 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
                 self.btn_capture.setEnabled(True)
                 self.is_running=False
                 return
-            if not self.rx_dict:
-                QMessageBox.warning(self,"MLColorimeter","RX未配置",QMessageBox.Ok)
-                self.btn_capture.setEnabled(True)
-                self.is_running=False
-                return
-            
+            if self.useRX:
+                if not self.rx_dict:
+                    QMessageBox.warning(self,"MLColorimeter","RX未配置",QMessageBox.Ok)
+                    self.btn_capture.setEnabled(True)
+                    self.is_running=False
+                    return
             self.out_path=self.line_edit_path.text()
             if self.out_path is None or self.out_path == "":
                 QMessageBox.warning(self,"MLColorimeter","请先选择保存路径",QMessageBox.Ok)
                 return
+            self.status_label.setText("<span style='color: green;'>状态: 正在进行拍图或计算...</span>")  # 更新状态
+            self.btn_capture.setEnabled(False)
+            self.is_running=True
             uniformity_parameters={
                 'colorimeter': self.colorimeter,
                 'half_size': self.pixelcount/2,
