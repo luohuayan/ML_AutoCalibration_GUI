@@ -14,6 +14,7 @@ from PyQt5.QtWidgets import (
     QFormLayout,
     QListWidget
 )
+from PyQt5.QtGui import QIntValidator,QDoubleValidator
 from core.app_config import AppConfig
 from PyQt5.QtCore import pyqtSignal, Qt,QThread
 import mlcolorimeter as mlcm
@@ -76,6 +77,7 @@ class FFCCalculateBinningWindow(QDialog):
         self.setWindowFlags(Qt.Window | Qt.WindowMaximizeButtonHint | Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint)
 
         self.colorimeter = AppConfig.get_colorimeter()
+        self.intValidator=QIntValidator()
         self.dialog_title = "选择文件夹"
         self.default_path = ""
         self.roi_list=[]
@@ -121,6 +123,7 @@ class FFCCalculateBinningWindow(QDialog):
         self.label_half_size=QLabel("half_size：(根据FOV修改)")
         grid_layout.addWidget(self.label_half_size,6,0)
         self.line_edit_half_size=QLineEdit()
+        self.line_edit_half_size.setValidator(self.intValidator)
         self.line_edit_half_size.setText("3600")
         self.line_edit_half_size.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         grid_layout.addWidget(self.line_edit_half_size, 7, 0)
@@ -135,6 +138,7 @@ class FFCCalculateBinningWindow(QDialog):
         self.label_step_loop=QLabel("步长：")
         grid_layout.addWidget(self.label_step_loop,10,0)
         self.line_edit_step_loop=QLineEdit()
+        self.line_edit_step_loop.setValidator(self.intValidator)
         self.line_edit_step_loop.setText("2")
         self.line_edit_step_loop.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         grid_layout.addWidget(self.line_edit_step_loop, 11, 0)
@@ -152,21 +156,25 @@ class FFCCalculateBinningWindow(QDialog):
 
         self.label_x_input=QLabel("x_input: ")
         self.line_edit_x_input = QLineEdit()
+        self.line_edit_x_input.setValidator(self.intValidator)
         self.line_edit_x_input.setText("0")
         self.line_edit_x_input.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
         self.label_y_input=QLabel("y_input: ")
         self.line_edit_y_input = QLineEdit()
+        self.line_edit_y_input.setValidator(self.intValidator)
         self.line_edit_y_input.setText("0")
         self.line_edit_y_input.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
         self.label_width_input=QLabel("width_input: ")
         self.line_edit_width_input = QLineEdit()
+        self.line_edit_width_input.setValidator(self.intValidator)
         self.line_edit_width_input.setText("100")
         self.line_edit_width_input.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
         self.label_height_input=QLabel("height_input: ")
         self.line_edit_height_input = QLineEdit()
+        self.line_edit_height_input.setValidator(self.intValidator)
         self.line_edit_height_input.setText("100")
         self.line_edit_height_input.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 

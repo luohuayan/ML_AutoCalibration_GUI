@@ -110,15 +110,15 @@ class MonoCalibrationWindow(QDialog):
         horizontal_layout.addWidget(self.line_edit_binn_mode)
         from_layout0.addRow(horizontal_layout)
 
-        self.label_binnlist = QLabel(" binning：")
-        self.line_edit_binnlist = QLineEdit()
-        self.line_edit_binnlist.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        self.label_binn = QLabel(" binning：")
+        self.line_edit_binn = QLineEdit()
+        self.line_edit_binn.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         int_validator=QIntValidator(0,4,self)
-        self.line_edit_binnlist.setValidator(int_validator)
-        self.line_edit_binnlist.setPlaceholderText("0: 1X1, 1: 2X2, 2: 4X4, 3: 8X8, 4: 16X16")
-        self.line_edit_binnlist.textChanged.connect(self.validate_input)
+        self.line_edit_binn.setValidator(int_validator)
+        self.line_edit_binn.setPlaceholderText("0: 1X1, 1: 2X2, 2: 4X4, 3: 8X8, 4: 16X16")
+        self.line_edit_binn.textChanged.connect(self.validate_input)
 
-        from_layout0.addRow(self.label_binnlist, self.line_edit_binnlist)
+        from_layout0.addRow(self.label_binn, self.line_edit_binn)
 
         self.label_pixel_format = QLabel(" pixel_format：")
         self.line_edit_pixel_format = QComboBox()
@@ -341,11 +341,11 @@ class MonoCalibrationWindow(QDialog):
 
 
     def validate_input(self):
-        text=self.line_edit_binnlist.text()
+        text=self.line_edit_binn.text()
         if text:
             value=int(text)
             if value <0 or value > 4:
-                self.line_edit_binnlist.setText("")
+                self.line_edit_binn.setText("")
 
     def _open_folder_dialog(self):
         # 打开文件夹选择对话框
@@ -407,7 +407,7 @@ class MonoCalibrationWindow(QDialog):
             self.pixel_format=self.get_current_pixel_format()
             self.binn_selector=self.get_current_binning_selector()
             self.binn_mode=self.get_current_binning_mode()
-            self.binn=mlcm.Binning(int(self.line_edit_binnlist.text().strip()))
+            self.binn=mlcm.Binning(int(self.line_edit_binn.text().strip()))
             # self.path_changed.connect(self.out_path_changed)
             self.eye1_path=self.line_edit_eye1_path.text()
             self.lum_dict={}

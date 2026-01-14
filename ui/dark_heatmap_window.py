@@ -13,6 +13,7 @@ from PyQt5.QtWidgets import (
     QComboBox,
     QFormLayout,
 )
+from PyQt5.QtGui import QIntValidator,QDoubleValidator
 from core.app_config import AppConfig
 from PyQt5.QtCore import pyqtSignal, Qt, QThread
 import mlcolorimeter as mlcm
@@ -44,7 +45,8 @@ class DarkHeatMapWindow(QDialog):
         self.setGeometry(200, 200, 800, 500)
         self.colorimeter = AppConfig.get_colorimeter()
         self.setWindowFlags(Qt.Window | Qt.WindowMaximizeButtonHint | Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint)
-        
+        self.intValidator=QIntValidator()
+        self.doubleValidator=QDoubleValidator()
         self.dialog_title = "选择文件夹"
         self.default_path = ""
         self.save_path=""
@@ -81,6 +83,8 @@ class DarkHeatMapWindow(QDialog):
 
         self.label_binn = QLabel(" binning：")
         self.line_edit_binn = QLineEdit()
+        self.line_edit_binn.setValidator(self.intValidator)
+        self.line_edit_binn.setText("0")
         self.line_edit_binn.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         self.line_edit_binn.setPlaceholderText("0: 1X1, 1: 2X2, 2: 4X4, 3: 8X8, 4: 16X16")
         from_layout0.addRow(self.label_binn, self.line_edit_binn)
@@ -104,6 +108,7 @@ class DarkHeatMapWindow(QDialog):
         grid_layout.addWidget(self.label_times, 1, 0)
 
         self.line_edit_times = QLineEdit()
+        self.line_edit_times.setValidator(self.intValidator)
         self.line_edit_times.setText("1")
         self.line_edit_times.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         grid_layout.addWidget(self.line_edit_times, 2, 0)

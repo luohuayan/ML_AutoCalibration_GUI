@@ -14,6 +14,7 @@ from PyQt5.QtWidgets import (
     QButtonGroup,
     QDialog,
 )
+from PyQt5.QtGui import QIntValidator,QDoubleValidator
 from core.app_config import AppConfig
 from PyQt5.QtCore import pyqtSignal, Qt,QThread
 import mlcolorimeter as mlcm
@@ -87,6 +88,8 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
         self.setGeometry(200, 200, 800, 700)
         self.setWindowFlags(Qt.Window | Qt.WindowMaximizeButtonHint | Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint)
         self.colorimeter = AppConfig.get_colorimeter()
+        self.intValidator=QIntValidator()
+        self.doubleValidator=QDoubleValidator()
         self.dialog_title = "选择文件夹"
         self.default_path = ""
         self.eye1_path=path
@@ -116,6 +119,7 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
         grid_layout.addWidget(self.label_binn, 2, 0)
 
         self.line_edit_binn = QLineEdit()
+        self.line_edit_binn.setValidator(self.intValidator)
         self.line_edit_binn.setText("0")
         self.line_edit_binn.setSizePolicy(
             QSizePolicy.Expanding, QSizePolicy.Fixed)
@@ -263,6 +267,7 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
         grid_layout.addWidget(self.label_pixelcount, 21, 0)
 
         self.line_edit_pixelcount = QLineEdit()
+        self.line_edit_pixelcount.setValidator(self.intValidator)
         self.line_edit_pixelcount.setText("7200")
         self.line_edit_pixelcount.setSizePolicy(
             QSizePolicy.Expanding, QSizePolicy.Fixed)

@@ -15,6 +15,7 @@ from PyQt5.QtWidgets import (
     QRadioButton,
     QCheckBox,
 )
+from PyQt5.QtGui import QIntValidator,QDoubleValidator
 from core.app_config import AppConfig
 from PyQt5.QtCore import pyqtSignal, Qt,QThread
 import mlcolorimeter as mlcm
@@ -45,7 +46,7 @@ class CaptureImageFixedLUMWindow(QDialog):
         self.setGeometry(200, 200, 800, 500)
         self.colorimeter = AppConfig.get_colorimeter()
         self.setWindowFlags(Qt.Window | Qt.WindowMaximizeButtonHint | Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint)
-        
+        self.intValidator=QIntValidator()
         self.dialog_title = "选择文件夹"
         self.default_path = ""
         self.file_name = "capture_image_fixedLUM"
@@ -88,11 +89,12 @@ class CaptureImageFixedLUMWindow(QDialog):
         horizontal_layout.addWidget(self.line_edit_pixel_format)
         from_layout0.addRow(horizontal_layout)
 
-        self.label_binnlist = QLabel(" binning：")
-        self.line_edit_binnlist = QLineEdit()
-        self.line_edit_binnlist.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        self.line_edit_binnlist.setPlaceholderText("0: 1X1, 1: 2X2, 2: 4X4, 3: 8X8, 4: 16X16")
-        from_layout0.addRow(self.label_binnlist, self.line_edit_binnlist)
+        self.label_binn = QLabel(" binning：")
+        self.line_edit_binn = QLineEdit()
+        self.line_edit_binn.setValidator(self.intValidator)
+        self.line_edit_binn.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        self.line_edit_binn.setPlaceholderText("0: 1X1, 1: 2X2, 2: 4X4, 3: 8X8, 4: 16X16")
+        from_layout0.addRow(self.label_binn, self.line_edit_binn)
 
         group_box0.setLayout(from_layout0)
         grid_layout.addWidget(group_box0, 0, 0)
@@ -106,7 +108,7 @@ class CaptureImageFixedLUMWindow(QDialog):
         grid_layout.addWidget(self.line_edit_ndlist, 2, 0)
 
         self.label_xyzlist = QLabel()
-        self.label_xyzlist.setText("xyz列表, (1: X, 2: Y, 3: Z, 10: Clear), 以空格隔开")
+        self.label_xyzlist.setText("xyz列表, (1: X, 2: Y, 3: Z, 10: Clear, 12: YA), 以空格隔开")
         grid_layout.addWidget(self.label_xyzlist, 3, 0)
         self.line_edit_xyzlist = QLineEdit()
         self.line_edit_xyzlist.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
@@ -267,7 +269,7 @@ class CaptureImageFixedLUMWindow(QDialog):
             self.pixel_format=self.get_current_pixel_format()
             self.binn_selector=self.get_current_binning_selector()
             self.binn_mode=self.get_current_binning_mode()
-            self.binn=mlcm.Binning(int(self.line_edit_binnlist.text().strip()))
+            self.binn=mlcm.Binning(int(self.line_edit_binn.text().strip()))
             self.nd_list=[int(nd) for nd in self.line_edit_ndlist.text().strip().split()]
             self.xyz_list=[int(xyz) for xyz in self.line_edit_xyzlist.text().strip().split()]
             self.et_list=[float(et) for et in self.line_edit_etlist.text().strip().split()]

@@ -14,6 +14,7 @@ from PyQt5.QtWidgets import (
     QFormLayout,
     QCheckBox,
 )
+from PyQt5.QtGui import QIntValidator,QDoubleValidator
 from core.app_config import AppConfig
 from PyQt5.QtCore import pyqtSignal, Qt,QThread
 import mlcolorimeter as mlcm
@@ -60,7 +61,8 @@ class FourColorCalabrationWindow(QDialog):
         self.setGeometry(200,200,800,500)
         self.colorimeter=AppConfig.get_colorimeter()
         self.setWindowFlags(Qt.Window | Qt.WindowMaximizeButtonHint | Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint)
-        
+        self.intValidator=QIntValidator()
+        self.doubleValidator=QDoubleValidator()
         self.dialog_title = "选择文件夹"
         self.default_path = ""
         self.exposure_mode=['Auto','Fixed']
@@ -96,6 +98,8 @@ class FourColorCalabrationWindow(QDialog):
 
         self.label_binn = QLabel(" binning：")
         self.line_edit_binn = QLineEdit()
+        self.line_edit_binn.setValidator(self.intValidator)
+        self.line_edit_binn.setText("0")
         self.line_edit_binn.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         self.line_edit_binn.setPlaceholderText("0: 1X1, 1: 2X2, 2: 4X4, 3: 8X8, 4: 16X16")
         from_layout0.addRow(self.label_binn, self.line_edit_binn)
@@ -133,6 +137,8 @@ class FourColorCalabrationWindow(QDialog):
         self.label_avg_count=QLabel("avg_count:(count to calculate average image for one color filter)")
         grid_layout.addWidget(self.label_avg_count,5,0)
         self.line_edit_avg_count=QLineEdit()
+        self.line_edit_avg_count.setValidator(self.intValidator)
+        self.line_edit_avg_count.setText("1")
         self.line_edit_avg_count.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         grid_layout.addWidget(self.line_edit_avg_count, 6, 0)
 
@@ -141,21 +147,25 @@ class FourColorCalabrationWindow(QDialog):
 
         self.label_x_input=QLabel("x_input: ")
         self.line_edit_x_input = QLineEdit()
+        self.line_edit_x_input.setValidator(self.intValidator)
         self.line_edit_x_input.setText("0")
         self.line_edit_x_input.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
         self.label_y_input=QLabel("y_input: ")
         self.line_edit_y_input = QLineEdit()
+        self.line_edit_y_input.setValidator(self.intValidator)
         self.line_edit_y_input.setText("0")
         self.line_edit_y_input.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
         self.label_width_input=QLabel("width_input: ")
         self.line_edit_width_input = QLineEdit()
+        self.line_edit_width_input.setValidator(self.intValidator)
         self.line_edit_width_input.setText("100")
         self.line_edit_width_input.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
         self.label_height_input=QLabel("height_input: ")
         self.line_edit_height_input = QLineEdit()
+        self.line_edit_height_input.setValidator(self.intValidator)
         self.line_edit_height_input.setText("100")
         self.line_edit_height_input.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 

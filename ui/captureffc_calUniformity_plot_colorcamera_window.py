@@ -14,6 +14,7 @@ from PyQt5.QtWidgets import (
     QDialog,
     QComboBox
 )
+from PyQt5.QtGui import QIntValidator,QDoubleValidator
 from core.app_config import AppConfig
 from PyQt5.QtCore import pyqtSignal, Qt,QThread
 import mlcolorimeter as mlcm
@@ -80,6 +81,8 @@ class CaptureFFCCalUniformityPlotColorCameraWindow(QDialog):
         self.setGeometry(200, 200, 800, 500)
         self.setWindowFlags(Qt.Window | Qt.WindowMaximizeButtonHint | Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint)
         self.colorimeter = AppConfig.get_colorimeter()
+        self.intValidator=QIntValidator()
+        self.doubleValidator=QDoubleValidator()
         self.dialog_title = "选择文件夹"
         self.default_path = ""
         self.module_id = 1
@@ -105,6 +108,7 @@ class CaptureFFCCalUniformityPlotColorCameraWindow(QDialog):
         grid_layout.addWidget(self.label_binn, 0, 0)
 
         self.line_edit_binn = QLineEdit()
+        self.line_edit_binn.setValidator(self.intValidator)
         self.line_edit_binn.setText("0")
         self.line_edit_binn.setSizePolicy(
             QSizePolicy.Expanding, QSizePolicy.Fixed)
@@ -129,7 +133,7 @@ class CaptureFFCCalUniformityPlotColorCameraWindow(QDialog):
         grid_layout.addWidget(self.line_edit_ndlist, 5, 0)
 
         self.label_xyzlist = QLabel()
-        self.label_xyzlist.setText("xyz列表, (1: X, 2: Y, 3: Z, 10: Clear), 以空格隔开，输入一个以上的值，如1 2")
+        self.label_xyzlist.setText("xyz列表, (1: X, 2: Y, 3: Z, 10: Clear, 12: YA), 以空格隔开，输入一个以上的值，如1 2")
         grid_layout.addWidget(self.label_xyzlist, 6, 0)
         self.line_edit_xyzlist = QLineEdit()
         self.line_edit_xyzlist.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
@@ -142,6 +146,7 @@ class CaptureFFCCalUniformityPlotColorCameraWindow(QDialog):
         self.label_capture_times=QLabel("capture_times:(multi frame averaging)")
         grid_layout.addWidget(self.label_capture_times,8,0)
         self.line_edit_capture_times=QLineEdit()
+        self.line_edit_capture_times.setValidator(self.intValidator)
         self.line_edit_capture_times.setText("1")
         self.line_edit_capture_times.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         grid_layout.addWidget(self.line_edit_capture_times, 9, 0)
@@ -149,6 +154,7 @@ class CaptureFFCCalUniformityPlotColorCameraWindow(QDialog):
         self.label_half_size=QLabel("half_size:")
         grid_layout.addWidget(self.label_half_size,10,0)
         self.line_edit_half_size=QLineEdit()
+        self.line_edit_half_size.setValidator(self.intValidator)
         self.line_edit_half_size.setText("3600")
         self.line_edit_half_size.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         grid_layout.addWidget(self.line_edit_half_size, 11, 0)
@@ -192,6 +198,7 @@ class CaptureFFCCalUniformityPlotColorCameraWindow(QDialog):
         self.label_exposure_time = QLabel("exposure_time(ms)：")
         grid_layout.addWidget(self.label_exposure_time,19,0)
         self.line_edit_exposure_time = QLineEdit()
+        self.line_edit_exposure_time.setValidator(self.doubleValidator)
         self.line_edit_exposure_time.setText("100")
         self.line_edit_exposure_time.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         grid_layout.addWidget(self.line_edit_exposure_time,20,0)

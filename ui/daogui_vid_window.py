@@ -19,6 +19,7 @@ from PyQt5.QtWidgets import (
     QFormLayout,
     QScrollArea
 )
+from PyQt5.QtGui import QIntValidator,QDoubleValidator
 from core.app_config import AppConfig
 from PyQt5.QtCore import pyqtSignal, Qt,QThread
 import mlcolorimeter as mlcm
@@ -63,6 +64,8 @@ class DaoGuiVIDWindow(QDialog):
         self.setWindowFlags(Qt.Window | Qt.WindowMaximizeButtonHint | Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint)
 
         self.colorimeter = AppConfig.get_colorimeter()
+        self.intValidator=QIntValidator()
+        self.doubleValidator=QDoubleValidator()
         self.dialog_title = "选择文件夹"
         self.default_path = ""
         self.roi_list=[]
@@ -104,11 +107,13 @@ class DaoGuiVIDWindow(QDialog):
         horizontal_layout.addWidget(self.line_edit_binn_mode)
         from_layout0.addRow(horizontal_layout)
 
-        self.label_binnlist = QLabel(" binning：")
-        self.line_edit_binnlist = QLineEdit()
-        self.line_edit_binnlist.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        self.line_edit_binnlist.setPlaceholderText("0: 1X1, 1: 2X2, 2: 4X4, 3: 8X8, 4: 16X16")
-        from_layout0.addRow(self.label_binnlist, self.line_edit_binnlist)
+        self.label_binn = QLabel(" binning：")
+        self.line_edit_binn = QLineEdit()
+        self.line_edit_binn.setValidator(self.intValidator)
+        self.line_edit_binn.setText("0")
+        self.line_edit_binn.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        self.line_edit_binn.setPlaceholderText("0: 1X1, 1: 2X2, 2: 4X4, 3: 8X8, 4: 16X16")
+        from_layout0.addRow(self.label_binn, self.line_edit_binn)
 
         self.label_pixel_format = QLabel(" pixel_format：")
         self.line_edit_pixel_format = QComboBox()
@@ -132,6 +137,7 @@ class DaoGuiVIDWindow(QDialog):
 
         self.label_inf_pos=QLabel("inf_pos:")
         self.line_edit_inf_pos = QLineEdit()
+        self.line_edit_inf_pos.setValidator(self.doubleValidator)
         self.line_edit_inf_pos.setText("27.06")
         self.line_edit_inf_pos.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         from_layout.addRow(self.label_inf_pos,self.line_edit_inf_pos)
@@ -139,6 +145,7 @@ class DaoGuiVIDWindow(QDialog):
         self.label_pos_offset=QLabel("pos_offset:(公式infinity_position + 1000 / vid * 0.8 中的这个1000，减法请输入负数)")
         from_layout.addRow(self.label_pos_offset)
         self.line_edit_pos_offset = QLineEdit()
+        self.line_edit_pos_offset.setValidator(self.doubleValidator)
         self.line_edit_pos_offset.setText("1000")
         self.line_edit_pos_offset.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         from_layout.addRow(self.line_edit_pos_offset)
@@ -146,18 +153,21 @@ class DaoGuiVIDWindow(QDialog):
         self.label_coef=QLabel("coef:(公式infinity_position + 1000 / vid * 0.8 中的这个0.8)")
         from_layout.addRow(self.label_coef)
         self.line_edit_coef = QLineEdit()
+        self.line_edit_coef.setValidator(self.doubleValidator)
         self.line_edit_coef.setText("0.8")
         self.line_edit_coef.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         from_layout.addRow(self.line_edit_coef)
 
         self.label_focal_length=QLabel("focal_length: ")
         self.line_edit_focal_length = QLineEdit()
+        self.line_edit_focal_length.setValidator(self.doubleValidator)
         self.line_edit_focal_length.setText("40")
         self.line_edit_focal_length.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         from_layout.addRow(self.label_focal_length,self.line_edit_focal_length)
 
         self.label_pixel_size=QLabel("pixel_size: ")
         self.line_edit_pixel_size = QLineEdit()
+        self.line_edit_pixel_size.setValidator(self.doubleValidator)
         self.line_edit_pixel_size.setText("0.00345")
         self.line_edit_pixel_size.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         from_layout.addRow(self.label_pixel_size,self.line_edit_pixel_size)
@@ -181,6 +191,7 @@ class DaoGuiVIDWindow(QDialog):
 
         self.label_rough_step=QLabel("rough_step: ")
         self.line_edit_rough_step = QLineEdit()
+        self.line_edit_rough_step.setValidator(self.doubleValidator)
         self.line_edit_rough_step.setText("0.1")
         self.line_edit_rough_step.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         from_layout.addRow(self.label_rough_step,self.line_edit_rough_step)
@@ -188,18 +199,21 @@ class DaoGuiVIDWindow(QDialog):
 
         self.label_freq=QLabel("freq: ")
         self.line_edit_freq = QLineEdit()
+        self.line_edit_freq.setValidator(self.doubleValidator)
         self.line_edit_freq.setText("3")
         self.line_edit_freq.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         from_layout.addRow(self.label_freq,self.line_edit_freq)
 
         self.label_average_count=QLabel("average_count: ")
         self.line_edit_average_count = QLineEdit()
+        self.line_edit_average_count.setValidator(self.intValidator)
         self.line_edit_average_count.setText("3")
         self.line_edit_average_count.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         from_layout.addRow(self.label_average_count,self.line_edit_average_count)
 
         self.label_total_pulse=QLabel("total_pulse:")
         self.line_edit_total_pulse = QLineEdit()
+        self.line_edit_total_pulse.setValidator(self.intValidator)
         self.line_edit_total_pulse.setText("2000000")
         self.line_edit_total_pulse.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)  
         from_layout.addRow(self.label_total_pulse,self.line_edit_total_pulse)
@@ -386,7 +400,7 @@ class DaoGuiVIDWindow(QDialog):
             self.binn_select=self.get_current_binning_selector()
             self.binn_mode=self.get_current_binning_mode()
             self.pixel_format=self.get_current_pixel_format()
-            self.binning=mlcm.Binning(int(self.line_edit_binnlist.text()))
+            self.binning=mlcm.Binning(int(self.line_edit_binn.text()))
             self.vid_list=[int(vid) for vid in self.line_edit_vid_list.text().strip().split()]
             self.inf_pos=float(self.line_edit_inf_pos.text())
             self.pos_offset=float(self.line_edit_pos_offset.text())
@@ -458,7 +472,7 @@ class DaoGuiVIDWindow(QDialog):
             self.binn_select=self.get_current_binning_selector()
             self.binn_mode=self.get_current_binning_mode()
             self.pixel_format=self.get_current_pixel_format()
-            self.binning=mlcm.Binning(int(self.line_edit_binnlist.text()))
+            self.binning=mlcm.Binning(int(self.line_edit_binn.text()))
             self.vid_list=[int(vid) for vid in self.line_edit_vid_list.text().strip().split()]
             self.inf_pos=float(self.line_edit_inf_pos.text())
             self.pos_offset=float(self.line_edit_pos_offset.text())

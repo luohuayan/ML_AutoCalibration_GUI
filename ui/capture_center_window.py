@@ -13,6 +13,7 @@ from PyQt5.QtWidgets import (
     QDialog,
     QFormLayout
 )
+from PyQt5.QtGui import QIntValidator,QDoubleValidator
 from core.app_config import AppConfig
 from PyQt5.QtCore import pyqtSignal, Qt,QThread
 import mlcolorimeter as mlcm
@@ -59,6 +60,7 @@ class CaptureCenterWindow(QDialog):
         self.setGeometry(200, 200, 400, 200)
         self.setWindowFlags(Qt.Window | Qt.WindowMaximizeButtonHint | Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint)
         self.colorimeter = AppConfig.get_colorimeter()
+        self.intValidator=QIntValidator()
         self.dialog_title = "选择文件夹"
         self.default_path = ""
         self.file_name = ""
@@ -128,21 +130,25 @@ class CaptureCenterWindow(QDialog):
 
         self.label_x_input=QLabel("x_input: ")
         self.line_edit_x_input = QLineEdit()
+        self.line_edit_x_input.setValidator(self.intValidator)
         self.line_edit_x_input.setText("0")
         self.line_edit_x_input.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
         self.label_y_input=QLabel("y_input: ")
         self.line_edit_y_input = QLineEdit()
+        self.line_edit_y_input.setValidator(self.intValidator)
         self.line_edit_y_input.setText("0")
         self.line_edit_y_input.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
         self.label_width_input=QLabel("width_input: ")
         self.line_edit_width_input = QLineEdit()
+        self.line_edit_width_input.setValidator(self.intValidator)
         self.line_edit_width_input.setText("300")
         self.line_edit_width_input.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
         self.label_height_input=QLabel("height_input: ")
         self.line_edit_height_input = QLineEdit()
+        self.line_edit_height_input.setValidator(self.intValidator)
         self.line_edit_height_input.setText("300")
         self.line_edit_height_input.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
