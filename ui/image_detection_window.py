@@ -1,11 +1,6 @@
 from PyQt5.QtWidgets import (
-    QMainWindow,
-    QAction,
     QMessageBox,
     QPushButton,
-    QWidget,
-    QHBoxLayout,
-    QVBoxLayout,
     QDialog,
     QSizePolicy,
     QFileDialog,

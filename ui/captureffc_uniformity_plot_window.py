@@ -1,5 +1,4 @@
 from PyQt5.QtWidgets import (
-    QWidget,
     QHBoxLayout,
     QVBoxLayout,
     QLabel,
@@ -8,24 +7,16 @@ from PyQt5.QtWidgets import (
     QFileDialog,
     QSizePolicy,
     QMessageBox,
-    QGroupBox,
     QGridLayout,
     QSpacerItem,
     QCheckBox,
     QRadioButton,
     QButtonGroup,
     QDialog,
-    QComboBox,
 )
 from core.app_config import AppConfig
 from PyQt5.QtCore import pyqtSignal, Qt,QThread
 import mlcolorimeter as mlcm
-import os
-import cv2
-import numpy as np
-import matplotlib.pyplot as plt
-from openpyxl import Workbook, load_workbook
-from openpyxl.drawing.image import Image
 from scripts.captureffc_calUniformity_plot import (
     cal_synthetic_mean_images, capture_ffc_images, cal_uniformity)
 
@@ -146,7 +137,7 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
             QSizePolicy.Expanding, QSizePolicy.Fixed)
         grid_layout.addWidget(self.line_edit_ndlist, 7, 0)
 
-        self.label_xyzlist = QLabel("xyz列表, (1: X, 2: Y, 3: Z, 10: Clear), 以空格隔开")
+        self.label_xyzlist = QLabel("xyz列表, (1: X, 2: Y, 3: Z, 10: Clear, 12: YA), 以空格隔开")
         grid_layout.addWidget(self.label_xyzlist, 8, 0)
 
         self.line_edit_xyzlist = QLineEdit()
@@ -469,8 +460,8 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
             self.ndlist = self.line_edit_ndlist.text().split()
             self.ndlist = [mlcm.MLFilterEnum(int(nd)) for nd in self.ndlist]
 
-            self.xyzlist = self.line_edit_xyzlist.text().split()
-            self.xyzlist = [mlcm.MLFilterEnum(int(xyz)) for xyz in self.xyzlist]
+            xyztext = [int(xyz) for xyz in self.line_edit_xyzlist.text().split()]
+            self.xyzlist = [mlcm.MLFilterEnum(xyz) for xyz in xyztext]
 
             self.useRX = self.cb_useRX.isChecked()
             self.sphlist = [float(sph) for sph in self.line_edit_sphlist.text().split()]

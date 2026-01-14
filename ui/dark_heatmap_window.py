@@ -1,7 +1,5 @@
 from PyQt5.QtWidgets import (
-    QWidget,
     QHBoxLayout,
-    QVBoxLayout,
     QLabel,
     QLineEdit,
     QPushButton,
@@ -18,12 +16,6 @@ from PyQt5.QtWidgets import (
 from core.app_config import AppConfig
 from PyQt5.QtCore import pyqtSignal, Qt, QThread
 import mlcolorimeter as mlcm
-import os
-import cv2
-import numpy as np
-import matplotlib.pyplot as plt
-from openpyxl import Workbook, load_workbook
-from openpyxl.drawing.image import Image
 from scripts.capture_dark_heatmap import capture_dark_heatmap
 
 class DarkHeatMapThread(QThread):
@@ -108,8 +100,7 @@ class DarkHeatMapWindow(QDialog):
         group_box0.setLayout(from_layout0)
         grid_layout.addWidget(group_box0, 0, 0)
 
-        self.label_times = QLabel()
-        self.label_times.setText("多帧平均次数: ")
+        self.label_times = QLabel("多帧平均次数: ")
         grid_layout.addWidget(self.label_times, 1, 0)
 
         self.line_edit_times = QLineEdit()
@@ -117,8 +108,7 @@ class DarkHeatMapWindow(QDialog):
         self.line_edit_times.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         grid_layout.addWidget(self.line_edit_times, 2, 0)
 
-        self.label_etlist = QLabel()
-        self.label_etlist.setText("曝光时间列表(ms), 例如: 1 10 20, 以空格隔开")
+        self.label_etlist = QLabel("曝光时间列表(ms), 例如: 1 10 20, 以空格隔开")
         grid_layout.addWidget(self.label_etlist, 3, 0)
 
         self.line_edit_etlist = QLineEdit()
@@ -126,10 +116,7 @@ class DarkHeatMapWindow(QDialog):
         self.line_edit_etlist.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         grid_layout.addWidget(self.line_edit_etlist, 4, 0)
 
-        self.label_binnlist = QLabel()
-        self.label_binnlist.setText(
-            "binning列表, (0: 1X1, 1: 2X2, 2: 4X4, 3: 8X8, 4: 16X16), 以空格隔开"
-        )
+        self.label_binnlist = QLabel("binning列表, (0: 1X1, 1: 2X2, 2: 4X4, 3: 8X8, 4: 16X16), 以空格隔开")
         grid_layout.addWidget(self.label_binnlist, 5, 0)
 
         self.line_edit_binnlist = QLineEdit()
@@ -137,8 +124,7 @@ class DarkHeatMapWindow(QDialog):
         self.line_edit_binnlist.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         grid_layout.addWidget(self.line_edit_binnlist, 6, 0)
 
-        self.label_ndlist = QLabel()
-        self.label_ndlist.setText("nd列表, (4: ND0, 5: ND1, 6: ND2, 7:ND3, 8:ND4), 以空格隔开")
+        self.label_ndlist = QLabel("nd列表, (4: ND0, 5: ND1, 6: ND2, 7:ND3, 8:ND4), 以空格隔开")
         grid_layout.addWidget(self.label_ndlist, 7, 0)
 
         self.line_edit_ndlist = QLineEdit()
@@ -146,8 +132,7 @@ class DarkHeatMapWindow(QDialog):
         self.line_edit_ndlist.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         grid_layout.addWidget(self.line_edit_ndlist, 8, 0)
 
-        self.label_xyzlist = QLabel()
-        self.label_xyzlist.setText("xyz列表, (1: X, 2: Y, 3: Z, 10: Clear), 以空格隔开")
+        self.label_xyzlist = QLabel("xyz列表, (1: X, 2: Y, 3: Z, 10: Clear, 12: YA), 以空格隔开")
         grid_layout.addWidget(self.label_xyzlist, 9, 0)
 
         self.line_edit_xyzlist = QLineEdit()
@@ -202,7 +187,6 @@ class DarkHeatMapWindow(QDialog):
         )
 
         if folder_path:
-            self.save_path = folder_path
             self.line_edit_path.setText(folder_path)
         else:
             QMessageBox.critical(self,"MLColorimeter","选择路径错误",QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
@@ -215,6 +199,7 @@ class DarkHeatMapWindow(QDialog):
                 return
             else:
                 self.binn=mlcm.Binning(int(binn_text))
+            self.save_path=self.line_edit_path.text().strip()
             if not self.save_path:
                 QMessageBox.warning(self, "提示", "请选择保存路径")
                 return

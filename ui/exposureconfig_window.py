@@ -1,20 +1,13 @@
 from PyQt5.QtWidgets import (
     QWidget,
     QScrollArea,
-    QHBoxLayout,
     QVBoxLayout,
     QLabel,
     QLineEdit,
     QPushButton,
     QFileDialog,
-    QSizePolicy,
     QMessageBox,
     QGroupBox,
-    QGridLayout,
-    QSpacerItem,
-    QRadioButton,
-    QButtonGroup,
-    QCheckBox,
     QComboBox,
     QFormLayout,
     QDialog,
@@ -22,12 +15,6 @@ from PyQt5.QtWidgets import (
 from core.app_config import AppConfig
 from PyQt5.QtCore import pyqtSignal, Qt
 import mlcolorimeter as mlcm
-import os
-import cv2
-import numpy as np
-import matplotlib.pyplot as plt
-from openpyxl import Workbook, load_workbook
-from openpyxl.drawing.image import Image
 from typing import List
 import json
 

@@ -1,7 +1,5 @@
 from PyQt5.QtWidgets import (
-    QWidget,
     QHBoxLayout,
-    QVBoxLayout,
     QLabel,
     QLineEdit,
     QPushButton,
@@ -11,9 +9,6 @@ from PyQt5.QtWidgets import (
     QGroupBox,
     QGridLayout,
     QSpacerItem,
-    QRadioButton,
-    QButtonGroup,
-    QCheckBox,
     QDialog,
     QComboBox,
     QFormLayout
@@ -21,12 +16,6 @@ from PyQt5.QtWidgets import (
 from core.app_config import AppConfig
 from PyQt5.QtCore import pyqtSignal, Qt,QThread
 import mlcolorimeter as mlcm
-import os
-import cv2
-import numpy as np
-import matplotlib.pyplot as plt
-from openpyxl import Workbook, load_workbook
-from openpyxl.drawing.image import Image
 from scripts.calculate_sph_cyl_coefficient_colorcamera import calculate_sph_cyl_coefficinet
 
 class CalculateSphCylCoefficientColorCameraThread(QThread):
@@ -58,7 +47,6 @@ class CalculateSphCylCoefficientColorCameraWindow(QDialog):
         self.file_name="sph_cyl_coefficient.xlsx"
         self.exposure_map_obj={}
         self.nd_list=['ND0','ND1','ND2','ND3','ND4','ND5']
-        self.xyz_list=['X','Y','Z','Clear']
         self.binning_selector=['Logic','Sensor']
         self.binning_mode=['AVERAGE','SUM']
         self.pixel_format=['MLMono8','MLMono10','MLMono12','MLMono16','MLRGB24','MLBayer','MLBayerGB8','MLBayerGB12']
@@ -77,14 +65,6 @@ class CalculateSphCylCoefficientColorCameraWindow(QDialog):
         self.line_edit_nd_selector.addItems(self.nd_list)
         self.line_edit_nd_selector.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         grid_layout.addWidget(self.line_edit_nd_selector,1,0)
-
-        # self.label_xyz_selector=QLabel("XYZ:")
-        # grid_layout.addWidget(self.label_xyz_selector,2,0)
-
-        # self.line_edit_xyz_selector = QComboBox()
-        # self.line_edit_xyz_selector.addItems(self.xyz_list)
-        # self.line_edit_xyz_selector.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        # grid_layout.addWidget(self.line_edit_xyz_selector,3,0)
 
         self.label_exposure_time=QLabel("曝光时间(ms):")
         grid_layout.addWidget(self.label_exposure_time,2,0)

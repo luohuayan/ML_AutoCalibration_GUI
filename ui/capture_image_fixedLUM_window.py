@@ -1,7 +1,5 @@
 from PyQt5.QtWidgets import (
-    QWidget,
     QHBoxLayout,
-    QVBoxLayout,
     QLabel,
     QLineEdit,
     QPushButton,
@@ -12,7 +10,6 @@ from PyQt5.QtWidgets import (
     QGridLayout,
     QSpacerItem,
     QDialog,
-    QButtonGroup,
     QFormLayout,
     QComboBox,
     QRadioButton,
@@ -21,13 +18,7 @@ from PyQt5.QtWidgets import (
 from core.app_config import AppConfig
 from PyQt5.QtCore import pyqtSignal, Qt,QThread
 import mlcolorimeter as mlcm
-import os
-import cv2
-import numpy as np
-import matplotlib.pyplot as plt
-from openpyxl import Workbook, load_workbook
-from openpyxl.drawing.image import Image
-from scripts.capture_image_fixedLUM import capture_image_fixedLUM, capture_image_ficedLUM_afterFFC
+from scripts.capture_image_fixedLUM import capture_image_ficedLUM_afterFFC
 
 
 class CaptureImageFixedLUMafterFFCThread(QThread):

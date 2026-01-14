@@ -1,32 +1,22 @@
 from PyQt5.QtWidgets import (
-    QWidget,
     QHBoxLayout,
-    QVBoxLayout,
     QLabel,
     QLineEdit,
     QPushButton,
     QFileDialog,
     QSizePolicy,
     QMessageBox,
-    QGroupBox,
     QGridLayout,
     QSpacerItem,
     QRadioButton,
     QButtonGroup,
     QCheckBox,
     QDialog,
-    QComboBox,
-    QFormLayout
+    QComboBox
 )
 from core.app_config import AppConfig
 from PyQt5.QtCore import pyqtSignal, Qt,QThread
 import mlcolorimeter as mlcm
-import os
-import cv2
-import numpy as np
-import matplotlib.pyplot as plt
-from openpyxl import Workbook, load_workbook
-from openpyxl.drawing.image import Image
 from ui.exposureconfig_window import ExposureConfigWindow
 from scripts.captureffc_calUniformity_plot_colorcamera import cal_synthetic_mean_images2,capture_ffc_images2,cal_uniformity2
 from ui.rx_config_window import RXConfigWindow

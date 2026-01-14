@@ -17,18 +17,11 @@ from PyQt5.QtWidgets import (
     QDialog,
     QComboBox,
     QFormLayout,
-    QListWidget,
     QScrollArea
 )
 from core.app_config import AppConfig
 from PyQt5.QtCore import pyqtSignal, Qt,QThread
 import mlcolorimeter as mlcm
-import os
-import cv2
-import numpy as np
-import matplotlib.pyplot as plt
-from openpyxl import Workbook, load_workbook
-from openpyxl.drawing.image import Image
 from scripts.serial_daogui_vid_focus_MTF import start_test_daogui,start_capture_image_vid,start_generate_roi_config,start_calibration_vid
 
 class TestDaoGuiThread(QThread):

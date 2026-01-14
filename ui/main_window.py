@@ -6,12 +6,8 @@ from PyQt5.QtWidgets import (
     QWidget,
     QHBoxLayout,
     QVBoxLayout,
-    QMenuBar,
-    QMenu,
-    QStatusBar,
 )
 from PyQt5.QtGui import QIcon
-from PyQt5.QtCore import QRect, QMetaObject
 from core.app_config import AppConfig
 from ui.settings_window import SettingsWindow
 from ui.dark_heatmap_window import DarkHeatMapWindow

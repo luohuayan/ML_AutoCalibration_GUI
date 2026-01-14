@@ -1,7 +1,5 @@
 from PyQt5.QtWidgets import (
-    QWidget,
     QHBoxLayout,
-    QVBoxLayout,
     QLabel,
     QLineEdit,
     QPushButton,
@@ -13,7 +11,6 @@ from PyQt5.QtWidgets import (
     QSpacerItem,
     QRadioButton,
     QButtonGroup,
-    QCheckBox,
     QDialog,
     QComboBox,
     QFormLayout
@@ -22,14 +19,7 @@ from PyQt5.QtGui import QIntValidator,QDoubleValidator
 from core.app_config import AppConfig
 from PyQt5.QtCore import pyqtSignal, Qt,QThread
 import mlcolorimeter as mlcm
-import os
-import cv2
-import numpy as np
-import matplotlib.pyplot as plt
-from openpyxl import Workbook, load_workbook
-from openpyxl.drawing.image import Image
 from scripts.monocalibration_colorcamera import mono_calibration
-from ui.settings_window import SettingsWindow
 
 class CalibrationColorThread(QThread):
     finished=pyqtSignal() # 线程完成信号

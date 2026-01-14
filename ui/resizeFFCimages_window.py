@@ -1,11 +1,6 @@
 from PyQt5.QtWidgets import (
-    QMainWindow,
-    QAction,
     QMessageBox,
     QPushButton,
-    QWidget,
-    QHBoxLayout,
-    QVBoxLayout,
     QDialog,
     QSizePolicy,
     QFileDialog,
@@ -16,9 +11,6 @@ from PyQt5.QtWidgets import (
     QCheckBox
 )
 from PyQt5.QtCore import pyqtSignal, Qt,QThread
-from scripts.image_detection import check_image_corruption
-import os
-from PIL import Image
 import mlcolorimeter as mlcm
 from scripts.resize_crop_images import resize_crop_images
 import ast

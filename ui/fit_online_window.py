@@ -1,7 +1,5 @@
 from PyQt5.QtWidgets import (
-    QWidget,
     QHBoxLayout,
-    QVBoxLayout,
     QLabel,
     QLineEdit,
     QPushButton,
@@ -11,24 +9,14 @@ from PyQt5.QtWidgets import (
     QGroupBox,
     QGridLayout,
     QSpacerItem,
-    QRadioButton,
-    QButtonGroup,
-    QCheckBox,
     QDialog,
     QComboBox,
-    QFormLayout,
-    QListWidget
+    QFormLayout
 )
 from PyQt5.QtGui import QIntValidator,QDoubleValidator
 from core.app_config import AppConfig
 from PyQt5.QtCore import pyqtSignal, Qt,QThread
 import mlcolorimeter as mlcm
-import os
-import cv2
-import numpy as np
-import matplotlib.pyplot as plt
-from openpyxl import Workbook, load_workbook
-from openpyxl.drawing.image import Image
 from scripts.circle_fit_online import circle_fit_online
 from scripts.polynomial_fit_online import polynomial_fit_online
 
@@ -116,7 +104,7 @@ class FitOnlineWindow(QDialog):
         grid_layout.addWidget(self.line_edit_ndlist, 2, 0)
 
         self.label_xyzlist = QLabel()
-        self.label_xyzlist.setText("xyz列表, (1: X, 2: Y, 3: Z, 10: Clear), 以空格隔开")
+        self.label_xyzlist.setText("xyz列表, (1: X, 2: Y, 3: Z, 10: Clear, 12: YA), 以空格隔开")
         grid_layout.addWidget(self.label_xyzlist, 3, 0)
         self.line_edit_xyzlist = QLineEdit()
         self.line_edit_xyzlist.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)

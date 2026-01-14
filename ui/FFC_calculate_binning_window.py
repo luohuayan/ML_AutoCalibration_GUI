@@ -1,7 +1,5 @@
 from PyQt5.QtWidgets import (
-    QWidget,
     QHBoxLayout,
-    QVBoxLayout,
     QLabel,
     QLineEdit,
     QPushButton,
@@ -11,9 +9,6 @@ from PyQt5.QtWidgets import (
     QGroupBox,
     QGridLayout,
     QSpacerItem,
-    QRadioButton,
-    QButtonGroup,
-    QCheckBox,
     QDialog,
     QComboBox,
     QFormLayout,
@@ -22,12 +17,6 @@ from PyQt5.QtWidgets import (
 from core.app_config import AppConfig
 from PyQt5.QtCore import pyqtSignal, Qt,QThread
 import mlcolorimeter as mlcm
-import os
-import cv2
-import numpy as np
-import matplotlib.pyplot as plt
-from openpyxl import Workbook, load_workbook
-from openpyxl.drawing.image import Image
 from scripts.FFC_one_by_one import FFC_calculate_1,FFC_calculate_2,FFC_calculate_4
 from ui.grayrange_dialog import GrayRangeDialog
 

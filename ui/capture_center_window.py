@@ -1,7 +1,5 @@
 from PyQt5.QtWidgets import (
-    QWidget,
     QHBoxLayout,
-    QVBoxLayout,
     QLabel,
     QLineEdit,
     QPushButton,
@@ -11,8 +9,6 @@ from PyQt5.QtWidgets import (
     QGroupBox,
     QGridLayout,
     QSpacerItem,
-    QRadioButton,
-    QButtonGroup,
     QCheckBox,
     QDialog,
     QFormLayout
@@ -20,12 +16,6 @@ from PyQt5.QtWidgets import (
 from core.app_config import AppConfig
 from PyQt5.QtCore import pyqtSignal, Qt,QThread
 import mlcolorimeter as mlcm
-import os
-import cv2
-import numpy as np
-import matplotlib.pyplot as plt
-from openpyxl import Workbook, load_workbook
-from openpyxl.drawing.image import Image
 from scripts.capture_colorfilter_center import capture_colorfilter_center
 from scripts.capture_RX_center import capture_RX_center
 from ui.exposureconfig_window import ExposureConfigWindow
