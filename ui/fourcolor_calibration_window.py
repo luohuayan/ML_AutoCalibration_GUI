@@ -119,6 +119,7 @@ class FourColorCalabrationWindow(QDialog):
         grid_layout.addWidget(self.label_ndlist, 1, 0)
 
         self.line_edit_ndlist = QLineEdit()
+        self.line_edit_ndlist.setText("4")
         self.line_edit_ndlist.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         grid_layout.addWidget(self.line_edit_ndlist, 2, 0)
 
@@ -127,6 +128,7 @@ class FourColorCalabrationWindow(QDialog):
         grid_layout.addWidget(self.label_xyzlist, 3, 0)
 
         self.line_edit_xyzlist = QLineEdit()
+        self.line_edit_xyzlist.setText("1")
         self.line_edit_xyzlist.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         grid_layout.addWidget(self.line_edit_xyzlist, 4, 0)
 

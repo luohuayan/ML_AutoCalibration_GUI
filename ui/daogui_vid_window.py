@@ -200,7 +200,7 @@ class DaoGuiVIDWindow(QDialog):
         self.label_freq=QLabel("freq: ")
         self.line_edit_freq = QLineEdit()
         self.line_edit_freq.setValidator(self.doubleValidator)
-        self.line_edit_freq.setText("3")
+        self.line_edit_freq.setText("7.5")
         self.line_edit_freq.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         from_layout.addRow(self.label_freq,self.line_edit_freq)
 

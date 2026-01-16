@@ -34,11 +34,13 @@ class RXConfigWindow(QDialog):
             # 创建输入框以输入三个参数的值
             inputs_1 = QLineEdit()
             inputs_1.setPlaceholderText("(例如: -6 -5 -4 -3 -2 -1 0 1 2 3 4 5 6), 以空格隔开")
+            inputs_1.setText("-6 -5 -4 -3 -2 -1 0 1 2 3 4 5 6")
             inputs_2 = QLineEdit()
             inputs_2.setPlaceholderText("(例如: -4 -3.5 -3 -2.5 -2 -1.5 -1 -0.5 0), 以空格隔开")
+            inputs_2.setText("-4 -3.75 -3.5 -3.25 -3 -2.75 -2.5 -2.25 -2 -1.75 -1.5 -1.25 -1 -0.75 -0.5 -0.25 0")
             inputs_3 = QLineEdit()
             inputs_3.setPlaceholderText("(例如: 0 15 30 45 60 75 90 105 120 135 150 165), 以空格隔开")
-
+            inputs_3.setText("0 15 30 45 60 75 90 105 120 135 150 165")
             form_layout.addRow(QLabel("sph列表:"), inputs_1)
             form_layout.addRow(QLabel("cyl列表:"), inputs_2)
             form_layout.addRow(QLabel("axis列表:"), inputs_3)

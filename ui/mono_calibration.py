@@ -266,6 +266,7 @@ class MonoCalibrationWindow(QDialog):
         grid_layout.addWidget(self.label_sphlist, 22, 0)
 
         self.line_edit_sphlist = QLineEdit()
+        self.line_edit_sphlist.setText("-6 -5 -4 -3 -2 -1 0 1 2 3 4 5 6")
         self.line_edit_sphlist.setSizePolicy(
             QSizePolicy.Expanding, QSizePolicy.Fixed)
         grid_layout.addWidget(self.line_edit_sphlist, 23, 0)
@@ -276,6 +277,7 @@ class MonoCalibrationWindow(QDialog):
         grid_layout.addWidget(self.label_cyllist, 24, 0)
 
         self.line_edit_cyllist = QLineEdit()
+        self.line_edit_cyllist.setText("-4 -3.75 -3.5 -3.25 -3 -2.75 -2.5 -2.25 -2 -1.75 -1.5 -1.25 -1 -0.75 -0.5 -0.25 0")
         self.line_edit_cyllist.setSizePolicy(
             QSizePolicy.Expanding, QSizePolicy.Fixed)
         grid_layout.addWidget(self.line_edit_cyllist, 25, 0)
@@ -286,6 +288,7 @@ class MonoCalibrationWindow(QDialog):
         grid_layout.addWidget(self.label_axislist, 26, 0)
 
         self.line_edit_axislist = QLineEdit()
+        self.line_edit_axislist.setText("0 15 30 45 60 75 90 105 120 135 150 165")
         self.line_edit_axislist.setSizePolicy(
             QSizePolicy.Expanding, QSizePolicy.Fixed)
         grid_layout.addWidget(self.line_edit_axislist, 27, 0)

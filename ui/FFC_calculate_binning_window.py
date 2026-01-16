@@ -106,7 +106,7 @@ class FFCCalculateBinningWindow(QDialog):
         self.btn_browse.clicked.connect(self._open_folder_dialog)
         grid_layout.addWidget(self.btn_browse, 1, 1)
 
-        self.label_xyz_list=QLabel("xyz滤光片，输入如X Y Z Clear，以空格分隔")
+        self.label_xyz_list=QLabel("xyz滤光片，输入如X Y Z Clear YA，以空格分隔")
         grid_layout.addWidget(self.label_xyz_list, 2, 0)
         self.line_edit_xyzlist = QLineEdit()
         self.line_edit_xyzlist.setText("X Y Z")

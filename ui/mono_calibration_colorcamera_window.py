@@ -115,6 +115,7 @@ class MonoCalibrationColorCameraWindow(QDialog):
         self.label_ndlist.setText("nd列表, (4: ND0, 5: ND1, 6: ND2, 7:ND3, 8:ND4), 以空格隔开")
         grid_layout.addWidget(self.label_ndlist, 3, 0)
         self.line_edit_ndlist = QLineEdit()
+        self.line_edit_ndlist.setText("4")
         self.line_edit_ndlist.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         grid_layout.addWidget(self.line_edit_ndlist, 4, 0)
 

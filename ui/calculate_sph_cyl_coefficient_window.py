@@ -73,16 +73,18 @@ class CalculateSphCylCoefficientWindow(QDialog):
         grid_layout.addWidget(self.btn_exposure, 3, 1)
 
         self.label_sphlist= QLabel()
-        self.label_sphlist.setText("球面镜列表（输入类似-5 -4 -3 0），以空格隔开")
+        self.label_sphlist.setText("sph列表, (例如: -6 -5 -4 -3 -2 -1 0 1 2 3 4 5 6), 以空格隔开")
         grid_layout.addWidget(self.label_sphlist, 4, 0)
         self.line_edit_sphlist = QLineEdit()
+        self.line_edit_sphlist.setText("-6 -5 -4 -3 -2 -1 0 1 2 3 4 5 6")
         self.line_edit_sphlist.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         grid_layout.addWidget(self.line_edit_sphlist, 5, 0)
 
         self.label_cyllist= QLabel()
-        self.label_cyllist.setText("柱面镜列表（输入类似-2 -1 0），以空格隔开")
+        self.label_cyllist.setText("cyl列表, (例如: -4 -3.5 -3 -2.5 -2 -1.5 -1 -0.5 0), 以空格隔开")
         grid_layout.addWidget(self.label_cyllist, 6, 0)
         self.line_edit_cyllist = QLineEdit()
+        self.line_edit_cyllist.setText("-4 -3.75 -3.5 -3.25 -3 -2.75 -2.5 -2.25 -2 -1.75 -1.5 -1.25 -1 -0.75 -0.5 -0.25 0")
         self.line_edit_cyllist.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         grid_layout.addWidget(self.line_edit_cyllist, 7, 0)
 

@@ -125,7 +125,7 @@ class DarkHeatMapWindow(QDialog):
         grid_layout.addWidget(self.label_binnlist, 5, 0)
 
         self.line_edit_binnlist = QLineEdit()
-        self.line_edit_binnlist.setText("0 1")
+        self.line_edit_binnlist.setText("0")
         self.line_edit_binnlist.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         grid_layout.addWidget(self.line_edit_binnlist, 6, 0)
 

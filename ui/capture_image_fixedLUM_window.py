@@ -105,6 +105,7 @@ class CaptureImageFixedLUMWindow(QDialog):
         self.label_ndlist.setText("nd列表, (4: ND0, 5: ND1, 6: ND2, 7:ND3, 8:ND4), 以空格隔开")
         grid_layout.addWidget(self.label_ndlist, 1, 0)
         self.line_edit_ndlist = QLineEdit()
+        self.line_edit_ndlist.setText("4")
         self.line_edit_ndlist.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         grid_layout.addWidget(self.line_edit_ndlist, 2, 0)
 
@@ -112,6 +113,7 @@ class CaptureImageFixedLUMWindow(QDialog):
         self.label_xyzlist.setText("xyz列表, (1: X, 2: Y, 3: Z, 10: Clear, 12: YA), 以空格隔开")
         grid_layout.addWidget(self.label_xyzlist, 3, 0)
         self.line_edit_xyzlist = QLineEdit()
+        self.line_edit_xyzlist.setText("1")
         self.line_edit_xyzlist.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         grid_layout.addWidget(self.line_edit_xyzlist, 4, 0)
 
@@ -151,16 +153,19 @@ class CaptureImageFixedLUMWindow(QDialog):
 
         self.label_sphlist = QLabel("sph列表, (例如: -6 -5 -4 -3 -2 -1 0 1 2 3 4 5 6), 以空格隔开")
         self.line_edit_sphlist = QLineEdit()
+        self.line_edit_sphlist.setText("-6 -5 -4 -3 -2 -1 0 1 2 3 4 5 6")
         self.line_edit_sphlist.setSizePolicy(
             QSizePolicy.Expanding, QSizePolicy.Fixed)
 
         self.label_cyllist = QLabel("cyl列表, (例如: -4 -3.5 -3 -2.5 -2 -1.5 -1 -0.5 0), 以空格隔开")
         self.line_edit_cyllist = QLineEdit()
+        self.line_edit_cyllist.setText("-4 -3.75 -3.5 -3.25 -3 -2.75 -2.5 -2.25 -2 -1.75 -1.5 -1.25 -1 -0.75 -0.5 -0.25 0")
         self.line_edit_cyllist.setSizePolicy(
             QSizePolicy.Expanding, QSizePolicy.Fixed)
         
         self.label_axislist = QLabel("axis列表, (例如: 0 15 30 45 60 75 90 105 120 135 150 165), 以空格隔开")
         self.line_edit_axislist = QLineEdit()
+        self.line_edit_axislist.setText("0 15 30 45 60 75 90 105 120 135 150 165")
         self.line_edit_axislist.setSizePolicy(
             QSizePolicy.Expanding, QSizePolicy.Fixed)
         
