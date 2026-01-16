@@ -91,6 +91,7 @@ class CaptureImageFixedLUMWindow(QDialog):
 
         self.label_binn = QLabel(" binning：")
         self.line_edit_binn = QLineEdit()
+        self.line_edit_binn.setText("0")
         self.line_edit_binn.setValidator(self.intValidator)
         self.line_edit_binn.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         self.line_edit_binn.setPlaceholderText("0: 1X1, 1: 2X2, 2: 4X4, 3: 8X8, 4: 16X16")

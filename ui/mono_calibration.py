@@ -115,6 +115,7 @@ class MonoCalibrationWindow(QDialog):
         self.line_edit_binn.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         int_validator=QIntValidator(0,4,self)
         self.line_edit_binn.setValidator(int_validator)
+        self.line_edit_binn.setText("0")
         self.line_edit_binn.setPlaceholderText("0: 1X1, 1: 2X2, 2: 4X4, 3: 8X8, 4: 16X16")
         self.line_edit_binn.textChanged.connect(self.validate_input)
 

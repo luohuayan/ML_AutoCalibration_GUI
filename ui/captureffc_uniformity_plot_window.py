@@ -110,6 +110,7 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
         grid_layout.addWidget(self.label_times, 0, 0)
 
         self.line_edit_times = QLineEdit()
+        self.line_edit_times.setValidator(self.intValidator)
         self.line_edit_times.setText("1")
         self.line_edit_times.setSizePolicy(
             QSizePolicy.Expanding, QSizePolicy.Fixed)

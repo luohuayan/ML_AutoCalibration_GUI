@@ -82,6 +82,7 @@ class FitOnlineWindow(QDialog):
         self.line_edit_binnlist.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         int_validator=QIntValidator(0,4,self)
         self.line_edit_binnlist.setValidator(int_validator)
+        self.line_edit_binnlist.setText("0")
         self.line_edit_binnlist.setPlaceholderText("0: 1X1, 1: 2X2, 2: 4X4, 3: 8X8, 4: 16X16")
         self.line_edit_binnlist.textChanged.connect(self.validate_input)
         from_layout0.addRow(self.label_binnlist, self.line_edit_binnlist)

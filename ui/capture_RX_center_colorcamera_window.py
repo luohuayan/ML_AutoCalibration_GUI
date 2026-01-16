@@ -47,8 +47,6 @@ class CaptureRXCenterColorCameraWindow(QDialog):
         self.default_path = ""
         self.file_name="sph_cyl_coefficient.xlsx"
         self.exposure_map_obj={}
-        self.binning_selector=['Logic','Sensor']
-        self.binning_mode=['AVERAGE','SUM']
         self.pixel_format=['MLMono8','MLMono10','MLMono12','MLMono16','MLRGB24','MLBayer','MLBayerGB8','MLBayerGB12']
         self._init_ui()
 
