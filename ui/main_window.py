@@ -29,15 +29,17 @@ from ui.daogui_vid_window import DaoGuiVIDWindow
 from ui.image_detection_window import ImageDetectionWindow
 from ui.resizeFFCimages_window import ResizeFFCImagesWindow
 
+
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Colorimeter Controller")
         self.setGeometry(100, 100, 1024, 768)
-        self.setWindowIcon(QIcon("F:/ML_AutoCalibration_GUI/ML_AutoCalibration_GUI/dist/FingerPrintScanMTF.ico"))
+        self.setWindowIcon(QIcon(
+            "F:/ML_AutoCalibration_GUI/ML_AutoCalibration_GUI/dist/FingerPrintScanMTF.ico"))
         self._init_ui()
         self.colorimeter = AppConfig.get_colorimeter()
-        self.select_path=""
+        self.select_path = ""
 
         # 初始化子窗口调用
         self.settings_window = None
@@ -48,19 +50,17 @@ class MainWindow(QMainWindow):
         self.capture_center_window = None
         self.capture_image_fixedLUM_window = None
         self.filed_curve_window = None
-        self.fourcolor_calibration=None
-        self.calculate_sph_cyl_coefficient_colorcamera_window=None
-        self.capture_rx_center_colorcamera=None
-        self.capture_FFC_CalUniformityPlot_ColorCamera=None
-        self.mono_calibration_Colorcamera=None
-        self.ffc_calculatebinning_window=None
-        self.fit_online_window_=None
-        self.version_window=None
-        self.daogui_window=None
-        self.imagedetction_window=None
-        self.resize_ffc_images_window=None
-        
-
+        self.fourcolor_calibration = None
+        self.calculate_sph_cyl_coefficient_colorcamera_window = None
+        self.capture_rx_center_colorcamera = None
+        self.capture_FFC_CalUniformityPlot_ColorCamera = None
+        self.mono_calibration_Colorcamera = None
+        self.ffc_calculatebinning_window = None
+        self.fit_online_window_ = None
+        self.version_window = None
+        self.daogui_window = None
+        self.imagedetction_window = None
+        self.resize_ffc_images_window = None
 
     def _init_ui(self):
         # 创建菜单栏
@@ -82,8 +82,7 @@ class MainWindow(QMainWindow):
         scripts_menu2 = menubar.addMenu("&Daogui_VID")
         scripts_menu3 = menubar.addMenu("&Scripts_Tool")
 
-
-        help_Action=menubar.addAction("Help")
+        help_Action = menubar.addAction("Help")
         help_Action.triggered.connect(self.open_version)
 
         # 子菜单项
@@ -97,7 +96,8 @@ class MainWindow(QMainWindow):
         script3_action.triggered.connect(self.open_monocalibration)
 
         script4_action = QAction("calculate_sph_cyl_coef", self)
-        script4_action.triggered.connect(self.open_calculate_sph_cyl_coefficient)
+        script4_action.triggered.connect(
+            self.open_calculate_sph_cyl_coefficient)
 
         script5_action = QAction("capture_center", self)
         script5_action.triggered.connect(self.open_capture_center)
@@ -111,14 +111,18 @@ class MainWindow(QMainWindow):
         script8_action = QAction("fourcolor_calibration", self)
         script8_action.triggered.connect(self.open_fourcolor_calibration)
 
-        script9_action = QAction("calculate_sph_cyl_coefficient_colorcamera", self)
-        script9_action.triggered.connect(self.calculate_sph_cyl_coefficient_colorcamera)
+        script9_action = QAction(
+            "calculate_sph_cyl_coefficient_colorcamera", self)
+        script9_action.triggered.connect(
+            self.calculate_sph_cyl_coefficient_colorcamera)
 
         script10_action = QAction("capture_RX_center_colorcamera", self)
         script10_action.triggered.connect(self.capture_RX_center_colorcamera)
 
-        script11_action = QAction("capture_ffc_CalUniformityPlot_ColorCamera", self)
-        script11_action.triggered.connect(self.capture_ffc_CalUniformityPlot_ColorCamera)
+        script11_action = QAction(
+            "capture_ffc_CalUniformityPlot_ColorCamera", self)
+        script11_action.triggered.connect(
+            self.capture_ffc_CalUniformityPlot_ColorCamera)
 
         script12_action = QAction("mono_calibration_colorcamera", self)
         script12_action.triggered.connect(self.mono_calibration_colorcamera)
@@ -201,15 +205,15 @@ class MainWindow(QMainWindow):
                 )
                 return
             QMessageBox.information(
-                    self,
-                    "MLColorimeter",
-                    "连接成功",
-                    QMessageBox.Yes | QMessageBox.No,
-                    QMessageBox.Yes,
-                )
+                self,
+                "MLColorimeter",
+                "连接成功",
+                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.Yes,
+            )
         except Exception as e:
             QMessageBox.critical(self, "MLColorimeter", "exception" + e,
-                                QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
+                                 QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
 
     def disconnect_colorimeter(self):
         ret = self.colorimeter.ml_disconnect()
@@ -223,37 +227,38 @@ class MainWindow(QMainWindow):
             )
             return
         QMessageBox.information(
-                self,
-                "MLColorimeter",
-                "断开连接成功",
-                QMessageBox.Yes | QMessageBox.No,
-                QMessageBox.Yes,
-            )
+            self,
+            "MLColorimeter",
+            "断开连接成功",
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.Yes,
+        )
 
     def open_settings(self):
         self.settings_window = SettingsWindow(self)
         self.settings_window.path_changed.connect(self.handle_path_changed)
-        self.settings_window.enables_connect_button.connect(self.enable_connect_button) # 连接信号
+        self.settings_window.enables_connect_button.connect(
+            self.enable_connect_button)  # 连接信号
         self.settings_window.exec_()
 
     def open_version(self):
-        self.version_window=VersionWindow(self)
+        self.version_window = VersionWindow(self)
         self.version_window.exec_()
-    
+
     def enable_connect_button(self):
         """启用连接按钮"""
         self.connect_btn.setEnabled(True)  # 启用 connect 按钮
-    
-    def handle_path_changed(self,path):
-        self.select_path=path
 
+    def handle_path_changed(self, path):
+        self.select_path = path
 
     def open_dark_heatmap(self):
         self.dark_heatmap_window = DarkHeatMapWindow()
         self.dark_heatmap_window.exec_()
 
     def open_captureffc_caluniformity(self):
-        self.captureffc_caluniformity_window = CaptureFFC_CalUniformity_Plot_Window(self.select_path)
+        self.captureffc_caluniformity_window = CaptureFFC_CalUniformity_Plot_Window(
+            self.select_path)
         self.captureffc_caluniformity_window.exec_()
 
     def open_monocalibration(self):
@@ -269,7 +274,8 @@ class MainWindow(QMainWindow):
         self.capture_center_window.exec_()
 
     def open_capture_image_fixedLUM(self):
-        self.capture_image_fixedLUM_window = CaptureImageFixedLUMWindow(self.select_path)
+        self.capture_image_fixedLUM_window = CaptureImageFixedLUMWindow(
+            self.select_path)
         self.capture_image_fixedLUM_window.exec_()
 
     def open_filed_curve(self):
@@ -277,41 +283,43 @@ class MainWindow(QMainWindow):
         self.filed_curve_window.exec_()
 
     def open_fourcolor_calibration(self):
-        self.fourcolor_calibration=FourColorCalabrationWindow()
+        self.fourcolor_calibration = FourColorCalabrationWindow()
         self.fourcolor_calibration.exec_()
 
     def calculate_sph_cyl_coefficient_colorcamera(self):
-        self.calculate_sph_cyl_coefficient_colorcamera_window=CalculateSphCylCoefficientColorCameraWindow()
+        self.calculate_sph_cyl_coefficient_colorcamera_window = CalculateSphCylCoefficientColorCameraWindow()
         self.calculate_sph_cyl_coefficient_colorcamera_window.exec_()
 
     def capture_RX_center_colorcamera(self):
-        self.capture_rx_center_colorcamera=CaptureRXCenterColorCameraWindow()
+        self.capture_rx_center_colorcamera = CaptureRXCenterColorCameraWindow()
         self.capture_rx_center_colorcamera.exec_()
 
     def capture_ffc_CalUniformityPlot_ColorCamera(self):
-        self.capture_FFC_CalUniformityPlot_ColorCamera=CaptureFFCCalUniformityPlotColorCameraWindow(self.select_path)
+        self.capture_FFC_CalUniformityPlot_ColorCamera = CaptureFFCCalUniformityPlotColorCameraWindow(
+            self.select_path)
         self.capture_FFC_CalUniformityPlot_ColorCamera.exec_()
 
     def mono_calibration_colorcamera(self):
-        self.mono_calibration_Colorcamera=MonoCalibrationColorCameraWindow(self.select_path)
+        self.mono_calibration_Colorcamera = MonoCalibrationColorCameraWindow(
+            self.select_path)
         self.mono_calibration_Colorcamera.exec_()
 
     def ffc_calculate_binning(self):
-        self.ffc_calculatebinning_window=FFCCalculateBinningWindow()
+        self.ffc_calculatebinning_window = FFCCalculateBinningWindow()
         self.ffc_calculatebinning_window.exec_()
 
     def fit_online(self):
-        self.fit_online_window_=FitOnlineWindow()
+        self.fit_online_window_ = FitOnlineWindow()
         self.fit_online_window_.exec_()
 
     def daogui_vid(self):
-        self.daogui_window=DaoGuiVIDWindow()
+        self.daogui_window = DaoGuiVIDWindow()
         self.daogui_window.exec_()
 
     def image_detection(self):
-        self.imagedetction_window=ImageDetectionWindow()
+        self.imagedetction_window = ImageDetectionWindow()
         self.imagedetction_window.exec_()
 
     def resize_FFC_images(self):
-        self.resize_ffc_images_window=ResizeFFCImagesWindow()
+        self.resize_ffc_images_window = ResizeFFCImagesWindow()
         self.resize_ffc_images_window.exec_()

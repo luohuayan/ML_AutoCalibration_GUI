@@ -33,10 +33,10 @@ def generate_heatmap(image, block_size):
 
 def capture_dark_heatmap(
     colorimeter: mlcm.ML_Colorimeter,
-    binn_selector:mlcm.BinningSelector,
-    binn_mode:mlcm.BinningMode,
-    binn:mlcm.Binning,
-    pixel_format:mlcm.MLPixelFormat,
+    binn_selector: mlcm.BinningSelector,
+    binn_mode: mlcm.BinningMode,
+    binn: mlcm.Binning,
+    pixel_format: mlcm.MLPixelFormat,
     nd_list: List[mlcm.MLFilterEnum],
     xyz_list: List[mlcm.MLFilterEnum],
     binn_list: List[mlcm.Binning],
@@ -71,20 +71,18 @@ def capture_dark_heatmap(
         raise RuntimeError("ml_set_pixel_format error")
 
     for nd in nd_list:
-        nd_enum = mlcm.MLFilterEnum(nd)
-        ret = mono.ml_move_nd_syn(nd_enum)
+        ret = mono.ml_move_nd_syn(nd)
         if not ret.success:
             raise RuntimeError("ml_move_nd_syn error")
 
         for xyz in xyz_list:
-            xyz_enum = mlcm.MLFilterEnum(xyz)
-            ret = mono.ml_move_xyz_syn(xyz_enum)
+            ret = mono.ml_move_xyz_syn(xyz)
             if not ret.success:
                 raise RuntimeError("ml_move_xyz_syn error")
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
             temp_str = mlcm.MLFilterEnum_to_str(
-                nd_enum) + "_" + mlcm.MLFilterEnum_to_str(xyz_enum) + "_" + timestamp +"_"
+                nd) + "_" + mlcm.MLFilterEnum_to_str(xyz) + "_" + timestamp + "_"
             file_path = save_path + "\\" + temp_str + file_name
             wb = Workbook()
             wb.save(file_path)
@@ -116,7 +114,7 @@ def capture_dark_heatmap(
 
                     # capture a single image
                     list = []
-                    for i in range(capture_times):
+                    for i in range(capture_times):  # type: ignore
                         ret = mono.ml_capture_image_syn()
                         if not ret.success:
                             raise RuntimeError("ml_capture_image_syn error")
@@ -150,10 +148,11 @@ def capture_dark_heatmap(
                     cropped_img = preprocess_image(get_img, block_size)
                     heatmap = generate_heatmap(cropped_img, block_size)
                     # plt.imshow(heatmap, cmap="jet", interpolation="nearest")
-                    plt.imshow(heatmap, cmap="jet", interpolation="nearest", vmin=0, vmax=10)
+                    plt.imshow(heatmap, cmap="jet",
+                               interpolation="nearest", vmin=0, vmax=10)
                     plt.colorbar()
                     plt.title("raw_" + str(pow(2, binn)) + "X" +
-                            str(pow(2, binn)) + "_" + str(et_list[k]) + "ms")
+                              str(pow(2, binn)) + "_" + str(et_list[k]) + "ms")
                     plt.savefig(save_path + "\\raw\\raw_" + str(pow(2, binn)) +
                                 "X" + str(pow(2, binn)) + "_" + str(et_list[k]) + "ms.png")
                     # plt.show()
@@ -175,16 +174,17 @@ def capture_dark_heatmap(
                         raw_list[k], dtype=np.int16))
                     cropped_img = preprocess_image(get_img, block_size)
                     heatmap = generate_heatmap(cropped_img, block_size)
-                    plt.imshow(heatmap, cmap="jet", interpolation="nearest", vmin=0, vmax=10)
+                    plt.imshow(heatmap, cmap="jet",
+                               interpolation="nearest", vmin=0, vmax=10)
                     # plt.imshow(heatmap, cmap="jet", interpolation="nearest")
                     plt.colorbar()
                     plt.title("processed_" + str(pow(2, binn)) + "X" +
-                            str(pow(2, binn)) + "_" + str(et_list[k]) + "ms")
+                              str(pow(2, binn)) + "_" + str(et_list[k]) + "ms")
                     plt.savefig(save_path + "\\processed\\processed_" + str(pow(2, binn)) +
                                 "X" + str(pow(2, binn)) + "_" + str(et_list[k]) + "ms.png")
                     plt.close()
                     img2 = Image(save_path + "\\processed\\processed_" + str(pow(2, binn)) +
-                                "X" + str(pow(2, binn)) + "_" + str(et_list[k]) + "ms.png")
+                                 "X" + str(pow(2, binn)) + "_" + str(et_list[k]) + "ms.png")
 
                     img2.width = 300  # 像素宽度
                     img2.height = 200  # 像素高度
@@ -213,44 +213,3 @@ def capture_dark_heatmap(
                 wb.save(file_path)
 
             update_status("finish")
-
-
-# if __name__ == "__main__":
-#     # set mono module calibration configuration path
-#     eye1_path = r"D:\MLOptic\MLColorimeter\config\EYE1"
-#     save_path = r"E:\project\test"
-#     if not os.path.exists(save_path):
-#         os.makedirs(save_path)
-
-#     path_list = [
-#         eye1_path,
-#     ]
-#     try:
-#         # create a ML_Colorimeter system instance
-#         ml_colorimeter = mlcm.ML_Colorimeter()
-#         # add mono module into ml_colorimeter system, according to path_list create one or more mono module
-#         ret = ml_colorimeter.ml_add_module(path_list=path_list)
-#         if not ret.success:
-#             raise RuntimeError("ml_add_module error")
-#         # connect all module in the ml_colorimeter system
-#         ret = ml_colorimeter.ml_connect()
-#         if not ret.success:
-#             raise RuntimeError("ml_connect error")
-
-#         # 4:ND0  5:ND1  6:ND2  7:ND3  8:ND4
-#         nd_list = [4]
-#         # 1:X  2:Y  3:Z  10:Clear
-#         xyz_list = [1]
-#         # exposure time list
-#         et_list = [0.1, 1, 10, 20, 50]
-#         # 0:ONE_BY_ONE  1:TWO_BY_TWO  2:FOUR_BY_FOUR  3:EIGHT_BY_EIGHT  4:SIXTEEN_BY_SIXTEEN
-#         binn_list = [0]
-#         # file name
-#         file_name = "dark_heatmap.xlsx"
-#         # multi frame averaging
-#         capture_times = 5
-#         capture_dark_heatmap(ml_colorimeter, nd_list, xyz_list,
-#                             binn_list, et_list, save_path, file_name, capture_times)
-#     except Exception as e:
-#         # print(e)
-#         pass

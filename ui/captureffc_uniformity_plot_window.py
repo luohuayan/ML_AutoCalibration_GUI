@@ -14,9 +14,9 @@ from PyQt5.QtWidgets import (
     QButtonGroup,
     QDialog,
 )
-from PyQt5.QtGui import QIntValidator,QDoubleValidator
+from PyQt5.QtGui import QIntValidator, QDoubleValidator
 from core.app_config import AppConfig
-from PyQt5.QtCore import pyqtSignal, Qt,QThread
+from PyQt5.QtCore import pyqtSignal, Qt, QThread
 import mlcolorimeter as mlcm
 from scripts.captureffc_calUniformity_plot import (
     cal_synthetic_mean_images, capture_ffc_images, cal_uniformity)
@@ -27,51 +27,56 @@ from ui.exposureconfig_window import ExposureConfigWindow
 
 
 class CaptureFFCThread(QThread):
-    finished=pyqtSignal() # 线程完成信号
-    error=pyqtSignal(str) # 错误信号
-    status_update=pyqtSignal(str) # 状态更新信号
+    finished = pyqtSignal()  # 线程完成信号
+    error = pyqtSignal(str)  # 错误信号
+    status_update = pyqtSignal(str)  # 状态更新信号
 
-    def __init__(self,parameters):
+    def __init__(self, parameters):
         super().__init__()
-        self.parameters=parameters
-    
+        self.parameters = parameters
+
     def run(self):
         try:
-            capture_ffc_images(status_callback=self.status_update.emit,**self.parameters)
+            capture_ffc_images(
+                status_callback=self.status_update.emit, **self.parameters)
             self.finished.emit()
 
         except Exception as e:
             self.error.emit(str(e))
+
 
 class CalSyntheticThread(QThread):
-    finished=pyqtSignal() # 线程完成信号
-    error=pyqtSignal(str) # 错误信号
-    status_update=pyqtSignal(str) # 状态更新信号
+    finished = pyqtSignal()  # 线程完成信号
+    error = pyqtSignal(str)  # 错误信号
+    status_update = pyqtSignal(str)  # 状态更新信号
 
-    def __init__(self,parameters):
+    def __init__(self, parameters):
         super().__init__()
-        self.parameters=parameters
-    
+        self.parameters = parameters
+
     def run(self):
         try:
-            cal_synthetic_mean_images(status_callback=self.status_update.emit,**self.parameters)
+            cal_synthetic_mean_images(
+                status_callback=self.status_update.emit, **self.parameters)
             self.finished.emit()
 
         except Exception as e:
             self.error.emit(str(e))
 
-class CalUniformityThread(QThread):
-    finished=pyqtSignal() # 线程完成信号
-    error=pyqtSignal(str) # 错误信号
-    status_update=pyqtSignal(str) # 状态更新信号
 
-    def __init__(self,parameters):
+class CalUniformityThread(QThread):
+    finished = pyqtSignal()  # 线程完成信号
+    error = pyqtSignal(str)  # 错误信号
+    status_update = pyqtSignal(str)  # 状态更新信号
+
+    def __init__(self, parameters):
         super().__init__()
-        self.parameters=parameters
-    
+        self.parameters = parameters
+
     def run(self):
         try:
-            cal_uniformity(status_callback=self.status_update.emit,**self.parameters)
+            cal_uniformity(
+                status_callback=self.status_update.emit, **self.parameters)
             self.finished.emit()
 
         except Exception as e:
@@ -86,22 +91,23 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
         self.setWindowTitle(
             "capture ffc images; calculate ffc, fourcolor uniformity; generate plot")
         self.setGeometry(200, 200, 800, 700)
-        self.setWindowFlags(Qt.Window | Qt.WindowMaximizeButtonHint | Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint)
+        self.setWindowFlags(Qt.Window | Qt.WindowMaximizeButtonHint |
+                            Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint)
         self.colorimeter = AppConfig.get_colorimeter()
-        self.intValidator=QIntValidator()
-        self.doubleValidator=QDoubleValidator()
+        self.intValidator = QIntValidator()
+        self.doubleValidator = QDoubleValidator()
         self.dialog_title = "选择文件夹"
         self.default_path = ""
-        self.eye1_path=path
-        self.rx_dict={}
-        self.roi_dict={}
-        self.exposure_map_obj={}
+        self.eye1_path = path
+        self.rx_dict = {}
+        self.roi_dict = {}
+        self.exposure_map_obj = {}
         self.file_name = ""
-        self.exposure_mode=['Auto','Fixed']
+        self.exposure_mode = ['Auto', 'Fixed']
         self.module_id = 1
         self._init_ui()
-        self.is_running=False
-        self.threads=[] # 存储活动线程
+        self.is_running = False
+        self.threads = []  # 存储活动线程
 
     def _init_ui(self):
         grid_layout = QGridLayout()
@@ -116,7 +122,8 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
             QSizePolicy.Expanding, QSizePolicy.Fixed)
         grid_layout.addWidget(self.line_edit_times, 1, 0)
 
-        self.label_binn = QLabel("平场图像采集 binning: (0: 1X1, 1: 2X2, 2: 4X4, 3: 8X8, 4: 16X16)")
+        self.label_binn = QLabel(
+            "平场图像采集 binning: (0: 1X1, 1: 2X2, 2: 4X4, 3: 8X8, 4: 16X16)")
         grid_layout.addWidget(self.label_binn, 2, 0)
 
         self.line_edit_binn = QLineEdit()
@@ -126,7 +133,8 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
             QSizePolicy.Expanding, QSizePolicy.Fixed)
         grid_layout.addWidget(self.line_edit_binn, 3, 0)
 
-        self.label_binnlist = QLabel("计算FFC,FourColor均匀性 binning列表, (0: 1X1, 1: 2X2, 2: 4X4, 3: 8X8, 4: 16X16), 以空格隔开")
+        self.label_binnlist = QLabel(
+            "计算FFC,FourColor均匀性 binning列表, (0: 1X1, 1: 2X2, 2: 4X4, 3: 8X8, 4: 16X16), 以空格隔开")
         grid_layout.addWidget(self.label_binnlist, 4, 0)
 
         self.line_edit_binnlist = QLineEdit()
@@ -135,7 +143,8 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
             QSizePolicy.Expanding, QSizePolicy.Fixed)
         grid_layout.addWidget(self.line_edit_binnlist, 5, 0)
 
-        self.label_ndlist = QLabel("nd列表, (4: ND0, 5: ND1, 6: ND2, 7:ND3, 8:ND4), 以空格隔开")
+        self.label_ndlist = QLabel(
+            "nd列表, (4: ND0, 5: ND1, 6: ND2, 7:ND3, 8:ND4), 以空格隔开")
         grid_layout.addWidget(self.label_ndlist, 6, 0)
 
         self.line_edit_ndlist = QLineEdit()
@@ -144,7 +153,8 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
             QSizePolicy.Expanding, QSizePolicy.Fixed)
         grid_layout.addWidget(self.line_edit_ndlist, 7, 0)
 
-        self.label_xyzlist = QLabel("xyz列表, (1: X, 2: Y, 3: Z, 10: Clear, 12: YA), 以空格隔开")
+        self.label_xyzlist = QLabel(
+            "xyz列表, (1: X, 2: Y, 3: Z, 10: Clear, 12: YA), 以空格隔开")
         grid_layout.addWidget(self.label_xyzlist, 8, 0)
 
         self.line_edit_xyzlist = QLineEdit()
@@ -177,7 +187,8 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
         self.cb_useRX.stateChanged.connect(self._useRX_state_changed)
         grid_layout.addWidget(self.cb_useRX, 12, 0)
 
-        self.label_sphlist = QLabel("平场图像采集 sph列表, (例如: -6 -5 -4 -3 -2 -1 0 1 2 3 4 5 6), 以空格隔开")
+        self.label_sphlist = QLabel(
+            "平场图像采集 sph列表, (例如: -6 -5 -4 -3 -2 -1 0 1 2 3 4 5 6), 以空格隔开")
         grid_layout.addWidget(self.label_sphlist, 13, 0)
 
         self.line_edit_sphlist = QLineEdit()
@@ -186,25 +197,29 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
             QSizePolicy.Expanding, QSizePolicy.Fixed)
         grid_layout.addWidget(self.line_edit_sphlist, 14, 0)
 
-        self.label_cyllist = QLabel("平场图像采集 cyl列表, (例如: -4 -3.5 -3 -2.5 -2 -1.5 -1 -0.5 0), 以空格隔开")
+        self.label_cyllist = QLabel(
+            "平场图像采集 cyl列表, (例如: -4 -3.5 -3 -2.5 -2 -1.5 -1 -0.5 0), 以空格隔开")
         grid_layout.addWidget(self.label_cyllist, 15, 0)
 
         self.line_edit_cyllist = QLineEdit()
-        self.line_edit_cyllist.setText("-4 -3.75 -3.5 -3.25 -3 -2.75 -2.5 -2.25 -2 -1.75 -1.5 -1.25 -1 -0.75 -0.5 -0.25 0")
+        self.line_edit_cyllist.setText(
+            "-4 -3.75 -3.5 -3.25 -3 -2.75 -2.5 -2.25 -2 -1.75 -1.5 -1.25 -1 -0.75 -0.5 -0.25 0")
         self.line_edit_cyllist.setSizePolicy(
             QSizePolicy.Expanding, QSizePolicy.Fixed)
         grid_layout.addWidget(self.line_edit_cyllist, 16, 0)
 
-        self.label_axislist = QLabel("平场图像采集 axis列表, (例如: 0 15 30 45 60 75 90 105 120 135 150 165), 以空格隔开")
+        self.label_axislist = QLabel(
+            "平场图像采集 axis列表, (例如: 0 15 30 45 60 75 90 105 120 135 150 165), 以空格隔开")
         grid_layout.addWidget(self.label_axislist, 17, 0)
 
         self.line_edit_axislist = QLineEdit()
-        self.line_edit_axislist.setText("0 15 30 45 60 75 90 105 120 135 150 165")
+        self.line_edit_axislist.setText(
+            "0 15 30 45 60 75 90 105 120 135 150 165")
         self.line_edit_axislist.setSizePolicy(
             QSizePolicy.Expanding, QSizePolicy.Fixed)
         grid_layout.addWidget(self.line_edit_axislist, 18, 0)
 
-        main_layout=QVBoxLayout()
+        main_layout = QVBoxLayout()
 
         h_layout = QHBoxLayout()
         self.cb_captureffc = QCheckBox()
@@ -225,11 +240,11 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
         h_layout.addWidget(self.cb_calculate_uniformity)
 
         h_layout0 = QHBoxLayout()
-        self.btn_roi_config=QPushButton("ROI列表配置")
+        self.btn_roi_config = QPushButton("ROI列表配置")
         self.btn_roi_config.clicked.connect(self._roi_config)
         h_layout0.addWidget(self.btn_roi_config)
 
-        self.btn_rx_config=QPushButton("RX列表配置")
+        self.btn_rx_config = QPushButton("RX列表配置")
         self.btn_rx_config.clicked.connect(self._rx_config)
         h_layout0.addWidget(self.btn_rx_config)
 
@@ -293,12 +308,12 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
         self.btn_capture.clicked.connect(self._start_capture_calculate)
         grid_layout.addWidget(self.btn_capture, 25, 0)
 
-        self.status_label=QLabel("状态：等待开始")
+        self.status_label = QLabel("状态：等待开始")
         self.status_label.setWordWrap(True)  # 设置自动换行
-        grid_layout.addWidget(self.status_label,26,0)
+        grid_layout.addWidget(self.status_label, 26, 0)
 
         spacer = QSpacerItem(20, 40, QSizePolicy.Minimum,
-                            QSizePolicy.Expanding)
+                             QSizePolicy.Expanding)
         grid_layout.addItem(spacer)
 
         self.setLayout(grid_layout)
@@ -315,19 +330,22 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
 
     def _captureFFC_config(self):
         if self.cb_captureffc.isChecked():
-            QMessageBox.information(self,"MLColorimeter","请点击曝光时间配置设置不同nd下xyz滤光片的曝光时间",QMessageBox.Ok)
+            QMessageBox.information(
+                self, "MLColorimeter", "请点击曝光时间配置设置不同nd下xyz滤光片的曝光时间", QMessageBox.Ok)
         else:
             return
-        
+
     def _useRX_config(self):
         if self.cb_calculate_uniformity.isChecked():
             if self.cb_useRX.isChecked():
                 self.btn_rx_config.show()
                 self.btn_roi_config.show()
-                QMessageBox.information(self,"MLColorimeter","请依次点击ROI列表配置按钮和RX列表配置设置ROI和RX",QMessageBox.Ok)
+                QMessageBox.information(
+                    self, "MLColorimeter", "请依次点击ROI列表配置按钮和RX列表配置设置ROI和RX", QMessageBox.Ok)
             else:
                 self.btn_roi_config.show()
-                QMessageBox.information(self,"MLColorimeter","请点击ROI列表配置按钮设置ROI",QMessageBox.Ok)
+                QMessageBox.information(
+                    self, "MLColorimeter", "请点击ROI列表配置按钮设置ROI", QMessageBox.Ok)
         else:
             self.btn_rx_config.hide()
             self.btn_roi_config.hide()
@@ -346,85 +364,97 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
             self.line_edit_path.setText(folder_path)
         else:
             QMessageBox.critical(self, "MLColorimeter", "选择路径错误",
-                                QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
-    
+                                 QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
+
     def load_exposure_config(self):
         try:
-            nd_list=self.line_edit_ndlist.text().strip().split()
-            xyz_list=self.line_edit_xyzlist.text().strip().split()
+            nd_list = self.line_edit_ndlist.text().strip().split()
+            xyz_list = self.line_edit_xyzlist.text().strip().split()
             if not nd_list or not xyz_list:
-                QMessageBox.warning(self,"MLColorimeter","nd列表或xyz列表不能为空",QMessageBox.Ok)
+                QMessageBox.warning(self, "MLColorimeter",
+                                    "nd列表或xyz列表不能为空", QMessageBox.Ok)
                 return
-            self.exposure_config_window = ExposureConfigWindow(nd_list,xyz_list)
+            self.exposure_config_window = ExposureConfigWindow(
+                nd_list, xyz_list)
             # 连接信号
-            self.exposure_config_window.config_saved.connect(self.update_config)
+            self.exposure_config_window.config_saved.connect(
+                self.update_config)
             self.exposure_config_window.exec_()
         except Exception as e:
-            QMessageBox.critical(self,"MLColorimeter","exception" + e, QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
-    
-    def update_config(self,exposure_map):
-        # print("Received exposure map:", exposure_map)
-        self.exposure_map_obj={}
-        for nd_str,xyz_dict in exposure_map.items():
-            nd_enum=mlcm.str_to_MLFilterEnum(nd_str)
-            self.exposure_map_obj[nd_enum]={}
-            for xyz_str,setting in xyz_dict.items():
-                xyz_enum=mlcm.str_to_MLFilterEnum(xyz_str)
-                exposure_mode = mlcm.ExposureMode.Fixed if setting['exposure_mode']=='Fixed' else mlcm.ExposureMode.Auto
-                exposure_time=setting['exposure_time']
-                self.exposure_map_obj[nd_enum][xyz_enum]=mlcm.pyExposureSetting(
+            QMessageBox.critical(self, "MLColorimeter", "exception" + e,
+                                 QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
+
+    def update_config(self, exposure_map):
+        self.exposure_map_obj = {}
+        for nd_str, xyz_dict in exposure_map.items():
+            nd_enum = mlcm.str_to_MLFilterEnum(nd_str)
+            self.exposure_map_obj[nd_enum] = {}
+            for xyz_str, setting in xyz_dict.items():
+                xyz_enum = mlcm.str_to_MLFilterEnum(xyz_str)
+                exposure_mode = mlcm.ExposureMode.Fixed if setting[
+                    'exposure_mode'] == 'Fixed' else mlcm.ExposureMode.Auto
+                exposure_time = setting['exposure_time']
+                self.exposure_map_obj[nd_enum][xyz_enum] = mlcm.pyExposureSetting(
                     exposure_mode=exposure_mode,
                     exposure_time=exposure_time
                 )
 
     def _rx_config(self):
         try:
-            nd_text=self.line_edit_ndlist.text().strip().split()
+            nd_text = self.line_edit_ndlist.text().strip().split()
             if not nd_text:
-                QMessageBox.warning(self,"MLColorimeter","ND列表不能为空",QMessageBox.Ok)
+                QMessageBox.warning(self, "MLColorimeter",
+                                    "ND列表不能为空", QMessageBox.Ok)
                 return
-            nd_enum=[int(nd) for nd in self.line_edit_ndlist.text().strip().split()]
-            nd_list=[mlcm.MLFilterEnum(nd) for nd in nd_enum]
+            nd_enum = [int(nd)
+                       for nd in self.line_edit_ndlist.text().strip().split()]
+            nd_list = [mlcm.MLFilterEnum(nd) for nd in nd_enum]
             self.rx_config_window = RXConfigWindow(nd_list)
             # 连接信号
             self.rx_config_window.config_saved.connect(self.update_rx_config)
             self.rx_config_window.exec_()
         except Exception as e:
-            QMessageBox.critical(self,"MLColorimeter","exception" + e, QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
+            QMessageBox.critical(self, "MLColorimeter", "exception" + e,
+                                 QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
 
     def _roi_config(self):
         try:
-            binn_text=self.line_edit_binnlist.text().strip().split()
+            binn_text = self.line_edit_binnlist.text().strip().split()
             if not binn_text:
-                QMessageBox.warning(self,"MLColorimeter","binning列表不能为空",QMessageBox.Ok)
+                QMessageBox.warning(self, "MLColorimeter",
+                                    "binning列表不能为空", QMessageBox.Ok)
                 return
-            binn_enum=[int(binn) for binn in self.line_edit_binnlist.text().strip().split()]
-            binn_list=[mlcm.Binning(binn) for binn in binn_enum]
+            binn_enum = [
+                int(binn) for binn in self.line_edit_binnlist.text().strip().split()]
+            binn_list = [mlcm.Binning(binn) for binn in binn_enum]
             self.roi_config_window = ROIConfigWindow(binn_list)
             # 连接信号
-            self.roi_config_window.roi_config_saved.connect(self.update_roi_config)
+            self.roi_config_window.roi_config_saved.connect(
+                self.update_roi_config)
             self.roi_config_window.exec_()
         except Exception as e:
-            QMessageBox.critical(self,"MLColorimeter","exception" + e, QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
+            QMessageBox.critical(self, "MLColorimeter", "exception" + e,
+                                 QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
 
-
-    def update_rx_config(self,rx_map):
-        self.rx_dict={}
+    def update_rx_config(self, rx_map):
+        self.rx_dict = {}
         try:
-            for nd_str,rx_list in rx_map.items():
-                nd_enum=mlcm.str_to_MLFilterEnum(nd_str)
-                self.rx_dict[nd_enum]=rx_list
+            for nd_str, rx_list in rx_map.items():
+                nd_enum = mlcm.str_to_MLFilterEnum(nd_str)
+                self.rx_dict[nd_enum] = rx_list
         except Exception as e:
-            QMessageBox.critical(self,"MLColorimeter","exception" + e, QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
-        
-    def update_roi_config(self,roi_map):
-        self.roi_dict={}
+            QMessageBox.critical(self, "MLColorimeter", "exception" + e,
+                                 QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
+
+    def update_roi_config(self, roi_map):
+        self.roi_dict = {}
         try:
-            for binn,roi_list in roi_map.items():
-                self.roi_dict[binn]=roi_list
+            for binn, roi_list in roi_map.items():
+                self.roi_dict[binn] = roi_list
             pass
         except Exception as e:
-            QMessageBox.critical(self,"MLColorimeter","exception" + e, QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
+            QMessageBox.critical(self, "MLColorimeter", "exception" + e,
+                                 QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
 
     def _useRX_state_changed(self):
         if self.cb_useRX.isChecked():
@@ -450,7 +480,6 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
             if self.cb_calculate_uniformity.isChecked():
                 self.btn_rx_config.hide()
 
-
     def _rgbw_changed(self, btn_id):
         try:
             obj = {1: "R", 2: "G", 3: "B", 4: "W"}
@@ -459,7 +488,7 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
                 self.module_id).ml_set_light_source(self.light_source)
         except Exception as e:
             QMessageBox.critical(self, "MLColorimeter", "exception" + str(e),
-                                QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
+                                 QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
 
     def _start_capture_calculate(self):
         try:
@@ -472,20 +501,25 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
             self.ndlist = self.line_edit_ndlist.text().split()
             self.ndlist = [mlcm.MLFilterEnum(int(nd)) for nd in self.ndlist]
 
-            xyztext = [int(xyz) for xyz in self.line_edit_xyzlist.text().split()]
+            xyztext = [int(xyz)
+                       for xyz in self.line_edit_xyzlist.text().split()]
             self.xyzlist = [mlcm.MLFilterEnum(xyz) for xyz in xyztext]
 
             self.useRX = self.cb_useRX.isChecked()
-            self.sphlist = [float(sph) for sph in self.line_edit_sphlist.text().split()]
-            self.cyllist = [float(cyl) for cyl in self.line_edit_cyllist.text().split()]
-            self.axislist = [int(axis) for axis in self.line_edit_axislist.text().split()]
+            self.sphlist = [float(sph)
+                            for sph in self.line_edit_sphlist.text().split()]
+            self.cyllist = [float(cyl)
+                            for cyl in self.line_edit_cyllist.text().split()]
+            self.axislist = [int(axis)
+                             for axis in self.line_edit_axislist.text().split()]
 
             self.capture_ffc = self.cb_captureffc.isChecked()
             self.cal_synthetic = self.cb_calculate_synthetic.isChecked()
             self.cal_uniformity = self.cb_calculate_uniformity.isChecked()
 
             self.pixelcount = int(self.line_edit_pixelcount.text())
-            self.vrange = [int(vrange) for vrange in self.line_edit_vrange.text().split()]
+            self.vrange = [int(vrange)
+                           for vrange in self.line_edit_vrange.text().split()]
 
             # exposure map for calculate uniformity
             self.exposure_map = {
@@ -499,35 +533,36 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
 
         except Exception as e:
             QMessageBox.critical(self, "MLColorimeter", "exception" + e,
-                                QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
+                                 QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
             self.btn_capture.setEnabled(True)
-            self.is_running=False
-            
-    
+            self.is_running = False
+
     def start_capture_ffc(self):
         if self.cb_captureffc.isChecked():
             if not self.exposure_map_obj:
-                QMessageBox.warning(self,"MLColorimeter","曝光时间未设置",QMessageBox.Ok)
+                QMessageBox.warning(self, "MLColorimeter",
+                                    "曝光时间未设置", QMessageBox.Ok)
                 self.btn_capture.setEnabled(True)
-                self.is_running=False
+                self.is_running = False
                 return
-            self.status_label.setText("<span style='color: green;'>状态: 正在进行拍图或计算...</span>")  # 更新状态
+            self.status_label.setText(
+                "<span style='color: green;'>状态: 正在进行拍图或计算...</span>")  # 更新状态
             self.btn_capture.setEnabled(False)
-            self.is_running=True
-            ffc_parameters={
-                    'colorimeter': self.colorimeter,
-                    'nd_list': self.ndlist,
-                    'xyz_list':self.xyzlist,
-                    'binn': self.binn,
-                    'exposure_map': self.exposure_map_obj,
-                    'capture_times': self.capture_times,
-                    'save_path': self.eye1_path,
-                    'use_RX': self.useRX,
-                    'sph_list': self.sphlist,
-                    'cyl_list': self.cyllist,
-                    'axis_list': self.axislist
-                }
-            ffc_thread=CaptureFFCThread(ffc_parameters)
+            self.is_running = True
+            ffc_parameters = {
+                'colorimeter': self.colorimeter,
+                'nd_list': self.ndlist,
+                'xyz_list': self.xyzlist,
+                'binn': self.binn,
+                'exposure_map': self.exposure_map_obj,
+                'capture_times': self.capture_times,
+                'save_path': self.eye1_path,
+                'use_RX': self.useRX,
+                'sph_list': self.sphlist,
+                'cyl_list': self.cyllist,
+                'axis_list': self.axislist
+            }
+            ffc_thread = CaptureFFCThread(ffc_parameters)
             self.threads.append(ffc_thread)  # 添加到活动线程列表
             ffc_thread.finished.connect(self.start_calculate_synthetic)
             ffc_thread.error.connect(self._on_capture_error)
@@ -535,19 +570,20 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
             ffc_thread.start()
         else:
             self.start_calculate_synthetic()
-    
+
     def start_calculate_synthetic(self):
         if self.useRX and self.cb_calculate_synthetic.isChecked():
-            self.status_label.setText("<span style='color: green;'>状态: 正在进行拍图或计算...</span>")  # 更新状态
+            self.status_label.setText(
+                "<span style='color: green;'>状态: 正在进行拍图或计算...</span>")  # 更新状态
             self.btn_capture.setEnabled(False)
-            self.is_running=True
-            synthetic_parameters={
+            self.is_running = True
+            synthetic_parameters = {
                 'colorimeter': self.colorimeter,
                 'nd_list': self.ndlist,
                 'xyz_list': self.xyzlist,
                 'save_path': self.eye1_path
             }
-            synthetic_thread=CalSyntheticThread(synthetic_parameters)
+            synthetic_thread = CalSyntheticThread(synthetic_parameters)
             self.threads.append(synthetic_thread)
             synthetic_thread.finished.connect(self.start_calculate_uniformity)
             synthetic_thread.error.connect(self._on_capture_error)
@@ -559,24 +595,28 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
     def start_calculate_uniformity(self):
         if self.cb_calculate_uniformity.isChecked():
             if not self.roi_dict:
-                QMessageBox.warning(self,"MLColorimeter","ROI未配置",QMessageBox.Ok)
+                QMessageBox.warning(self, "MLColorimeter",
+                                    "ROI未配置", QMessageBox.Ok)
                 self.btn_capture.setEnabled(True)
-                self.is_running=False
+                self.is_running = False
                 return
             if self.useRX:
                 if not self.rx_dict:
-                    QMessageBox.warning(self,"MLColorimeter","RX未配置",QMessageBox.Ok)
+                    QMessageBox.warning(
+                        self, "MLColorimeter", "RX未配置", QMessageBox.Ok)
                     self.btn_capture.setEnabled(True)
-                    self.is_running=False
+                    self.is_running = False
                     return
-            self.out_path=self.line_edit_path.text()
+            self.out_path = self.line_edit_path.text()
             if self.out_path is None or self.out_path == "":
-                QMessageBox.warning(self,"MLColorimeter","请先选择保存路径",QMessageBox.Ok)
+                QMessageBox.warning(self, "MLColorimeter",
+                                    "请先选择保存路径", QMessageBox.Ok)
                 return
-            self.status_label.setText("<span style='color: green;'>状态: 正在进行拍图或计算...</span>")  # 更新状态
+            self.status_label.setText(
+                "<span style='color: green;'>状态: 正在进行拍图或计算...</span>")  # 更新状态
             self.btn_capture.setEnabled(False)
-            self.is_running=True
-            uniformity_parameters={
+            self.is_running = True
+            uniformity_parameters = {
                 'colorimeter': self.colorimeter,
                 'half_size': self.pixelcount/2,
                 'vrange': self.vrange,
@@ -589,7 +629,7 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
                 'use_RX': self.useRX,
                 'rx_dict': self.rx_dict
             }
-            uniformity_thread=CalUniformityThread(uniformity_parameters)
+            uniformity_thread = CalUniformityThread(uniformity_parameters)
             self.threads.append(uniformity_thread)
             uniformity_thread.finished.connect(self.on_all_tasks_finished)
             uniformity_thread.error.connect(self._on_capture_error)
@@ -597,34 +637,37 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
             uniformity_thread.start()
         else:
             self.on_all_tasks_finished()
-    
+
     def on_all_tasks_finished(self):
-        QMessageBox.information(self,"MLColorimeter","完成!",QMessageBox.Ok)
+        QMessageBox.information(self, "MLColorimeter", "完成!", QMessageBox.Ok)
         self.btn_capture.setEnabled(True)
-        self.is_running=False # 标识完成
-        self.status_label.setText("<span style='color: green;'>状态: 所有任务完成！</span>")  # 更新状态
-        
+        self.is_running = False  # 标识完成
+        self.status_label.setText(
+            "<span style='color: green;'>状态: 所有任务完成！</span>")  # 更新状态
 
-    def update_status(self,message):
-        self.status_label.setText(f"<span style='color: green;'>状态: {message}</span>")
-    
+    def update_status(self, message):
+        self.status_label.setText(
+            f"<span style='color: green;'>状态: {message}</span>")
+
     def _on_capture_finished(self):
-        QMessageBox.information(self,"MLColorimeter","完成!",QMessageBox.Ok)
-        self.status_label.setText("<span style='color: green;'>状态: 完成！</span>")  # 更新状态
+        QMessageBox.information(self, "MLColorimeter", "完成!", QMessageBox.Ok)
+        self.status_label.setText(
+            "<span style='color: green;'>状态: 完成！</span>")  # 更新状态
         self.btn_capture.setEnabled(True)
-        self.is_running=False # 标识定标完成
+        self.is_running = False  # 标识定标完成
 
-    def _on_capture_error(self,error_message):
-        QMessageBox.critical(self, "MLColorimeter", "发生错误: " + error_message, QMessageBox.Ok)
-        self.status_label.setText(f"<span style='color: red;'>状态: 发生错误: {error_message}</span>")  # 更新状态为红色
+    def _on_capture_error(self, error_message):
+        QMessageBox.critical(self, "MLColorimeter",
+                             "发生错误: " + error_message, QMessageBox.Ok)
+        self.status_label.setText(
+            f"<span style='color: red;'>状态: 发生错误: {error_message}</span>")  # 更新状态为红色
         self.btn_capture.setEnabled(True)
-        self.is_running=False # 标识定标完成
+        self.is_running = False  # 标识定标完成
 
     def closeEvent(self, event):
         if self.is_running:
             # 如果正在进行定标，拦截关闭事件
             event.ignore()
-            QMessageBox.warning(self,"警告","定标进行中，请勿关闭窗口",QMessageBox.Ok)
+            QMessageBox.warning(self, "警告", "定标进行中，请勿关闭窗口", QMessageBox.Ok)
         else:
             event.accept()
-

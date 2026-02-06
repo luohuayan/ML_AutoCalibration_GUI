@@ -248,15 +248,12 @@ def capture_ffc_images(
 
     for nd in nd_list:
         ret = mono.ml_move_nd_syn(nd)
-        print(mlcm.MLFilterEnum_to_str(nd))
         if not ret.success:
             raise RuntimeError("ml_move_nd_syn error")
 
         ret = mono.ml_set_binning(binn)
         if not ret.success:
             raise RuntimeError("ml_set_binning error")
-        get_binn = mono.ml_get_binning()
-        print(mlcm.Binning_to_str(get_binn))
 
         if use_RX == False or (not sph_list) or (not cyl_list) or (not axis_list):
             rx = mlcm.pyRXCombination(0, 0, 0)

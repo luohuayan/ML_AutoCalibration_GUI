@@ -124,7 +124,7 @@ def FFC_calculate_1(
             plt.savefig(
                 savepath + "/IS_0mm FFC_1X1 " + str(loop_i) + "0% " + xyz_list[i] + ".png",
                 bbox_inches="tight",
-            )
+            ) 
             plt.close(fig)
         update_status(f"{loop_i}对应的ffc计算结束")
 
