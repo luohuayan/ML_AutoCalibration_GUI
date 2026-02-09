@@ -27,10 +27,6 @@ def capture_RX_center(
     def update_status(message):
         if status_callback:
             status_callback(message)
-    # #test
-    # update_status("capture_RX_center start")
-    # time.sleep(10)
-    # update_status("capture_RX_center finish")
 
     module_id = 1
     ml_mono = colorimeter.ml_bino_manage.ml_get_module_by_id(module_id)
@@ -89,28 +85,28 @@ def capture_RX_center(
     update_status("finish")
 
 
-if __name__ == "__main__":
-    eye1_path = r"I:\duling ffc\EYE1"
-    path_list = [
-        eye1_path,
-    ]
-    try:
-        # create a ML_Colorimeter system instance
-        ml_colorimeter = mlcm.ML_Colorimeter()
-        # add mono module into ml_colorimeter system, according to path_list create one or more mono module
-        ret = ml_colorimeter.ml_add_module(path_list=path_list)
-        if not ret.success:
-            raise RuntimeError("ml_add_module error")
-        # connect all module in the ml_colorimeter system
-        ret = ml_colorimeter.ml_connect()
-        if not ret.success:
-            raise RuntimeError("ml_connect error")
+# if __name__ == "__main__":
+#     eye1_path = r"I:\duling ffc\EYE1"
+#     path_list = [
+#         eye1_path,
+#     ]
+#     try:
+#         # create a ML_Colorimeter system instance
+#         ml_colorimeter = mlcm.ML_Colorimeter()
+#         # add mono module into ml_colorimeter system, according to path_list create one or more mono module
+#         ret = ml_colorimeter.ml_add_module(path_list=path_list)
+#         if not ret.success:
+#             raise RuntimeError("ml_add_module error")
+#         # connect all module in the ml_colorimeter system
+#         ret = ml_colorimeter.ml_connect()
+#         if not ret.success:
+#             raise RuntimeError("ml_connect error")
 
-        module_id = 1
-        ml_mono = ml_colorimeter.ml_bino_manage.ml_get_module_by_id(module_id)
+#         module_id = 1
+#         ml_mono = ml_colorimeter.ml_bino_manage.ml_get_module_by_id(module_id)
 
-        capture_RX_center()
+#         capture_RX_center()
 
-    except Exception as e:
-        # print(e)
-        pass
+#     except Exception as e:
+#         # print(e)
+#         pass

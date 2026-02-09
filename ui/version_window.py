@@ -1,25 +1,19 @@
 from PyQt5.QtWidgets import (
-    QWidget,
     QHBoxLayout,
     QVBoxLayout,
     QLabel,
-    QLineEdit,
     QPushButton,
-    QFileDialog,
-    QSizePolicy,
-    QMessageBox,
     QDialog,
 )
 from PyQt5.QtGui import QFont
-from core.app_config import AppConfig
-from PyQt5.QtCore import pyqtSignal, Qt
+from PyQt5.QtCore import Qt
 
 class VersionWindow(QDialog):
     def __init__(self, parent=None, dialog_title="选择文件夹", default_path=""):
         super().__init__(parent)
         self.setWindowTitle("About AutoCalibration GUI")
         self.setGeometry(300, 300, 500, 200)
-        self.version="0.1.1.5"
+        self.version="0.1.1.7"
         self.setWindowFlags(Qt.Window | Qt.WindowMaximizeButtonHint | Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint)
         self._init_ui()
 

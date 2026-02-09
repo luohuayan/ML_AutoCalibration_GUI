@@ -94,8 +94,6 @@ def capture_dark_heatmap(
                 ret = mono.ml_set_binning(mlcm.Binning(binn))
                 if not ret.success:
                     raise RuntimeError("ml_set_binning error")
-                get_binn = mono.ml_get_binning()
-                # print(get_binn)
 
                 # generate xlsx file
                 title = str(pow(2, binn)) + "X" + str(pow(2, binn))
@@ -217,42 +215,42 @@ def capture_dark_heatmap(
             update_status("finish")
 
 
-if __name__ == "__main__":
-    # set mono module calibration configuration path
-    eye1_path = r"D:\MLOptic\MLColorimeter\config\EYE1"
-    save_path = r"E:\project\test"
-    if not os.path.exists(save_path):
-        os.makedirs(save_path)
+# if __name__ == "__main__":
+#     # set mono module calibration configuration path
+#     eye1_path = r"D:\MLOptic\MLColorimeter\config\EYE1"
+#     save_path = r"E:\project\test"
+#     if not os.path.exists(save_path):
+#         os.makedirs(save_path)
 
-    path_list = [
-        eye1_path,
-    ]
-    try:
-        # create a ML_Colorimeter system instance
-        ml_colorimeter = mlcm.ML_Colorimeter()
-        # add mono module into ml_colorimeter system, according to path_list create one or more mono module
-        ret = ml_colorimeter.ml_add_module(path_list=path_list)
-        if not ret.success:
-            raise RuntimeError("ml_add_module error")
-        # connect all module in the ml_colorimeter system
-        ret = ml_colorimeter.ml_connect()
-        if not ret.success:
-            raise RuntimeError("ml_connect error")
+#     path_list = [
+#         eye1_path,
+#     ]
+#     try:
+#         # create a ML_Colorimeter system instance
+#         ml_colorimeter = mlcm.ML_Colorimeter()
+#         # add mono module into ml_colorimeter system, according to path_list create one or more mono module
+#         ret = ml_colorimeter.ml_add_module(path_list=path_list)
+#         if not ret.success:
+#             raise RuntimeError("ml_add_module error")
+#         # connect all module in the ml_colorimeter system
+#         ret = ml_colorimeter.ml_connect()
+#         if not ret.success:
+#             raise RuntimeError("ml_connect error")
 
-        # 4:ND0  5:ND1  6:ND2  7:ND3  8:ND4
-        nd_list = [4]
-        # 1:X  2:Y  3:Z  10:Clear
-        xyz_list = [1]
-        # exposure time list
-        et_list = [0.1, 1, 10, 20, 50]
-        # 0:ONE_BY_ONE  1:TWO_BY_TWO  2:FOUR_BY_FOUR  3:EIGHT_BY_EIGHT  4:SIXTEEN_BY_SIXTEEN
-        binn_list = [0]
-        # file name
-        file_name = "dark_heatmap.xlsx"
-        # multi frame averaging
-        capture_times = 5
-        capture_dark_heatmap(ml_colorimeter, nd_list, xyz_list,
-                            binn_list, et_list, save_path, file_name, capture_times)
-    except Exception as e:
-        # print(e)
-        pass
+#         # 4:ND0  5:ND1  6:ND2  7:ND3  8:ND4
+#         nd_list = [4]
+#         # 1:X  2:Y  3:Z  10:Clear
+#         xyz_list = [1]
+#         # exposure time list
+#         et_list = [0.1, 1, 10, 20, 50]
+#         # 0:ONE_BY_ONE  1:TWO_BY_TWO  2:FOUR_BY_FOUR  3:EIGHT_BY_EIGHT  4:SIXTEEN_BY_SIXTEEN
+#         binn_list = [0]
+#         # file name
+#         file_name = "dark_heatmap.xlsx"
+#         # multi frame averaging
+#         capture_times = 5
+#         capture_dark_heatmap(ml_colorimeter, nd_list, xyz_list,
+#                             binn_list, et_list, save_path, file_name, capture_times)
+#     except Exception as e:
+#         # print(e)
+#         pass

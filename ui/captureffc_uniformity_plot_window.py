@@ -112,8 +112,7 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
     def _init_ui(self):
         grid_layout = QGridLayout()
 
-        self.label_times = QLabel()
-        self.label_times.setText("多帧平均次数: ")
+        self.label_times = QLabel("多帧平均次数: ")
         grid_layout.addWidget(self.label_times, 0, 0)
 
         self.line_edit_times = QLineEdit()
@@ -122,9 +121,7 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
             QSizePolicy.Expanding, QSizePolicy.Fixed)
         grid_layout.addWidget(self.line_edit_times, 1, 0)
 
-        self.label_binn = QLabel()
-        self.label_binn.setText(
-            "平场图像采集 binning: (0: 1X1, 1: 2X2, 2: 4X4, 3: 8X8, 4: 16X16)")
+        self.label_binn = QLabel("平场图像采集 binning: (0: 1X1, 1: 2X2, 2: 4X4, 3: 8X8, 4: 16X16)")
         grid_layout.addWidget(self.label_binn, 2, 0)
 
         self.line_edit_binn = QLineEdit()
@@ -133,10 +130,7 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
             QSizePolicy.Expanding, QSizePolicy.Fixed)
         grid_layout.addWidget(self.line_edit_binn, 3, 0)
 
-        self.label_binnlist = QLabel()
-        self.label_binnlist.setText(
-            "计算FFC,FourColor均匀性 binning列表, (0: 1X1, 1: 2X2, 2: 4X4, 3: 8X8, 4: 16X16), 以空格隔开"
-        )
+        self.label_binnlist = QLabel("计算FFC,FourColor均匀性 binning列表, (0: 1X1, 1: 2X2, 2: 4X4, 3: 8X8, 4: 16X16), 以空格隔开")
         grid_layout.addWidget(self.label_binnlist, 4, 0)
 
         self.line_edit_binnlist = QLineEdit()
@@ -144,9 +138,7 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
             QSizePolicy.Expanding, QSizePolicy.Fixed)
         grid_layout.addWidget(self.line_edit_binnlist, 5, 0)
 
-        self.label_ndlist = QLabel()
-        self.label_ndlist.setText(
-            "nd列表, (4: ND0, 5: ND1, 6: ND2, 7:ND3, 8:ND4), 以空格隔开")
+        self.label_ndlist = QLabel("nd列表, (4: ND0, 5: ND1, 6: ND2, 7:ND3, 8:ND4), 以空格隔开")
         grid_layout.addWidget(self.label_ndlist, 6, 0)
 
         self.line_edit_ndlist = QLineEdit()
@@ -154,9 +146,7 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
             QSizePolicy.Expanding, QSizePolicy.Fixed)
         grid_layout.addWidget(self.line_edit_ndlist, 7, 0)
 
-        self.label_xyzlist = QLabel()
-        self.label_xyzlist.setText(
-            "xyz列表, (1: X, 2: Y, 3: Z, 10: Clear), 以空格隔开")
+        self.label_xyzlist = QLabel("xyz列表, (1: X, 2: Y, 3: Z, 10: Clear), 以空格隔开")
         grid_layout.addWidget(self.label_xyzlist, 8, 0)
 
         self.line_edit_xyzlist = QLineEdit()
@@ -168,8 +158,7 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
         self.btn_load_config.clicked.connect(self.load_exposure_config)
         grid_layout.addWidget(self.btn_load_config, 9, 1)
 
-        self.label_path = QLabel()
-        self.label_path.setText("保存路径:")
+        self.label_path = QLabel("保存路径:")
         grid_layout.addWidget(self.label_path, 10, 0)
 
         self.line_edit_path = QLineEdit()
@@ -189,9 +178,7 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
         self.cb_useRX.stateChanged.connect(self._useRX_state_changed)
         grid_layout.addWidget(self.cb_useRX, 12, 0)
 
-        self.label_sphlist = QLabel()
-        self.label_sphlist.setText(
-            "平场图像采集 sph列表, (例如: -6 -5 -4 -3 -2 -1 0 1 2 3 4 5 6), 以空格隔开")
+        self.label_sphlist = QLabel("平场图像采集 sph列表, (例如: -6 -5 -4 -3 -2 -1 0 1 2 3 4 5 6), 以空格隔开")
         grid_layout.addWidget(self.label_sphlist, 13, 0)
 
         self.line_edit_sphlist = QLineEdit()
@@ -199,9 +186,7 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
             QSizePolicy.Expanding, QSizePolicy.Fixed)
         grid_layout.addWidget(self.line_edit_sphlist, 14, 0)
 
-        self.label_cyllist = QLabel()
-        self.label_cyllist.setText(
-            "平场图像采集 cyl列表, (例如: -4 -3.5 -3 -2.5 -2 -1.5 -1 -0.5 0), 以空格隔开")
+        self.label_cyllist = QLabel("平场图像采集 cyl列表, (例如: -4 -3.5 -3 -2.5 -2 -1.5 -1 -0.5 0), 以空格隔开")
         grid_layout.addWidget(self.label_cyllist, 15, 0)
 
         self.line_edit_cyllist = QLineEdit()
@@ -209,9 +194,7 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
             QSizePolicy.Expanding, QSizePolicy.Fixed)
         grid_layout.addWidget(self.line_edit_cyllist, 16, 0)
 
-        self.label_axislist = QLabel()
-        self.label_axislist.setText(
-            "平场图像采集 axis列表, (例如: 0 15 30 45 60 75 90 105 120 135 150 165), 以空格隔开")
+        self.label_axislist = QLabel("平场图像采集 axis列表, (例如: 0 15 30 45 60 75 90 105 120 135 150 165), 以空格隔开")
         grid_layout.addWidget(self.label_axislist, 17, 0)
 
         self.line_edit_axislist = QLineEdit()
@@ -285,8 +268,7 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
         h_layout.addWidget(self.cb_W)
         grid_layout.addLayout(h_layout, 20, 0)
 
-        self.label_pixelcount = QLabel()
-        self.label_pixelcount.setText("Plot计算, 水平方向和竖直方向像素个数: ")
+        self.label_pixelcount = QLabel("Plot计算, 水平方向和竖直方向像素个数(计算均匀性时更改): ")
         grid_layout.addWidget(self.label_pixelcount, 21, 0)
 
         self.line_edit_pixelcount = QLineEdit()
@@ -295,11 +277,11 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
             QSizePolicy.Expanding, QSizePolicy.Fixed)
         grid_layout.addWidget(self.line_edit_pixelcount, 22, 0)
 
-        self.label_vrange = QLabel()
-        self.label_vrange.setText("Plot图坐标轴范围: 例如: 1500 3900")
+        self.label_vrange = QLabel("Plot图坐标轴范围: 例如: 1500 3900(计算均匀性时更改)")
         grid_layout.addWidget(self.label_vrange, 23, 0)
 
         self.line_edit_vrange = QLineEdit()
+        self.line_edit_vrange.setText("1500 3900")
         self.line_edit_vrange.setSizePolicy(
             QSizePolicy.Expanding, QSizePolicy.Fixed)
         grid_layout.addWidget(self.line_edit_vrange, 24, 0)
@@ -336,9 +318,13 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
         
     def _useRX_config(self):
         if self.cb_calculate_uniformity.isChecked():
-            self.btn_rx_config.show()
-            self.btn_roi_config.show()
-            QMessageBox.information(self,"MLColorimeter","请依次点击ROI列表配置按钮和RX列表配置设置ROI和RX",QMessageBox.Ok)
+            if self.cb_useRX.isChecked():
+                self.btn_rx_config.show()
+                self.btn_roi_config.show()
+                QMessageBox.information(self,"MLColorimeter","请依次点击ROI列表配置按钮和RX列表配置设置ROI和RX",QMessageBox.Ok)
+            else:
+                self.btn_roi_config.show()
+                QMessageBox.information(self,"MLColorimeter","请点击ROI列表配置按钮设置ROI",QMessageBox.Ok)
         else:
             self.btn_rx_config.hide()
             self.btn_roi_config.hide()
@@ -447,6 +433,8 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
             self.line_edit_axislist.show()
             self.cb_calculate_synthetic.show()
             self.cb_calculate_synthetic.setChecked(True)
+            if self.cb_calculate_uniformity.isChecked():
+                self.btn_rx_config.show()
         else:
             self.label_sphlist.hide()
             self.line_edit_sphlist.hide()
@@ -456,6 +444,8 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
             self.line_edit_axislist.hide()
             self.cb_calculate_synthetic.hide()
             self.cb_calculate_synthetic.setChecked(False)
+            if self.cb_calculate_uniformity.isChecked():
+                self.btn_rx_config.hide()
 
 
     def _rgbw_changed(self, btn_id):
@@ -483,9 +473,9 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
             self.xyzlist = [mlcm.MLFilterEnum(int(xyz)) for xyz in self.xyzlist]
 
             self.useRX = self.cb_useRX.isChecked()
-            self.sphlist = self.line_edit_sphlist.text().split()
-            self.cyllist = self.line_edit_cyllist.text().split()
-            self.axislist = self.line_edit_axislist.text().split()
+            self.sphlist = [float(sph) for sph in self.line_edit_sphlist.text().split()]
+            self.cyllist = [float(cyl) for cyl in self.line_edit_cyllist.text().split()]
+            self.axislist = [int(axis) for axis in self.line_edit_axislist.text().split()]
 
             self.capture_ffc = self.cb_captureffc.isChecked()
             self.cal_synthetic = self.cb_calculate_synthetic.isChecked()
@@ -502,10 +492,6 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
                 mlcm.MLFilterEnum.Clear: mlcm.pyExposureSetting(
                     exposure_mode=mlcm.ExposureMode.Auto, exposure_time=100)
             }
-            
-            self.status_label.setText("<span style='color: green;'>状态: 正在进行拍图或计算...</span>")  # 更新状态
-            self.btn_capture.setEnabled(False)
-            self.is_running=True
             self.start_capture_ffc()
 
         except Exception as e:
@@ -522,6 +508,9 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
                 self.btn_capture.setEnabled(True)
                 self.is_running=False
                 return
+            self.status_label.setText("<span style='color: green;'>状态: 正在进行拍图或计算...</span>")  # 更新状态
+            self.btn_capture.setEnabled(False)
+            self.is_running=True
             ffc_parameters={
                     'colorimeter': self.colorimeter,
                     'nd_list': self.ndlist,
@@ -529,7 +518,7 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
                     'binn': self.binn,
                     'exposure_map': self.exposure_map_obj,
                     'capture_times': self.capture_times,
-                    'save_path': self.out_path,
+                    'save_path': self.eye1_path,
                     'use_RX': self.useRX,
                     'sph_list': self.sphlist,
                     'cyl_list': self.cyllist,
@@ -546,11 +535,14 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
     
     def start_calculate_synthetic(self):
         if self.useRX and self.cb_calculate_synthetic.isChecked():
+            self.status_label.setText("<span style='color: green;'>状态: 正在进行拍图或计算...</span>")  # 更新状态
+            self.btn_capture.setEnabled(False)
+            self.is_running=True
             synthetic_parameters={
                 'colorimeter': self.colorimeter,
                 'nd_list': self.ndlist,
                 'xyz_list': self.xyzlist,
-                'save_path': self.out_path
+                'save_path': self.eye1_path
             }
             synthetic_thread=CalSyntheticThread(synthetic_parameters)
             self.threads.append(synthetic_thread)
@@ -568,11 +560,19 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
                 self.btn_capture.setEnabled(True)
                 self.is_running=False
                 return
-            if not self.rx_dict:
-                QMessageBox.warning(self,"MLColorimeter","RX未配置",QMessageBox.Ok)
-                self.btn_capture.setEnabled(True)
-                self.is_running=False
+            if self.useRX:
+                if not self.rx_dict:
+                    QMessageBox.warning(self,"MLColorimeter","RX未配置",QMessageBox.Ok)
+                    self.btn_capture.setEnabled(True)
+                    self.is_running=False
+                    return
+            self.out_path=self.line_edit_path.text()
+            if self.out_path is None or self.out_path == "":
+                QMessageBox.warning(self,"MLColorimeter","请先选择保存路径",QMessageBox.Ok)
                 return
+            self.status_label.setText("<span style='color: green;'>状态: 正在进行拍图或计算...</span>")  # 更新状态
+            self.btn_capture.setEnabled(False)
+            self.is_running=True
             uniformity_parameters={
                 'colorimeter': self.colorimeter,
                 'half_size': self.pixelcount/2,
