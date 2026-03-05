@@ -10,6 +10,7 @@ from PyQt5.QtWidgets import (
     QGridLayout,
     QCheckBox
 )
+from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import pyqtSignal, Qt,QThread
 import mlcolorimeter as mlcm
 from scripts.resize_crop_images import resize_crop_images
@@ -38,7 +39,8 @@ class ResizeFFCImagesWindow(QDialog):
         self.setWindowTitle("resize FFC images")
         self.setGeometry(200, 200, 800, 500)
         self.setWindowFlags(Qt.Window | Qt.WindowMaximizeButtonHint | Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint)
-
+        self.setWindowIcon(QIcon(
+            "F:/ML_AutoCalibration_GUI/ML_AutoCalibration_GUI/dist/FingerPrintScanMTF.ico"))
         self.dialog_title = "选择文件夹"
         self.default_path = ""
         self._init_ui()

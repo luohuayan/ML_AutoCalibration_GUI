@@ -14,7 +14,7 @@ from PyQt5.QtWidgets import (
     QFormLayout,
     QListWidget
 )
-from PyQt5.QtGui import QIntValidator, QDoubleValidator
+from PyQt5.QtGui import QIntValidator, QDoubleValidator,QIcon
 from core.app_config import AppConfig
 from PyQt5.QtCore import pyqtSignal, Qt, QThread
 import mlcolorimeter as mlcm
@@ -83,7 +83,8 @@ class FFCCalculateBinningWindow(QDialog):
         self.setGeometry(200, 200, 800, 500)
         self.setWindowFlags(Qt.Window | Qt.WindowMaximizeButtonHint |
                             Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint)
-
+        self.setWindowIcon(QIcon(
+            "F:/ML_AutoCalibration_GUI/ML_AutoCalibration_GUI/dist/FingerPrintScanMTF.ico"))
         self.colorimeter = AppConfig.get_colorimeter()
         self.intValidator = QIntValidator()
         self.dialog_title = "选择文件夹"

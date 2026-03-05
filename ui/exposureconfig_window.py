@@ -12,6 +12,7 @@ from PyQt5.QtWidgets import (
     QFormLayout,
     QDialog,
 )
+from PyQt5.QtGui import QIcon
 from core.app_config import AppConfig
 from PyQt5.QtCore import pyqtSignal, Qt
 import mlcolorimeter as mlcm
@@ -29,6 +30,8 @@ class ExposureConfigWindow(QDialog):
         self.setGeometry(250, 250, 400, 300)
         self.setWindowFlags(Qt.Window | Qt.WindowMaximizeButtonHint |
                             Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint)
+        self.setWindowIcon(QIcon(
+            "F:/ML_AutoCalibration_GUI/ML_AutoCalibration_GUI/dist/FingerPrintScanMTF.ico"))
 
         self.colorimeter = AppConfig.get_colorimeter()
         self.nd_list = nd_list

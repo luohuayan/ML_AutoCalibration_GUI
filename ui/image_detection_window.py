@@ -9,6 +9,7 @@ from PyQt5.QtWidgets import (
     QLabel,
     QGridLayout,
 )
+from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import pyqtSignal, Qt,QThread
 from scripts.image_detection import check_image_corruption
 import os
@@ -36,7 +37,8 @@ class ImageDetectionWindow(QDialog):
         self.setWindowTitle("image detection")
         self.setGeometry(200, 200, 800, 500)
         self.setWindowFlags(Qt.Window | Qt.WindowMaximizeButtonHint | Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint)
-
+        self.setWindowIcon(QIcon(
+            "F:/ML_AutoCalibration_GUI/ML_AutoCalibration_GUI/dist/FingerPrintScanMTF.ico"))
         self.dialog_title = "选择文件夹"
         self.default_path = ""
         self._init_ui()

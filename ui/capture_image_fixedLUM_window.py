@@ -15,7 +15,7 @@ from PyQt5.QtWidgets import (
     QRadioButton,
     QCheckBox,
 )
-from PyQt5.QtGui import QIntValidator, QDoubleValidator
+from PyQt5.QtGui import QIntValidator, QDoubleValidator,QIcon
 from core.app_config import AppConfig
 from PyQt5.QtCore import pyqtSignal, Qt, QThread
 import mlcolorimeter as mlcm
@@ -49,6 +49,8 @@ class CaptureImageFixedLUMWindow(QDialog):
         self.colorimeter = AppConfig.get_colorimeter()
         self.setWindowFlags(Qt.Window | Qt.WindowMaximizeButtonHint |
                             Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint)
+        self.setWindowIcon(QIcon(
+            "F:/ML_AutoCalibration_GUI/ML_AutoCalibration_GUI/dist/FingerPrintScanMTF.ico"))
         self.intValidator = QIntValidator()
         self.dialog_title = "选择文件夹"
         self.default_path = ""

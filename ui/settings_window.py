@@ -14,16 +14,17 @@ from PyQt5.QtCore import pyqtSignal, Qt
 
 class SettingsWindow(QDialog):
     path_changed = pyqtSignal(str)
-    enables_connect_button=pyqtSignal()
+    enables_connect_button = pyqtSignal()
 
     def __init__(self, parent=None, dialog_title="选择文件夹", default_path=""):
         super().__init__(parent)
         self.setWindowTitle("Setting")
         self.setGeometry(300, 300, 500, 200)
-        self.setWindowFlags(Qt.Window | Qt.WindowMaximizeButtonHint | Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint)
+        self.setWindowFlags(Qt.Window | Qt.WindowMaximizeButtonHint |
+                            Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint)
         self.dialog_title = dialog_title
-        self.default_path = default_path    
-        self.previous_path=""
+        self.default_path = default_path
+        self.previous_path = ""
         self.colorimeter = AppConfig.get_colorimeter()
         self._init_ui()
 
@@ -64,14 +65,16 @@ class SettingsWindow(QDialog):
             ret = self.colorimeter.ml_remove_module([1])
             ret = self.colorimeter.ml_add_module(path_list=[folder_path])
             if not ret.success:
-                QMessageBox.critical(self,"MLColorimeter","ml_add_module error",QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
-                
+                QMessageBox.critical(self, "MLColorimeter", "ml_add_module error",
+                                     QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
+
             else:
                 # 发射信号，启用连接按钮
                 self.enables_connect_button.emit()
             self.close()
         else:
-            QMessageBox.critical(self,"MLColorimeter","选择路径错误",QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
+            QMessageBox.critical(self, "MLColorimeter", "选择路径错误",
+                                 QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
             self.close()
 
     def get_path(self):

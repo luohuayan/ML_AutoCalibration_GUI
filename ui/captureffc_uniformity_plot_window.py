@@ -14,7 +14,7 @@ from PyQt5.QtWidgets import (
     QButtonGroup,
     QDialog,
 )
-from PyQt5.QtGui import QIntValidator, QDoubleValidator
+from PyQt5.QtGui import QIntValidator, QDoubleValidator, QIcon
 from core.app_config import AppConfig
 from PyQt5.QtCore import pyqtSignal, Qt, QThread
 import mlcolorimeter as mlcm
@@ -93,6 +93,8 @@ class CaptureFFC_CalUniformity_Plot_Window(QDialog):
         self.setGeometry(200, 200, 800, 700)
         self.setWindowFlags(Qt.Window | Qt.WindowMaximizeButtonHint |
                             Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint)
+        self.setWindowIcon(QIcon(
+            "F:/ML_AutoCalibration_GUI/ML_AutoCalibration_GUI/dist/FingerPrintScanMTF.ico"))
         self.colorimeter = AppConfig.get_colorimeter()
         self.intValidator = QIntValidator()
         self.doubleValidator = QDoubleValidator()

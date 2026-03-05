@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import (
     QPushButton,
     QDialog,
 )
-from PyQt5.QtGui import QFont
+from PyQt5.QtGui import QFont, QIcon
 from PyQt5.QtCore import Qt
 from config.version import __version__
 
@@ -17,6 +17,8 @@ class VersionWindow(QDialog):
         self.setGeometry(300, 300, 500, 200)
         self.setWindowFlags(Qt.Window | Qt.WindowMaximizeButtonHint |
                             Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint)
+        self.setWindowIcon(QIcon(
+            "F:/ML_AutoCalibration_GUI/ML_AutoCalibration_GUI/dist/FingerPrintScanMTF.ico"))
         self._init_ui()
 
     def _init_ui(self):
