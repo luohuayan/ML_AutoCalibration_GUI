@@ -28,6 +28,7 @@ from ui.version_window import VersionWindow
 from ui.daogui_vid_window import DaoGuiVIDWindow
 from ui.image_detection_window import ImageDetectionWindow
 from ui.resizeFFCimages_window import ResizeFFCImagesWindow
+from ui.generate_colorshift_window import GenerateColorShift
 
 
 class MainWindow(QMainWindow):
@@ -61,6 +62,7 @@ class MainWindow(QMainWindow):
         self.daogui_window = None
         self.imagedetction_window = None
         self.resize_ffc_images_window = None
+        self.generate_colorshift_window = None
 
     def _init_ui(self):
         # 创建菜单栏
@@ -142,6 +144,9 @@ class MainWindow(QMainWindow):
         script17_action = QAction("resize_FFC_images", self)
         script17_action.triggered.connect(self.resize_FFC_images)
 
+        script18_action = QAction("generate_ColorShift", self)
+        script18_action.triggered.connect(self.generate_ColorShift)
+
         scripts_menu.addAction(script1_action)
         scripts_menu.addAction(script2_action)
         scripts_menu.addAction(script3_action)
@@ -159,6 +164,7 @@ class MainWindow(QMainWindow):
         scripts_menu2.addAction(script15_action)
         scripts_menu3.addAction(script16_action)
         scripts_menu3.addAction(script17_action)
+        scripts_menu3.addAction(script18_action)
 
     def create_main_widget(self):
         # 主控件
@@ -323,3 +329,7 @@ class MainWindow(QMainWindow):
     def resize_FFC_images(self):
         self.resize_ffc_images_window = ResizeFFCImagesWindow()
         self.resize_ffc_images_window.exec_()
+
+    def generate_ColorShift(self):
+        self.generate_colorshift_window = GenerateColorShift()
+        self.generate_colorshift_window.exec_()

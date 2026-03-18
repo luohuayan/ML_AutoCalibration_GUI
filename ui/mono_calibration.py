@@ -19,7 +19,7 @@ from PyQt5.QtWidgets import (
     QFormLayout,
     QScrollArea
 )
-from PyQt5.QtGui import QIntValidator, QDoubleValidator,QIcon
+from PyQt5.QtGui import QIntValidator, QDoubleValidator, QIcon
 from core.app_config import AppConfig
 from PyQt5.QtCore import pyqtSignal, Qt, QThread
 import mlcolorimeter as mlcm
@@ -475,135 +475,69 @@ class MonoCalibrationWindow(QDialog):
             self.roi_size = self.line_edit_roi_size.text().split()
             self.expusure_offset = float(self.line_edit_exposure_offset.text())
             self.gray_offset = float(self.line_edit_gray_offset.text())
-            roi_width = int(self.roi_size[0])
-            roi_height = int(self.roi_size[1])
-            mono = self.colorimeter.ml_bino_manage.ml_get_module_by_id(1)
-            res = mono.ml_capture_image_syn()
-            if (res.success):
-                image = mono.ml_get_image()
-            else:
-                QMessageBox.critical(self, "MLColorimeter", "获取图像失败，请检查相机连接或设置",
-                                     QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
-                return
-            # image=cv2.imread(r'F:\ffc.tif')
-            if len(image.shape) == 3:
-                height, width, _ = image.shape
-            else:
-                height, width = image.shape
 
-            center_x = width//2
-            center_y = height//2
-            self.line_edit_image_size.setText(f"{center_x} {center_y}")
-            self.image_point = self.line_edit_image_size.text().split()
-
-            # 计算roi的左上角坐标和右下角坐标
-            top_left_x = center_x - roi_width//2
-            top_left_y = center_y - roi_height//2
-            bottom_right_x = center_x + roi_width//2
-            bottom_right_y = center_y + roi_height//2
-
-            # 确保坐标在图像范围内
-            top_left_x = max(0, top_left_x)
-            top_left_y = max(0, top_left_y)
-            bottom_right_x = min(width, bottom_right_x)
-            bottom_right_y = min(height, bottom_right_y)
-
-            # 绘制roi矩形
-            cv2.rectangle(image, (top_left_x, top_left_y),
-                          (bottom_right_x, bottom_right_y), (0, 255, 0), 2)
-            # 缩放图像以适应窗口
-            max_display_size = 1000  # 最大显示边长
-            if height > max_display_size or width > max_display_size:
-                scaling_factor = max_display_size / max(height, width)
-                new_size = (int(width * scaling_factor),
-                            int(height * scaling_factor))
-                image = cv2.resize(image, new_size)
-
-            # 在缩放后的图像上绘制 ROI
-            cv2.rectangle(image,
-                          (int(top_left_x * scaling_factor),
-                           int(top_left_y * scaling_factor)),
-                          (int(bottom_right_x * scaling_factor),
-                           int(bottom_right_y * scaling_factor)),
-                          (0, 255, 0), 2)
-
-            # 显示图像
-            cv2.imshow('Image with Centered ROI', image)
-
-            # 等待用户按任意键关闭图像窗口
-            cv2.waitKey(0)
-            cv2.destroyAllWindows()
-
-            # 弹出确认框
-            reply = QMessageBox.question(
-                self, '确认', 'ROI 是否正确？', QMessageBox.Yes | QMessageBox.No)
-            if reply == QMessageBox.Yes:
-                self.status_label.setText(
-                    "<span style='color: green;'>状态: 正在进行单色定标...</span>")  # 更新状态
-                self.btn_capture.setEnabled(False)
-                self.is_calibrating = True
-                # 将参数打包到字典中
-                parameters = {
-                    'colorimeter': self.colorimeter,
-                    'binn_selector': self.binn_selector,
-                    'binn_mode': self.binn_mode,
-                    'binn': self.binn,
-                    'pixel_format': self.pixel_format,
-                    'nd_list': self.nd_list,
-                    'xyz_list': self.xyz_list,
-                    'gray_range': self.gray_list,
-                    'apturate': self.aperture,
-                    'light_source': self.light_source,
-                    'luminance_values': self.lum_dict,
-                    'luminance_no_xyz': self.luminance_no_xyz,
-                    'radiance': self.radiance,
-                    'eye1_path': self.eye1_path,
-                    'out_path': self.out_path,
-                    'image_point': self.image_point,
-                    'roi_size': self.roi_size,
-                    'expusure_offset': self.expusure_offset,
-                    'gray_offset': self.gray_offset
-                }
-                if self.checkbox_do_ffc.isChecked():
-                    self.is_rx = self.checkbox_is_rx.isChecked()
-                    if self.is_rx:
-                        self.sph_list = [
-                            float(sph) for sph in self.line_edit_sphlist.text().split()]
-                        self.cyl_list = [
-                            float(cyl) for cyl in self.line_edit_cyllist.text().split()]
-                        self.axis_list = [
-                            int(axis) for axis in self.line_edit_axislist.text().split()]
-                    else:
-                        self.sph_list = [0.0]
-                        self.cyl_list = [0.0]
-                        self.axis_list = [0]
-                    parameters['is_rx'] = self.is_rx
-                    parameters['sph_list'] = self.sph_list
-                    parameters['cyl_list'] = self.cyl_list
-                    parameters['axis_list'] = self.axis_list
-                    self.calibration_doffc_thread = CalibrationDoFFCThread(
-                        parameters)
-                    self.calibration_doffc_thread.finished.connect(
-                        self.on_calibration_finished)
-                    self.calibration_doffc_thread.error.connect(
-                        self.on_calibration_error)
-                    self.calibration_doffc_thread.status_update.connect(
-                        self.update_status)
-                    self.calibration_doffc_thread.start()  # 启动线程
+            self.status_label.setText(
+                "<span style='color: green;'>状态: 正在进行单色定标...</span>")  # 更新状态
+            self.btn_capture.setEnabled(False)
+            self.is_calibrating = True
+            # 将参数打包到字典中
+            parameters = {
+                'colorimeter': self.colorimeter,
+                'binn_selector': self.binn_selector,
+                'binn_mode': self.binn_mode,
+                'binn': self.binn,
+                'pixel_format': self.pixel_format,
+                'nd_list': self.nd_list,
+                'xyz_list': self.xyz_list,
+                'gray_range': self.gray_list,
+                'apturate': self.aperture,
+                'light_source': self.light_source,
+                'luminance_values': self.lum_dict,
+                'luminance_no_xyz': self.luminance_no_xyz,
+                'radiance': self.radiance,
+                'eye1_path': self.eye1_path,
+                'out_path': self.out_path,
+                'image_point': self.image_point,
+                'roi_size': self.roi_size,
+                'expusure_offset': self.expusure_offset,
+                'gray_offset': self.gray_offset
+            }
+            if self.checkbox_do_ffc.isChecked():
+                self.is_rx = self.checkbox_is_rx.isChecked()
+                if self.is_rx:
+                    self.sph_list = [
+                        float(sph) for sph in self.line_edit_sphlist.text().split()]
+                    self.cyl_list = [
+                        float(cyl) for cyl in self.line_edit_cyllist.text().split()]
+                    self.axis_list = [
+                        int(axis) for axis in self.line_edit_axislist.text().split()]
                 else:
-
-                    self.calibration_thread = CalibrationThread(parameters)
-                    self.calibration_thread.finished.connect(
-                        self.on_calibration_finished)
-                    self.calibration_thread.error.connect(
-                        self.on_calibration_error)
-                    self.calibration_thread.status_update.connect(
-                        self.update_status)
-                    self.calibration_thread.start()  # 启动线程
+                    self.sph_list = [0.0]
+                    self.cyl_list = [0.0]
+                    self.axis_list = [0]
+                parameters['is_rx'] = self.is_rx
+                parameters['sph_list'] = self.sph_list
+                parameters['cyl_list'] = self.cyl_list
+                parameters['axis_list'] = self.axis_list
+                self.calibration_doffc_thread = CalibrationDoFFCThread(
+                    parameters)
+                self.calibration_doffc_thread.finished.connect(
+                    self.on_calibration_finished)
+                self.calibration_doffc_thread.error.connect(
+                    self.on_calibration_error)
+                self.calibration_doffc_thread.status_update.connect(
+                    self.update_status)
+                self.calibration_doffc_thread.start()  # 启动线程
             else:
-                QMessageBox.information(
-                    self, "MLColorimeter", "请调整参数后重新定标", QMessageBox.Ok)
-                return
+
+                self.calibration_thread = CalibrationThread(parameters)
+                self.calibration_thread.finished.connect(
+                    self.on_calibration_finished)
+                self.calibration_thread.error.connect(
+                    self.on_calibration_error)
+                self.calibration_thread.status_update.connect(
+                    self.update_status)
+                self.calibration_thread.start()  # 启动线程
 
         except Exception as e:
             QMessageBox.critical(self, "MLColorimeter", "exception" + e,
