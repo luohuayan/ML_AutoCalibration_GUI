@@ -69,6 +69,7 @@ class GenerateColorShift(QDialog):
         self.line_edit_aperature = QLineEdit()
         self.line_edit_aperature.setSizePolicy(
             QSizePolicy.Expanding, QSizePolicy.Fixed)
+        self.line_edit_aperature.setText("3mm")
         grid_layout.addWidget(self.line_edit_aperature, 3, 0)
 
         self.checkbox_exist_nd = QCheckBox("NDFilter")
@@ -145,9 +146,9 @@ class GenerateColorShift(QDialog):
         }
 
         self.x_offset = int(self.line_edit_x.text()
-                              ) if self.line_edit_x.text() else 0
+                            ) if self.line_edit_x.text() else 0
         self.y_offset = int(self.line_edit_y.text()
-                              ) if self.line_edit_y.text() else 0
+                            ) if self.line_edit_y.text() else 0
 
         data = {
             "ColorShift": [
