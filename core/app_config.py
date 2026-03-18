@@ -1,5 +1,6 @@
 import mlcolorimeter as mlcm
 
+
 class AppConfig:
     _instance = None
 
@@ -13,7 +14,21 @@ class AppConfig:
     @classmethod
     def get_colorimeter(cls) -> mlcm.ML_Colorimeter:
         return cls().colorimeter
-    
+
+    @classmethod
+    def delete_instance(cls):
+        if cls._instance is not None:
+            ret = None
+            ret = AppConfig.get_colorimeter().ml_bino_manage.ml_disconnect_modules()
+            if not ret.success:
+                return ret.success
+            id_list = AppConfig.get_colorimeter().ml_bino_manage.ml_get_modules_id_list()
+            for i in id_list:
+                ret = AppConfig.get_colorimeter().ml_bino_manage.ml_remove_module(i)
+                if not ret.success:
+                    return ret.success
+            cls._instance = None
+            return True
     # @classmethod
     # def get_cylaxis(cls) -> mtfca.MTF_cylaxis:
     #     return cls().cylaxis
