@@ -29,6 +29,7 @@ from ui.daogui_vid_window import DaoGuiVIDWindow
 from ui.image_detection_window import ImageDetectionWindow
 from ui.resizeFFCimages_window import ResizeFFCImagesWindow
 from ui.generate_colorshift_window import GenerateColorShift
+from ui.config_detection_window import ConfigDetectionWindow
 
 
 class MainWindow(QMainWindow):
@@ -63,6 +64,7 @@ class MainWindow(QMainWindow):
         self.imagedetction_window = None
         self.resize_ffc_images_window = None
         self.generate_colorshift_window = None
+        self.config_detection_window = None
 
     def _init_ui(self):
         # 创建菜单栏
@@ -147,6 +149,9 @@ class MainWindow(QMainWindow):
         script18_action = QAction("generate_ColorShift", self)
         script18_action.triggered.connect(self.generate_ColorShift)
 
+        script19_action = QAction("config_Detection", self)
+        script19_action.triggered.connect(self.config_Detection)
+
         scripts_menu.addAction(script1_action)
         scripts_menu.addAction(script2_action)
         scripts_menu.addAction(script3_action)
@@ -165,6 +170,7 @@ class MainWindow(QMainWindow):
         scripts_menu3.addAction(script16_action)
         scripts_menu3.addAction(script17_action)
         scripts_menu3.addAction(script18_action)
+        scripts_menu3.addAction(script19_action)
 
     def create_main_widget(self):
         # 主控件
@@ -333,3 +339,7 @@ class MainWindow(QMainWindow):
     def generate_ColorShift(self):
         self.generate_colorshift_window = GenerateColorShift()
         self.generate_colorshift_window.exec_()
+
+    def config_Detection(self):
+        self.config_detection_window = ConfigDetectionWindow()
+        self.config_detection_window.exec_()
