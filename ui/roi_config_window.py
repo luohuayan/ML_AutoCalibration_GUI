@@ -1,5 +1,6 @@
 from PyQt5.QtWidgets import QDialog, QVBoxLayout, QScrollArea, QWidget, QFormLayout, QLabel, QLineEdit, QPushButton, QGroupBox,QMessageBox,QHBoxLayout,QSizePolicy,QListWidget,QFileDialog
 from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtGui import QIcon
 from typing import List
 import mlcolorimeter as mlcm
 from PyQt5.QtCore import pyqtSignal, Qt
@@ -14,6 +15,8 @@ class ROIConfigWindow(QDialog):
         self.setWindowTitle("roi config")
         self.setGeometry(250, 250, 400, 300)
         self.setWindowFlags(Qt.Window | Qt.WindowMaximizeButtonHint | Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint)
+        self.setWindowIcon(QIcon(
+            "F:/ML_AutoCalibration_GUI/ML_AutoCalibration_GUI/dist/FingerPrintScanMTF.ico"))
         self.binn_list = binn_list
         self.roi_dict={} # 用于存储每个Binning的ROI列表
         self.binn_input_fields = {}  # 用于存储输入框

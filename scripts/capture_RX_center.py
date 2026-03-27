@@ -13,29 +13,24 @@ def datetime_str():
 
 
 def capture_RX_center(
-        colorimeter:mlcm.ML_Colorimeter,
-        sph_list:List[float],
-        cyl_list:List[float],
-        axis_list:List[int],
-        save_path:str,
-        nd_list:List[mlcm.MLFilterEnum],
-        xyz_list:List[mlcm.MLFilterEnum],
-        roi:mlcm.pyCVRect,
-        exposure_map_obj:Dict[mlcm.MLFilterEnum,Dict[mlcm.MLFilterEnum,mlcm.pyExposureSetting]]={},
+        colorimeter: mlcm.ML_Colorimeter,
+        sph_list: List[float],
+        cyl_list: List[float],
+        axis_list: List[int],
+        save_path: str,
+        nd_list: List[mlcm.MLFilterEnum],
+        xyz_list: List[mlcm.MLFilterEnum],
+        roi: mlcm.pyCVRect,
+        exposure_map_obj: Dict[mlcm.MLFilterEnum,
+                               Dict[mlcm.MLFilterEnum, mlcm.pyExposureSetting]] = {},
         status_callback=None
 ):
     def update_status(message):
         if status_callback:
             status_callback(message)
-    # #test
-    # update_status("capture_RX_center start")
-    # time.sleep(10)
-    # update_status("capture_RX_center finish")
 
     module_id = 1
     ml_mono = colorimeter.ml_bino_manage.ml_get_module_by_id(module_id)
-    if not os.path.exists(save_path):
-        os.makedirs(save_path)
     pixel_format = mlcm.MLPixelFormat.MLMono12
     ret = ml_mono.ml_set_pixel_format(pixel_format)
     if not ret.success:
@@ -60,8 +55,7 @@ def capture_RX_center(
                 + "_"
                 + mlcm.MLFilterEnum_to_str(xyz_enum)
             )
-            if not os.path.exists(out_path):
-                os.makedirs(out_path)
+            os.makedirs(out_path, exist_ok=True)
 
             ret = ml_mono.ml_set_exposure(exposure_map_obj[nd_enum][xyz_enum])
             if not ret.success:
@@ -81,36 +75,12 @@ def capture_RX_center(
 
                         get_image = ml_mono.ml_get_image()
                         img_path = (
-                            out_path + "\\" + mlcm.pyRXCombination_to_str(rx) + ".tif"
+                            out_path + "\\" +
+                            mlcm.pyRXCombination_to_str(rx) + ".tif"
                         )
-                        roi_img = get_image[roi.y:roi.y+roi.height, roi.x:roi.x+roi.width]
+                        roi_img = get_image[roi.y:roi.y +
+                                            roi.height, roi.x:roi.x+roi.width]
                         cv2.imwrite(img_path, roi_img)
-                        update_status(f"{mlcm.MLFilterEnum_to_str(nd_enum)}_{mlcm.MLFilterEnum_to_str(xyz_enum)}_{mlcm.pyRXCombination_to_str(rx)} save success")
+                        update_status(
+                            f"{mlcm.MLFilterEnum_to_str(nd_enum)}_{mlcm.MLFilterEnum_to_str(xyz_enum)}_{mlcm.pyRXCombination_to_str(rx)} save success")
     update_status("finish")
-
-
-if __name__ == "__main__":
-    eye1_path = r"I:\duling ffc\EYE1"
-    path_list = [
-        eye1_path,
-    ]
-    try:
-        # create a ML_Colorimeter system instance
-        ml_colorimeter = mlcm.ML_Colorimeter()
-        # add mono module into ml_colorimeter system, according to path_list create one or more mono module
-        ret = ml_colorimeter.ml_add_module(path_list=path_list)
-        if not ret.success:
-            raise RuntimeError("ml_add_module error")
-        # connect all module in the ml_colorimeter system
-        ret = ml_colorimeter.ml_connect()
-        if not ret.success:
-            raise RuntimeError("ml_connect error")
-
-        module_id = 1
-        ml_mono = ml_colorimeter.ml_bino_manage.ml_get_module_by_id(module_id)
-
-        capture_RX_center()
-
-    except Exception as e:
-        # print(e)
-        pass
